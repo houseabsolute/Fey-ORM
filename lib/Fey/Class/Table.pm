@@ -57,39 +57,64 @@ sub MakeColumnAttributes
     my $class = shift;
     my $table = $class->Table();
 
+    {
+        eval "package $class";
+
+        has '_column_data' =>
+            ( is       => 'rw',
+              isa      => 'HashRef',
+              lazy     => 1,
+              default  => \&_select_columns,
+              init_arg => "\0_column_data",
+            );
+    }
+
     for my $col ( $table->columns() )
     {
-        _make_column_accessor( $class, $col->name() );
+        _make_column_attribute( $class, $col->name() );
     }
 }
 
-sub _make_column_accessor
+sub _make_column_attribute
 {
-    my $package = shift;
-    my $column  = shift;
-
-    my $sub_name = join '::', $package, $column;
+    my $class  = shift;
+    my $column = shift;
 
     {
-        no strict 'refs';
-        return if defined &{$sub_name};
+        eval "package $class";
+
+        my $name = $column->name();
+        has $name =>
+            ( is        => 'ro',
+              isa       => $class->_MooseTypeForColumn($column);
+              reader    => sub { $_[0]->_column_data()->{$name} },
+              predicate => sub { exists $_[0]->_column_data()->{$name} },
+            );
     }
+}
 
-    my $sub =
-        sub { my $self = shift;
+{
+    my %Types = ( text     => 'Str',
+                  blob     => 'Value',
+                  integer  => 'Int',
+                  float    => 'Num',
+                  datetime => 'Str',
+                  date     => 'Str',
+                  time     => 'Str',
+                  boolean  => 'Bool',
+                  other    => 'Value',
+                );
+    sub _MooseTypeForColumn
+    {
+        my $class  = shift;
+        my $column = shift;
 
-              my $cache = $self->_per_object_cache();
+        my $type = $column->generic_type();
 
-              return $cache->{$column}
-                  if exists $cache->{$column};
+        $type .= ' | Undef' if $column->is_nullable();
 
-              $self->_select_columns();
-
-              return $cache->{$column};
-            };
-
-    no strict 'refs';
-    *{"${package}::$column"} = $sub;
+        return $type;
+    }
 }
 
 sub MakeAttributes
@@ -112,11 +137,6 @@ sub MakeAttributes
     }
 }
 
-sub _per_object_cache
-{
-    return $_[0]->{'Fey::Class::Table'}{per_object_cache} ||= {};
-}
-
 sub _PerClassCache
 {
     my $class = ref $_[0] || $_[0];
@@ -134,12 +154,14 @@ sub _select_columns
 
     $sth->execute( $self->_pk_vals() );
 
-    my $cache = $self->_per_object_cache();
-    $sth->bind_columns( @{ $cache }{ @{ $sth->{NAME} } } );
+    my %columns;
+    $sth->bind_columns( @columns{ @{ $sth->{NAME} } } );
 
     $sth->fetch();
 
     $sth->finish();
+
+    return \%columns;
 }
 
 sub _select_columns_sth
