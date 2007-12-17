@@ -6,6 +6,7 @@ use warnings;
 use Fey::Exceptions qw( param_error );
 use List::MoreUtils qw( pairwise );
 
+use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
 use Moose;
 use Moose::Util::TypeConstraints;
 
@@ -34,7 +35,7 @@ has handle =>
 has index =>
     ( is       => 'rw',
       isa      => 'Int',
-      writer   => '_index',
+      writer   => '_set_index',
       default  => 0,
       init_arg => "\0index",
     );
@@ -46,13 +47,13 @@ has _executed =>
     );
 
 has _row =>
-    ( is      => 'rw',
+    ( is      => 'ro',
       isa     => 'HashRef',
       default => sub { return {} },
     );
 
 has _attribute_map =>
-    ( is      => 'rw',
+    ( is      => 'ro',
       isa     => 'HashRef[ArrayRef[Str]]',
       lazy    => 1,
       default => sub { return $_[0]->_make_attribute_map() },
@@ -70,7 +71,7 @@ sub next
 
     return unless $sth->fetch();
 
-    $self->index( $self->index() + 1 );
+    $self->_set_index( $self->index() + 1 );
 
     my $map = $self->_attribute_map();
 
@@ -100,7 +101,7 @@ sub _executed_handle
 
     $sth->execute();
 
-    $self->_executed(1);
+    $self->_set_executed(1);
 
     return $sth;
 }
@@ -123,6 +124,16 @@ sub next_as_hash
     return
         pairwise { $a->Table()->name() => $b }
         @{ $self->classes() }, @objects;
+}
+
+sub reset
+{
+    my $self = shift;
+
+    $self->_set_executed(0);
+    $self->_set_index(0);
+
+    return;
 }
 
 sub DEMOLISH

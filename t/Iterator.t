@@ -7,7 +7,7 @@ BEGIN
 {
     if ( eval "use Fey::Test::SQLite; 1" )
     {
-        plan tests => 10;
+        plan tests => 20;
     }
     else
     {
@@ -102,6 +102,20 @@ my $dbh = Fey::Test::SQLite->dbh();
         'index() is 2 after attempt to fetch another row' );
     is( $user, undef,
         '$user is undef when there are no more objects to fetch' );
+
+    $iterator->reset();
+
+    $user = $iterator->next();
+
+    is( $iterator->index(), 1,
+        'index() is 1 after reset and first row has been fetched' );
+
+    is( $user->user_id(), 1,
+        'user_id = 1' );
+    is( $user->username(), 'autarch',
+        'username = autarch' );
+    is( $user->email(), 'autarch@example.com',
+        'email = autarch@example.com' );
 }
 
 {
