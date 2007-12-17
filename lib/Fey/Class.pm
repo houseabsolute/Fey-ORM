@@ -13,6 +13,7 @@ use Fey::Validate qw( validate_pos TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 use Moose ();
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
+use MooseX::StrictConstructor::Meta::Class;
 
 
 # This re-exporting is a mess. Once MooseX::Exporter is done,
@@ -101,16 +102,16 @@ sub _make_class_attributes
             isa       => 'Fey::SQL',
             lazy      => 1,
             default   => sub { return $_[0]->_MakeRowSQL() },
-          );
+          )
+        );
 
     MooseX::ClassAttribute::process_class_attribute
         ( $caller,
           '_Manager' =>
-          ( is        => 'rw',
-            isa       => 'Fey::DBIManager',
-            lazy      => 1,
-            default   => sub { return $_[0]->_MakeRowSQL() },
-          );
+          ( is  => 'rw',
+            isa => 'Fey::DBIManager',
+          )
+        );
 }
 
 sub _make_column_attributes
