@@ -1,19 +1,21 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;
+use Test::More tests => 17;
 
-use Fey::Test;
+use lib 't/lib';
 
+use Fey::Class::Test qw( schema );
 
-my $schema = Fey::Test->mock_test_schema_with_fks();
+my $Schema = schema();
+
 
 {
     package User;
 
     use Fey::Class;
 
-    has_table $schema->table('User');
+    has_table $Schema->table('User');
 
     transform 'email'
         => inflate { return Email::Address->new( $_[1] ) }
@@ -21,18 +23,20 @@ my $schema = Fey::Test->mock_test_schema_with_fks();
 }
 
 {
-    ok( User->isa('Fey::Class::Object'),
-        q{User->isa('Fey::Class::Object')} );
+    ok( User->isa('Fey::Object'),
+        q{User->isa('Fey::Object')} );
     can_ok( 'User', 'Table' );
     is( User->Table()->name(), 'User',
         'User->Table() returns User table' );
 
-    for my $column ( $schema->table('User')->columns() )
+    for my $column ( $Schema->table('User')->columns() )
     {
         can_ok( 'User', $column->name() );
     }
 
     can_ok( 'User', 'email_raw' );
+
+    can_ok( 'User', '_email' );
 
     is ( User->meta()->get_attribute('user_id')->type_constraint()->name(),
          'Int',
@@ -54,9 +58,11 @@ my $schema = Fey::Test->mock_test_schema_with_fks();
 
     use Fey::Class;
 
-    has_table $schema->table('Message');
+    has_table $Schema->table('Message');
 
-    # Just testing passing >1 attribute to transofmr
+    has_one $Schema->table('User');
+
+    # Testing passing >1 attribute to transform
     transform qw( message quality )
         => inflate { $_[0] }
         => deflate { $_[0] };
@@ -81,6 +87,8 @@ my $schema = Fey::Test->mock_test_schema_with_fks();
 }
 
 {
+    can_ok( 'Message', 'user' );
+
     ok( Message->_HasDeflator('message'), 'Message has a deflator coderef for message' );
     ok( Message->_HasDeflator('quality'), 'Message has a deflator coderef for quality' );
 }

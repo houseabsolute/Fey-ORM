@@ -3,12 +3,13 @@ package Fey::Class;
 use strict;
 use warnings;
 
-our @EXPORT = qw( has_table transform inflate deflate ); ## no critic ProhibitAutomaticExportation
+our @EXPORT = ## no critic ProhibitAutomaticExportation
+    qw( has_table has_one transform inflate deflate );
 use base 'Exporter';
 
-use Fey::Class::Object;
+use Fey::Object;
 use Fey::Exceptions qw( param_error );
-use Fey::Validate qw( validate_pos TABLE_TYPE );
+use Fey::Validate qw( validate_pos TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 use Moose ();
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
@@ -23,7 +24,7 @@ sub import
     return if $caller eq 'main';
 
     Moose::init_meta( $caller,
-                      'Fey::Class::Object',
+                      'Fey::Object',
                       'MooseX::StrictConstructor::Meta::Class',
                     );
 
@@ -67,14 +68,17 @@ sub unimport ## no critic RequireFinalReturn
         param_error 'A table object passed to has_table() must have a schema'
             unless $table->has_schema();
 
+        param_error 'A table object passed to has_table() must have at least one key'
+            unless $table->primary_key();
+
         my $caller = caller();
 
-        _make_table_attribute( $caller, $table );
+        _make_class_attributes( $caller, $table );
         _make_column_attributes( $caller, $table );
     }
 }
 
-sub _make_table_attribute
+sub _make_class_attributes
 {
     my $caller = shift;
     my $table  = shift;
@@ -89,6 +93,24 @@ sub _make_table_attribute
         );
 
     $caller->_SetTable($table);
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $caller,
+          '_RowSQL' =>
+          ( is        => 'rw',
+            isa       => 'Fey::SQL',
+            lazy      => 1,
+            default   => sub { return $_[0]->_MakeRowSQL() },
+          );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $caller,
+          '_Manager' =>
+          ( is        => 'rw',
+            isa       => 'Fey::DBIManager',
+            lazy      => 1,
+            default   => sub { return $_[0]->_MakeRowSQL() },
+          );
 }
 
 sub _make_column_attributes
@@ -98,18 +120,27 @@ sub _make_column_attributes
 
     my $meta = $caller->meta();
 
+    my %pk = map { $_->name() => 1 } $table->primary_key();
+
     for my $column ( $table->columns() )
     {
         my $name = $column->name();
 
         next if $meta->has_method($name);
 
+        my %default_or_required =
+            ( $pk{$name}
+              ? ( required => 1 )
+              : ( lazy    => 1,
+                  default => sub { $_[0]->_get_column_value($name) } )
+            );
+
         $meta->_process_attribute
             ( $name,
-              is      => 'ro',
+              is      => 'rw',
               isa     => _type_for_column( $caller, $column ),
-              lazy    => 1,
-              default => sub { $_[0]->_get_column_value($name) },
+              writer  => q{_} . $name,
+              %default_or_required,
             );
     }
 }
@@ -234,6 +265,117 @@ sub _make_deflate_attribute
                          },
           )
         );
+}
+
+{
+    my $simple_spec = ( TABLE_TYPE );
+    my $complex_spec = { table => TABLE_TYPE,
+                         cache => BOOLEAN_TYPE,
+                         fk    => FK_TYPE,
+                       };
+
+    sub has_one
+    {
+        my %p;
+        if ( @_ == 1 )
+        {
+            ( $p{table} ) = validate_pos( @_, $simple_spec );
+        }
+        else
+        {
+            %p = validate( @_, $complex_spec );
+        }
+
+        param_error 'A table object passed to has_one() must have a schema'
+            unless $p{table}->has_schema();
+
+        my $caller = caller();
+
+        param_error 'You must call has_table() before calling has_one().'
+            unless $caller->can('Table');
+
+        $p{fk} ||= _find_one_fk( $caller->Table(), $p{table}, 'has_one' );
+
+        _make_has_one_attribute( $caller, \%p );
+    }
+}
+
+sub _find_one_fk
+{
+    my $from = shift;
+    my $to   = shift;
+    my $func = shift;
+
+    my @fk = $from->schema()->foreign_keys_between_tables( $from, $to );
+
+    return $fk[0] if @fk == 1;
+
+    if ( @fk == 0 )
+    {
+        param_error
+            'There are no foreign keys between the table for this class, '
+            . $from->name()
+            . " and the table you passed to $func(), "
+            . $to->name() . '.';
+    }
+    elsif ( @fk == 2 )
+    {
+        param_error
+            'There is more than one foreign keys between the table for this class, '
+            . $from->name()
+            . " and the table you passed to $func(), "
+            . $to->name()
+            . '. You must specify one explicitly.';
+    }
+}
+
+sub _make_has_one_attribute
+{
+    my $caller = shift;
+    my $p      = shift;
+
+    # XXX - names should be settable via a Fey::Class::Policy
+    my $name = $p->{name} || lc $p->{table}->name();
+
+    my $default_sub = _make_has_one_default_sub($p);
+
+    if ( $p->{cache} )
+    {
+        # It'd be nice to set isa to the actual foreign class, but we may
+        # not be able to map a table to a class yet, since that depends on
+        # the related class being loaded. It doesn't really matter, since
+        # this accessor is read-only, so there's really no typing issue to
+        # deal with.
+        $caller->meta()->_process_attribute
+            ( $name,
+              is      => 'ro',
+              isa     => 'Fey::Object',
+              lazy    => 1,
+              default => $default_sub,
+            );
+    }
+    else
+    {
+        $caller->meta()->add_method( $name => $default_sub );
+    }
+}
+
+sub _make_has_one_default_sub
+{
+    my $p = shift;
+
+    my $table = $p->{table};
+    my @column_names = map { $_->name() } $p->{fk}->source_columns();
+
+    return
+        sub { my $self = shift;
+
+              return
+                  Fey::Object
+                      ->TableToClass($table)
+                      ->new( map { $_ => $self->$_() }
+                             @column_names );
+            };
 }
 
 
