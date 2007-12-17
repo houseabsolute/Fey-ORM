@@ -209,11 +209,31 @@ sub _transform
 
         $caller->meta()->add_method( $raw_reader => $attr->get_read_method_ref() );
 
+        my $cache_name      = q{_inflated_} . $name;
+        my $cache_set       = q{_set_inflated_} . $name;
+        my $cache_predicate = q{_has} . $cache_name;
+
+        $caller->meta()->_process_attribute( $cache_name,
+                                             is        => 'rw',
+                                             writer    => $cache_set,
+                                             predicate => $cache_predicate,
+                                             init_arg  => "\0$cache_name",
+                                           );
+
         my $inflator =
             sub { my $orig = shift;
-                  my $val = $_[0]->$orig();
+                  my $self = shift;
 
-                  return $_[0]->$inflate_sub($val);
+                  return $self->$cache_name()
+                      if $self->$cache_predicate();
+
+                  my $val = $self->$orig();
+
+                  my $inflated = $self->$inflate_sub($val);
+
+                  $self->$cache_set($inflated);
+
+                  return $inflated;
                 };
 
         $caller->meta()->add_around_method_modifier( $name => $inflator );

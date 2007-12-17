@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 16;
+use Test::More tests => 18;
 
 use lib 't/lib';
 
@@ -11,6 +11,18 @@ my $Schema = schema();
 
 
 {
+    package Email;
+
+    sub new
+    {
+        return bless \$_[1], $_[0];
+    }
+
+    sub as_string
+    {
+        return ${ $_[0] };
+    }
+
     package User;
 
     use Fey::Class;
@@ -18,7 +30,7 @@ my $Schema = schema();
     has_table $Schema->table('User');
 
     transform 'email'
-        => inflate { return Email::Address->new( $_[1] ) }
+        => inflate { return Email->new( $_[1] ) }
         => deflate { return $_[1]->as_string() };
 }
 
@@ -49,6 +61,12 @@ my $Schema = schema();
          'type for email is Str | Undef' );
 
     ok( User->_HasDeflator('email'), 'User has a deflator coderef for email' );
+
+    my $user = User->new( user_id => 1, email => 'test@example.com' );
+
+    my $email = $user->email();
+    isa_ok( $email, 'Email' );
+    is( $email, $user->email(), 'inflated values are cached' );
 }
 
 {
