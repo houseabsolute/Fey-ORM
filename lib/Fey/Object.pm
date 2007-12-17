@@ -7,6 +7,9 @@ use Fey::Placeholder;
 use Fey::SQL;
 
 use Moose;
+
+extends 'Moose::Object';
+
 no Moose;
 
 
