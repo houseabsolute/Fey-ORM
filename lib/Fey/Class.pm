@@ -138,9 +138,8 @@ sub _make_column_attributes
 
         $meta->_process_attribute
             ( $name,
-              is      => 'rw',
-              isa     => _type_for_column( $caller, $column ),
-              writer  => q{_} . $name,
+              is  => 'ro',
+              isa => _type_for_column( $caller, $column ),
               %default_or_required,
             );
     }

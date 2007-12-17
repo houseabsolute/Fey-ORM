@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 17;
+use Test::More tests => 16;
 
 use lib 't/lib';
 
@@ -35,8 +35,6 @@ my $Schema = schema();
     }
 
     can_ok( 'User', 'email_raw' );
-
-    can_ok( 'User', '_email' );
 
     is ( User->meta()->get_attribute('user_id')->type_constraint()->name(),
          'Int',
