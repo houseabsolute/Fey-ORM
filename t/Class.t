@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 20;
 
 use lib 't/lib';
 
@@ -63,6 +63,11 @@ my $Schema = schema();
     ok( User->_HasDeflator('email'), 'User has a deflator coderef for email' );
 
     my $user = User->new( user_id => 1, email => 'test@example.com' );
+
+    ok( ! ref $user->email_raw(),
+        'email_raw() returns a plain string' );
+    is( $user->email_raw(), 'test@example.com',
+        'email_raw = test@example.com' );
 
     my $email = $user->email();
     isa_ok( $email, 'Email' );
