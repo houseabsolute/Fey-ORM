@@ -7,13 +7,10 @@ our @EXPORT = ## no critic ProhibitAutomaticExportation
     qw( has_table has_one transform inflate deflate );
 use base 'Exporter';
 
-use Fey::Object;
-use Fey::Exceptions qw( param_error );
-use Fey::Validate qw( validate_pos TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
-use Moose ();
 use Fey::Meta::Class;
-use MooseX::AttributeHelpers;
-use MooseX::ClassAttribute;
+use Fey::Object;
+use Fey::Validate qw( validate_pos TABLE_TYPE );
+use Moose ();
 
 
 # This re-exporting is a mess. Once MooseX::Exporter is done,
