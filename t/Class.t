@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;
+use Test::More tests => 21;
 
 use lib 't/lib';
 
@@ -37,9 +37,9 @@ my $Schema = schema();
 {
     ok( User->isa('Fey::Object'),
         q{User->isa('Fey::Object')} );
-    can_ok( 'User', 'Table' );
-    is( User->Table()->name(), 'User',
-        'User->Table() returns User table' );
+    can_ok( User->meta(), 'table' );
+    is( User->meta()->table()->name(), 'User',
+        'User->meta()->table() returns User table' );
 
     for my $column ( $Schema->table('User')->columns() )
     {
@@ -60,7 +60,8 @@ my $Schema = schema();
          'Str | Undef',
          'type for email is Str | Undef' );
 
-    ok( User->_HasDeflator('email'), 'User has a deflator coderef for email' );
+    ok( User->meta()->has_inflator('email'), 'User has an inflator coderef for email' );
+    ok( User->meta()->has_deflator('email'), 'User has a deflator coderef for email' );
 
     my $user = User->new( user_id => 1, email => 'test@example.com' );
 
@@ -110,6 +111,6 @@ my $Schema = schema();
 {
     can_ok( 'Message', 'user' );
 
-    ok( Message->_HasDeflator('message'), 'Message has a deflator coderef for message' );
-    ok( Message->_HasDeflator('quality'), 'Message has a deflator coderef for quality' );
+    ok( Message->meta()->has_deflator('message'), 'Message has a deflator coderef for message' );
+    ok( Message->meta()->has_deflator('quality'), 'Message has a deflator coderef for quality' );
 }
