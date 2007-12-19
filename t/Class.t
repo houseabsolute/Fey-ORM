@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More tests => 22;
 
 use lib 't/lib';
 
@@ -40,6 +40,9 @@ my $Schema = schema();
     can_ok( User->meta(), 'table' );
     is( User->meta()->table()->name(), 'User',
         'User->meta()->table() returns User table' );
+
+    is( Fey::Meta::Class->TableForClass('User')->name(), 'User',
+        q{Fey::Meta::Class->TableForClass('User') returns User table} );
 
     for my $column ( $Schema->table('User')->columns() )
     {

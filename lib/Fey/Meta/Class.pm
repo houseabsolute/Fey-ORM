@@ -43,6 +43,18 @@ has 'deflators' =>
                    },
     );
 
+class_has '_TableClassMap' =>
+    ( metaclass => 'Collection::Hash',
+      is        => 'rw',
+      isa       => 'HashRef[Fey::Table]',
+      default   => sub { {} },
+      lazy      => 1,
+      provides  => { get    => 'TableForClass',
+                     set    => '_SetTableForClass',
+                     exists => '_ClassHasTable',
+                   },
+    );
+
 # XXX - how to do this?
 sub _make_class_attributes
 {
@@ -82,6 +94,7 @@ sub set_table
     param_error 'A table object passed to has_table() must have at least one key'
         unless $table->primary_key();
 
+    $self->_SetTableForClass( $self->name() => $table );
     $self->_set_table($table);
 
     #_make_class_attributes( $caller, $table );
