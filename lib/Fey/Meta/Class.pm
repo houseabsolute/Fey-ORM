@@ -311,9 +311,7 @@ sub _make_has_one_default_sub
             };
 }
 
-
 no Moose;
-
 __PACKAGE__->meta()->make_immutable();
 
 1;
