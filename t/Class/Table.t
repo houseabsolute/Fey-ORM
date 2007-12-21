@@ -25,7 +25,7 @@ my $Schema = schema();
 
     package User;
 
-    use Fey::Class;
+    use Fey::Class::Table;
 
     has_table $Schema->table('User');
 
@@ -41,8 +41,8 @@ my $Schema = schema();
     is( User->meta()->table()->name(), 'User',
         'User->meta()->table() returns User table' );
 
-    is( Fey::Meta::Class->TableForClass('User')->name(), 'User',
-        q{Fey::Meta::Class->TableForClass('User') returns User table} );
+    is( Fey::Meta::Class::Table->TableForClass('User')->name(), 'User',
+        q{Fey::Meta::Class::Table->TableForClass('User') returns User table} );
 
     for my $column ( $Schema->table('User')->columns() )
     {
@@ -81,7 +81,7 @@ my $Schema = schema();
 {
     package Message;
 
-    use Fey::Class;
+    use Fey::Class::Table;
 
     has_table $Schema->table('Message');
 

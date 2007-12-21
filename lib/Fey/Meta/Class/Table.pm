@@ -1,4 +1,4 @@
-package Fey::Meta::Class;
+package Fey::Meta::Class::Table;
 
 use strict;
 use warnings;
