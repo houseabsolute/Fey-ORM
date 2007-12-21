@@ -47,7 +47,7 @@ sub _select_columns
 
     my $sth = $self->_select_columns_sth();
 
-    $sth->finish() if $sth->{Active}:
+    $sth->finish() if $sth->{Active};
 
     $sth->execute( $self->_pk_vals() );
 
