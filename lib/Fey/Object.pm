@@ -40,5 +40,26 @@ sub _MakeRowSQL
     return $sql;
 }
 
+# XXX - old bits from Fey::Class::Table
+sub _select_columns
+{
+    my $self = shift;
+
+    my $sth = $self->_select_columns_sth();
+
+    $sth->finish() if $sth->{Active}:
+
+    $sth->execute( $self->_pk_vals() );
+
+    my %columns;
+    $sth->bind_columns( @columns{ @{ $sth->{NAME} } } );
+
+    $sth->fetch();
+
+    $sth->finish();
+
+    return \%columns;
+}
+
 
 1;
