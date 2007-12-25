@@ -122,7 +122,7 @@ sub next_as_hash
     my @objects = $self->next();
 
     return
-        pairwise { $a->meta()->table()->name() => $b }
+        pairwise { $a->Table()->name() => $b }
         @{ $self->classes() }, @objects;
 }
 

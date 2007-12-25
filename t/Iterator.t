@@ -27,15 +27,21 @@ my $Schema = schema();
 
 
 {
+    package Schema;
+
+    use Fey::Class::Schema;
+
+    has_schema $Schema;
+
     package User;
 
-    use Fey::Class;
+    use Fey::Class::Table;
 
     has_table $Schema->table('User');
 
     package Message;
 
-    use Fey::Class;
+    use Fey::Class::Table;
 
     has_table $Schema->table('Message');
 }
