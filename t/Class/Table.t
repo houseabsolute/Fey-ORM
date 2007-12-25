@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 22;
+use Test::More tests => 27;
 
 use lib 't/lib';
 
@@ -11,6 +11,24 @@ my $Schema = schema();
 
 
 {
+    package Group;
+
+    use Fey::Class::Table;
+
+    eval { has_table $Schema->table('Group') };
+
+    ::like( $@, qr/must load your schema class/,
+            'cannot call has_table() before schema class is loaded' );
+}
+
+{
+    package Schema;
+
+    use Fey::Class::Schema;
+
+    has_schema $Schema;
+
+
     package Email;
 
     sub new
@@ -23,6 +41,7 @@ my $Schema = schema();
         return ${ $_[0] };
     }
 
+
     package User;
 
     use Fey::Class::Table;
@@ -32,14 +51,39 @@ my $Schema = schema();
     transform 'email'
         => inflate { return Email->new( $_[1] ) }
         => deflate { return $_[1]->as_string() };
+
+
+    eval { has_table $Schema->table('User') };
+    ::like( $@, qr/more than once per class/,
+            'cannot call has_table() more than once for a class' );
+
+    package User2;
+
+    use Fey::Class::Table;
+
+    eval { has_table $Schema->table('User') };
+    ::like( $@, qr/associate the same table with multiple classes/,
+            'cannot associate the same table with multiple classes' );
+
+    my $table = Fey::Table->new( name => 'User2' );
+
+    eval { has_table $table };
+    ::like( $@, qr/must have a schema/,
+            'tables passed to has_table() must have a schema' );
+
+    $Schema->add_table($table);
+
+    eval { has_table $table };
+    ::like( $@, qr/must have at least one key/,
+            'tables passed to has_table() must have at least one key' );
 }
 
 {
     ok( User->isa('Fey::Object'),
         q{User->isa('Fey::Object')} );
-    can_ok( User->meta(), 'table' );
-    is( User->meta()->table()->name(), 'User',
-        'User->meta()->table() returns User table' );
+    can_ok( 'User', 'Table' );
+    is( User->Table()->name(), 'User',
+        'User->Table() returns User table' );
 
     is( Fey::Meta::Class::Table->TableForClass('User')->name(), 'User',
         q{Fey::Meta::Class::Table->TableForClass('User') returns User table} );

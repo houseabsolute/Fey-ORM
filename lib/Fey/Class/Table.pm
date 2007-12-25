@@ -65,7 +65,7 @@ sub unimport ## no critic RequireFinalReturn
 
         my $caller = caller();
 
-        $caller->meta()->set_table($table);
+        $caller->meta()->has_table($table);
     }
 }
 

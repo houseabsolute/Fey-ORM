@@ -3,88 +3,67 @@ package Fey::Class::Schema;
 use strict;
 use warnings;
 
-use base 'Class::Singleton';
+our @EXPORT = ## no critic ProhibitAutomaticExportation
+    qw( has_schema );
+use base 'Exporter';
 
-use Fey::Core;
-use Fey::DBIManager;
-use Fey::Validate qw( validate validate_pos SCHEMA_TYPE );
+use Fey::Meta::Class::Schema;
+use Fey::Validate qw( validate_pos SCHEMA_TYPE );
+use Moose ();
 
 
-sub instance
+sub import
 {
-    return $_[0] if ref $_[0];
+    my $caller = Moose::_get_caller();
 
-    my $class = shift;
-    die "Cannot make an instance of $class, create a subclass instead"
-        if $class eq __PACKAGE__;
+    return if $caller eq 'main';
 
-    return $class->SUPER::instance(@_);
+    Moose::init_meta( $caller,
+                      'Moose::Object',
+                      'Fey::Meta::Class::Schema',
+                    );
+
+    Moose->import( { into => $caller } );
+
+    __PACKAGE__->export_to_level( 1, @_ );
+
+    return;
 }
 
+sub unimport ## no critic RequireFinalReturn
 {
-    my %ClassForSchema;
+    my $caller = caller();
 
-    my $spec = SCHEMA_TYPE;
-    sub SetSchema
+    no strict 'refs'; ## no critic ProhibitNoStrict
+    foreach my $name (@EXPORT)
     {
-        my $self = shift->instance();
-        my ($schema) = validate_pos( @_, SCHEMA_TYPE );
-
-        my $sname = $schema->name();
-        if ( $ClassForSchema{$sname} )
+        if ( defined &{ $caller . '::' . $name } )
         {
-            die "The $sname schema already belongs to the $ClassForSchema{$sname} class.";
+            my $keyword = \&{ $caller . '::' . $name };
+
+            my $pkg_name =
+                eval { svref_2object($keyword)->GV()->STASH()->NAME() };
+
+            next if $@;
+            next if $pkg_name ne __PACKAGE__;
+
+            delete ${ $caller . '::' }{$name};
         }
-
-        $self->{schema} = $schema;
-        $ClassForSchema{$sname} = ref $self;
     }
 
-    sub ClassForSchema
+    Moose::unimport( { into_level => 1 } );
+}
+
+{
+    my $spec = ( SCHEMA_TYPE );
+    sub has_schema
     {
-        return $ClassForSchema{ $_[1]->name() };
+        my ($schema) = validate_pos( @_, $spec );
+
+        my $caller = caller();
+
+        $caller->meta()->set_schema($schema);
     }
-}
-
-sub Schema { $_[0]->instance->{schema} }
-
-{
-    my $spec = Fey::DBIManager->ConstructorSpec();
-
-    sub AddSourceInfo
-    {
-        my $self = shift->instance();
-        my %p    = validate( @_, $spec );
-
-        $self->{connect_info}{ $p{name} } = \%p;
-    }
-}
-
-sub SetCurrentSourceName
-{
-    my $self = shift->instance();
-
-    $self->{default_source_name} = shift;
-}
-
-sub CurrentSourceName
-{
-    my $self = ref $_[0] ? $_[0] : $_[0]->instance();
-
-    return $self->{default_source_name} || 'main';
-}
-
-sub Source
-{
-    my $self = shift->instance();
-    my $name = shift || $self->CurrentSourceName();
-
-    die "No source named $name, call AddSourceInfo first."
-        unless $self->{connect_info}{$name};
-
-    return
-        $self->{sources}{$name} ||=
-            Fey::DBIManager->new( %{ $self->{connect_info}{$name} } );
 }
 
 

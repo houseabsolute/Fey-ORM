@@ -6,18 +6,13 @@ use warnings;
 use Fey::Exceptions qw( param_error );
 use Fey::Validate qw( validate TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 
+use Fey::Meta::Class::Schema;
+
 use Moose;
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
 
 extends 'MooseX::StrictConstructor::Meta::Class';
-
-has 'table' =>
-    ( is        => 'rw',
-      isa       => 'Fey::Table',
-      writer    => '_set_table',
-      predicate => 'has_table',
-    );
 
 has 'inflators' =>
     ( metaclass => 'Collection::Hash',
@@ -55,58 +50,63 @@ class_has '_TableClassMap' =>
                    },
     );
 
-# XXX - how to do this?
-sub _make_class_attributes
+sub ClassForTable
 {
-    my $caller = shift;
-    my $table  = shift;
+    my $class = shift;
+    my $table = shift;
 
-    MooseX::ClassAttribute::process_class_attribute
-        ( $caller,
-          '_RowSQL' =>
-          ( is        => 'rw',
-            isa       => 'Fey::SQL',
-            lazy      => 1,
-            default   => sub { return $_[0]->_MakeRowSQL() },
-          )
-        );
+    my $map = $class->_TableClassMap();
 
-    MooseX::ClassAttribute::process_class_attribute
-        ( $caller,
-          '_Manager' =>
-          ( is  => 'rw',
-            isa => 'Fey::DBIManager',
-          )
-        );
+    for my $class_name ( keys %{ $map } )
+    {
+        return $class_name
+            if $map->{$class_name}->name() eq $table->name();
+    }
+
+    return;
 }
 
-sub set_table
+sub has_table
 {
     my $self  = shift;
     my $table = shift;
 
-    param_error 'Cannot call set_table() more than once per class'
-        if $self->has_table();
+    my $caller = $self->name();
+
+    param_error 'Cannot call has_table() more than once per class'
+        if $caller->can('HasTable') && $caller->HasTable();
+
+    param_error 'Cannot associate the same table with multiple classes'
+        if __PACKAGE__->ClassForTable($table);
 
     param_error 'A table object passed to has_table() must have a schema'
         unless $table->has_schema();
 
+    my $class = Fey::Meta::Class::Schema->ClassForSchema( $table->schema() );
+
+    param_error 'You must load your schema class before calling has_table()'
+        unless $class
+        && $class->can('meta')
+        && $class->can('HasSchema')
+        && $class->HasSchema();
+
     param_error 'A table object passed to has_table() must have at least one key'
         unless $table->primary_key();
 
-    $self->_SetTableForClass( $self->name() => $table );
-    $self->_set_table($table);
+    __PACKAGE__->_SetTableForClass( $self->name() => $table );
 
-    #_make_class_attributes( $caller, $table );
+    $self->_make_class_attributes();
 
-    $self->_make_column_attributes($table);
+    $caller->_SetTable($table);
+
+    $self->_make_column_attributes();
 }
 
 sub _make_column_attributes
 {
     my $self = shift;
 
-    my $table = $self->table();
+    my $table = $self->name()->Table();
 
     my %pk = map { $_->name() => 1 } $table->primary_key();
 
@@ -120,7 +120,7 @@ sub _make_column_attributes
             ( $pk{$name}
               ? ( required => 1 )
               : ( lazy    => 1,
-                  default => sub { $_[0]->_get_column_value($name) } )
+                  default => sub { $_[0]->row()->get_column_values($name) } )
             );
 
         $self->_process_attribute
@@ -130,6 +130,31 @@ sub _make_column_attributes
               %default_or_required,
             );
     }
+}
+
+sub _make_class_attributes
+{
+    my $self = shift;
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $self->name(),
+          'Table',
+          ( is        => 'rw',
+            isa       => 'Fey::Table',
+            writer    => '_SetTable',
+            predicate => 'HasTable',
+          ),
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $self->name(),
+          '_RowSql',
+          ( is        => 'rw',
+            isa       => 'Fey::SQL',
+            lazy      => 1,
+            default   => sub { return $_[0]->_MakeRowSQL() },
+          ),
+        );
 }
 
 # XXX - can this be overridden or customized? should it account for
@@ -236,7 +261,7 @@ sub add_transform
             unless $p{table}->has_schema();
 
         param_error 'You must call has_table() before calling has_one().'
-            unless $self->has_table();
+            unless $self->name()->HasTable();
 
         $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
 
@@ -250,7 +275,7 @@ sub _find_one_fk
     my $to   = shift;
     my $func = shift;
 
-    my $from = $self->table();
+    my $from = $self->name()->Table();
 
     my @fk = $from->schema()->foreign_keys_between_tables( $from, $to );
 
@@ -318,7 +343,7 @@ sub _make_has_one_default_sub
 
               return
                   Fey::Meta::Class
-                      ->TableToClass($table)
+                      ->ClassForTable($table)
                       ->new( map { $_ => $self->$_() }
                              @column_names );
             };
