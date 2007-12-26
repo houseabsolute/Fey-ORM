@@ -107,8 +107,8 @@ my $Schema = schema();
          'Str | Undef',
          'type for email is Str | Undef' );
 
-    ok( User->meta()->has_inflator('email'), 'User has an inflator coderef for email' );
-    ok( User->meta()->has_deflator('email'), 'User has a deflator coderef for email' );
+    ok( User->HasInflator('email'), 'User has an inflator coderef for email' );
+    ok( User->HasDeflator('email'), 'User has a deflator coderef for email' );
 
     my $user = User->new( user_id => 1, email => 'test@example.com' );
 
@@ -158,6 +158,6 @@ my $Schema = schema();
 {
     can_ok( 'Message', 'user' );
 
-    ok( Message->meta()->has_deflator('message'), 'Message has a deflator coderef for message' );
-    ok( Message->meta()->has_deflator('quality'), 'Message has a deflator coderef for quality' );
+    ok( Message->HasDeflator('message'), 'Message has a deflator coderef for message' );
+    ok( Message->HasDeflator('quality'), 'Message has a deflator coderef for quality' );
 }

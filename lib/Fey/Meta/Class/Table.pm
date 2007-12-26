@@ -14,30 +14,6 @@ use MooseX::ClassAttribute;
 
 extends 'MooseX::StrictConstructor::Meta::Class';
 
-has 'inflators' =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'rw',
-      isa       => 'HashRef[CodeRef]',
-      default   => sub { {} },
-      lazy      => 1,
-      provides  => { get    => 'get_inflator',
-                     set    => 'set_inflator',
-                     exists => 'has_inflator',
-                   },
-    );
-
-has 'deflators' =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'rw',
-      isa       => 'HashRef[CodeRef]',
-      default   => sub { {} },
-      lazy      => 1,
-      provides  => { get    => 'get_deflator',
-                     set    => 'set_deflator',
-                     exists => 'has_deflator',
-                   },
-    );
-
 class_has '_TableClassMap' =>
     ( metaclass => 'Collection::Hash',
       is        => 'rw',
@@ -148,6 +124,36 @@ sub _make_class_attributes
 
     MooseX::ClassAttribute::process_class_attribute
         ( $self->name(),
+          'Inflators',
+          ( metaclass => 'Collection::Hash',
+            is        => 'rw',
+            isa       => 'HashRef[CodeRef]',
+            default   => sub { {} },
+            lazy      => 1,
+            provides  => { get    => 'GetInflator',
+                           set    => 'SetInflator',
+                           exists => 'HasInflator',
+                         },
+          ),
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $self->name(),
+          'Deflators',
+          ( metaclass => 'Collection::Hash',
+            is        => 'rw',
+            isa       => 'HashRef[CodeRef]',
+            default   => sub { {} },
+            lazy      => 1,
+            provides  => { get    => 'GetDeflator',
+                           set    => 'SetDeflator',
+                           exists => 'HasDeflator',
+                         },
+          ),
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $self->name(),
           '_RowSql',
           ( is        => 'rw',
             isa       => 'Fey::SQL',
@@ -234,15 +240,15 @@ sub add_transform
 
         $self->add_around_method_modifier( $name => $inflator );
 
-        $self->set_inflator( $name => $inflate_sub );
+        $self->name()->SetInflator( $name => $inflate_sub );
     }
 
     if ( $p{deflate} )
     {
         param_error "Cannot provide more than one deflator for a column ($name)"
-            if $self->has_deflator($name);
+            if $self->name()->HasDeflator($name);
 
-        $self->set_deflator( $name => $p{deflate} );
+        $self->name()->SetDeflator( $name => $p{deflate} );
     }
 }
 
