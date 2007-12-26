@@ -142,7 +142,7 @@ sub DEMOLISH
 
     if ( my $sth = $self->handle() )
     {
-        $sth->finish();
+        $sth->finish() if $sth->{Active};
     }
 }
 
