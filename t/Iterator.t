@@ -3,48 +3,18 @@ use warnings;
 
 use Test::More;
 
-BEGIN
-{
-    if ( eval "use Fey::Test::SQLite; 1" )
-    {
-        plan tests => 20;
-    }
-    else
-    {
-        plan skip_all => 'These tests require Fey::Test::SQLite';
-    }
-}
-
 use Fey::Object::Iterator;
 
 use lib 't/lib';
 
-
-use Fey::Class::Test qw( schema );
+use Fey::Class::Test;
 use Fey::Test;
 
-my $Schema = schema();
 
+Fey::Class::Test::insert_user_data();
+Fey::Class::Test::define_basic_classes();
 
-{
-    package Schema;
-
-    use Fey::Class::Schema;
-
-    has_schema $Schema;
-
-    package User;
-
-    use Fey::Class::Table;
-
-    has_table $Schema->table('User');
-
-    package Message;
-
-    use Fey::Class::Table;
-
-    has_table $Schema->table('Message');
-}
+Test::More::plan tests => 20;
 
 {
     eval { Fey::Object::Iterator->new( classes => [] ) };
@@ -57,14 +27,6 @@ my $Schema = schema();
 }
 
 my $dbh = Fey::Test::SQLite->dbh();
-
-{
-    my $insert = 'INSERT INTO User ( user_id, username, email ) VALUES ( ?, ?, ? )';
-    my $sth = $dbh->prepare($insert);
-
-    $sth->execute( 1,  'autarch', 'autarch@example.com' );
-    $sth->execute( 42, 'bubba',   'bubba@example.com' );
-}
 
 {
     my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User ORDER BY user_id' );

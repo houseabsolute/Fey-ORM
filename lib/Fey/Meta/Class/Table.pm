@@ -6,6 +6,7 @@ use warnings;
 use Fey::Exceptions qw( param_error );
 use Fey::Validate qw( validate TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 
+use Fey::Hash::ColumnsKey;
 use Fey::Meta::Class::Schema;
 
 use Moose;
@@ -92,19 +93,28 @@ sub _make_column_attributes
 
         next if $self->has_method($name);
 
-        my %default_or_required =
-            ( $pk{$name}
-              ? ( required => 1 )
-              : ( lazy    => 1,
-                  default => sub { $_[0]->row()->get_column_values($name) } )
-            );
+        my %attr_p;
 
-        $self->_process_attribute
-            ( $name,
-              is  => 'ro',
-              isa => $self->_type_for_column($column),
-              %default_or_required,
-            );
+        if ( $pk{$name} )
+        {
+            %attr_p = ( is       => 'ro',
+                        required => 1,
+                      );
+        }
+        else
+        {
+            %attr_p = ( is        => 'rw',
+                        writer    => q{_set_} . $name,
+                        predicate => q{_has_} . $name,
+                        lazy      => 1,
+                        default => sub { $_[0]->_get_column_value($name) },
+                      );
+        }
+
+        $attr_p{isa}     = $self->_type_for_column($column);
+        $attr_p{clearer} = q{_clear_} . $name;
+
+        $self->_process_attribute( $name, %attr_p );
     }
 }
 
@@ -112,8 +122,10 @@ sub _make_class_attributes
 {
     my $self = shift;
 
+    my $caller = $self->name();
+
     MooseX::ClassAttribute::process_class_attribute
-        ( $self->name(),
+        ( $caller,
           'Table',
           ( is        => 'rw',
             isa       => 'Fey::Table',
@@ -123,7 +135,7 @@ sub _make_class_attributes
         );
 
     MooseX::ClassAttribute::process_class_attribute
-        ( $self->name(),
+        ( $caller,
           'Inflators',
           ( metaclass => 'Collection::Hash',
             is        => 'rw',
@@ -138,7 +150,7 @@ sub _make_class_attributes
         );
 
     MooseX::ClassAttribute::process_class_attribute
-        ( $self->name(),
+        ( $caller,
           'Deflators',
           ( metaclass => 'Collection::Hash',
             is        => 'rw',
@@ -153,12 +165,64 @@ sub _make_class_attributes
         );
 
     MooseX::ClassAttribute::process_class_attribute
-        ( $self->name(),
-          '_RowSql',
-          ( is        => 'rw',
-            isa       => 'Fey::SQL',
+        ( $caller,
+          'SchemaClass',
+          ( is      => 'ro',
+            isa     => 'ClassName',
+            lazy    => 1,
+            default => sub { Fey::Meta::Class::Schema->ClassForSchema( $_[0]->Table()->schema() ) },
+          ),
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $caller,
+          '_SelectSQLCache',
+          ( is      => 'ro',
+            isa     => 'Fey::Hash::ColumnsKey',
+            lazy    => 1,
+            default => sub { Fey::Hash::ColumnsKey->new() },
+          ),
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $caller,
+          '_SelectByPKSQL',
+          ( is        => 'ro',
+            isa       => 'Fey::SQL::Select',
             lazy      => 1,
-            default   => sub { return $_[0]->_MakeRowSQL() },
+            default   => sub { return $caller->_MakeSelectByPKSQL() },
+          ),
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $caller,
+          '_CountSQL',
+          ( is        => 'ro',
+            isa       => 'Fey::SQL::Select',
+            lazy      => 1,
+            default   => sub { return $caller->_MakeCountSQL() },
+          ),
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $caller,
+          'ObjectCacheIsEnabled',
+          ( is      => 'rw',
+            isa     => 'Bool',
+            lazy    => 1,
+            default => 0,
+            writer  => '_ObjectCacheIsEnabled',
+          ),
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $caller,
+          '_ObjectCache',
+          ( is      => 'ro',
+            isa     => 'HashRef',
+            lazy    => 1,
+            default => sub { {} },
+            clearer => 'ClearObjectCache',
           ),
         );
 }

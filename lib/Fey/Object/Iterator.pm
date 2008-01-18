@@ -81,7 +81,9 @@ sub next
     for my $class ( keys %{ $map } )
     {
         my %attr = map { $_ => $row->{$_} } grep { exists $row->{$_ } } @{ $map->{$class} };
-        push @return, $class->new(%attr);
+        $attr{_from_query} = 1;
+
+        push @return, $class->new( \%attr );
     }
 
     return wantarray ? @return : $return[0];

@@ -6,17 +6,12 @@ use warnings;
 use Fey::Exceptions qw( param_error );
 use Fey::Validate qw( validate TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 
+use Fey::DBIManager;
 use Moose;
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
 
 extends 'MooseX::StrictConstructor::Meta::Class';
-
-has 'dbi_manager' =>
-    ( is        => 'rw',
-      isa       => 'Fey::DBIManager',
-      predicate => 'has_dbi_manager',
-    );
 
 class_has '_SchemaClassMap' =>
     ( metaclass => 'Collection::Hash',
@@ -85,7 +80,18 @@ sub _make_class_attributes
           'DBIManager' =>
           ( is        => 'rw',
             isa       => 'Fey::DBIManager',
-            predicate => 'HasDBIManager',
+            lazy      => 1,
+            default   => sub { Fey::DBIManager->new() },
+          )
+        );
+
+    MooseX::ClassAttribute::process_class_attribute
+        ( $self->name(),
+          'SQLFactoryClass' =>
+          ( is        => 'rw',
+            isa       => 'ClassName',
+            lazy      => 1,
+            default   => 'Fey::SQL',
           )
         );
 }
