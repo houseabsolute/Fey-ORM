@@ -62,7 +62,7 @@ sub unimport ## no critic RequireFinalReturn
 
         my $caller = caller();
 
-        $caller->meta()->set_schema($schema);
+        $caller->meta()->has_schema($schema);
     }
 }
 

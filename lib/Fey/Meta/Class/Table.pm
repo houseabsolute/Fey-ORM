@@ -105,14 +105,14 @@ sub _make_column_attributes
         {
             %attr_p = ( is        => 'rw',
                         writer    => q{_set_} . $name,
-                        predicate => q{_has_} . $name,
                         lazy      => 1,
                         default => sub { $_[0]->_get_column_value($name) },
                       );
         }
 
-        $attr_p{isa}     = $self->_type_for_column($column);
-        $attr_p{clearer} = q{_clear_} . $name;
+        $attr_p{isa}       = $self->_type_for_column($column);
+        $attr_p{clearer}   = q{_clear_} . $name;
+        $attr_p{predicate} = q{has_} . $name;
 
         $self->_process_attribute( $name, %attr_p );
     }

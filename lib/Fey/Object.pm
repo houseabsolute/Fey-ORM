@@ -277,7 +277,7 @@ sub _get_column_values
     for my $col ( keys %col_values )
     {
         my $set = q{_set_} . $col;
-        my $has = q{_has_} . $col;
+        my $has = q{has_} . $col;
         $self->$set( $col_values{$col} )
             unless $self->$has();
     }

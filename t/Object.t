@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_live_classes();
 
-plan tests => 7;
+plan tests => 19;
 
 
 {
@@ -35,7 +35,7 @@ plan tests => 7;
 
     is( $user2->username(), 'autarch',
         'username is fetched as needed' );
-    ok( $user2->_has_email(),
+    ok( $user2->has_email(),
         'email is set as side effect of calling username()' );
 }
 
@@ -77,14 +77,14 @@ plan tests => 7;
     $user->update( username => 'updated',
                    email    => 'updated@example.com' );
 
-    ok( $user->_has_email(), 'email is not cleared when update value is a non-reference' );
+    ok( $user->has_email(), 'email is not cleared when update value is a non-reference' );
     is( $user->username(), 'updated', 'username = updated' );
     is( $user->email(), 'updated@example.com', 'email = updated@example.com' );
 
     my $string = Fey::Literal::String->new( 'updated2' );
     $user->update( username => $string );
 
-    ok( ! $user->_has_username(), 'username is cleared when update value is a reference' );
+    ok( ! $user->has_username(), 'username is cleared when update value is a reference' );
     is( $user->username(), 'updated2', 'username = updated2' );
 }
 

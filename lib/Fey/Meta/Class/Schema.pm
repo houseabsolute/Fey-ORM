@@ -41,7 +41,7 @@ sub ClassForSchema
     return;
 }
 
-sub set_schema
+sub has_schema
 {
     my $self   = shift;
     my $schema = shift;
