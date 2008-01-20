@@ -156,33 +156,82 @@ sub insert
     my $class = shift;
     my %p     = @_;
 
+    return $class->insert_many(\%p);
+}
+
+sub insert_many
+{
+    my $class = shift;
+    my @rows  = @_;
+
+    my $insert = $class->_insert_for_data( $rows[0] );
+
+    my $dbh = $class->_dbh($insert);
+
+    my $sth = $dbh->prepare( $insert->sql($dbh) );
+
+    my @auto_inc_columns =
+        ( grep { ! exists $rows[0]->{$_} }
+          map { $_->name() }
+          grep { $_->is_auto_increment() }
+          $class->Table->columns() );
+
+    my $table_name = $class->Table()->name();
+
+    my @non_ref_row_keys;
+    my @ref_row_keys;
+
+    for my $key ( sort keys %{ $rows[0] } )
+    {
+        if ( ref $rows[0]->{$key} )
+        {
+            push @ref_row_keys, $key;
+        }
+        else
+        {
+            push @non_ref_row_keys, $key;
+        }
+    }
+
+    my $wantarray = wantarray;
+
+    my @objects;
+    for my $row (@rows)
+    {
+        $sth->execute( @{ $row }{ @non_ref_row_keys } );
+
+        next unless defined $wantarray;
+
+        for my $col (@auto_inc_columns)
+        {
+            $row->{$col} = $dbh->last_insert_id( undef, undef, $table_name, $col );
+        }
+
+        delete @{ $row }{ @ref_row_keys }
+            if @ref_row_keys;
+
+        push @objects, $class->new($row);
+    }
+
+    return $wantarray ? @objects : $objects[0];
+}
+
+sub _insert_for_data
+{
+    my $class = shift;
+    my $data  = shift;
+
     my $insert = $class->SchemaClass()->SQLFactoryClass()->new_insert();
 
     my $table = $class->Table();
 
-    $insert->into( $table->columns( sort keys %p ) );
+    $insert->into( $table->columns( sort keys %{ $data } ) );
 
     my $ph = Fey::Placeholder->new();
 
-    $insert->values( map { $_ => ref $p{$_} ? $p{$_} : $ph } sort keys %p );
+    $insert->values( map { $_ => ref $data->{$_} ? $data->{$_} : $ph } sort keys %{ $data } );
 
-    my $dbh = $class->_dbh($insert);
-
-    $dbh->do( $insert->sql($dbh), {}, grep { ! ref } @p{ sort keys %p } );
-
-    return unless defined wantarray;
-
-    for my $col ( grep { ! exists $p{$_} }
-                  map { $_->name() }
-                  grep { $_->is_auto_increment() }
-                  $table->columns() )
-    {
-        $p{$col} = $dbh->last_insert_id( undef, undef, $table->name(), $col );
-    }
-
-    delete $p{$_} for grep { ref $p{$_} } keys %p;
-
-    return $class->new(\%p);
+    return $insert;
 }
 
 sub update

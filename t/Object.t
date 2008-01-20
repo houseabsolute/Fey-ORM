@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_live_classes();
 
-plan tests => 19;
+plan tests => 21;
 
 
 {
@@ -73,6 +73,22 @@ plan tests => 19;
 }
 
 {
+    my @users = User->insert_many( { username => 'new3',
+                                     email    => 'new3@example.com',
+                                   },
+                                   { username => 'new4',
+                                     email    => 'new4@example.com',
+                                   },
+                                 );
+
+    is( @users, 2, 'two new users were inserted' );
+    is_deeply( [ map { $_->username() } @users ],
+               [ qw( new3 new4 ) ],
+               'users were returned with expected data in the order they were provided'
+             );
+}
+
+{
     my $user = User->new( user_id => 1 );
     $user->update( username => 'updated',
                    email    => 'updated@example.com' );
@@ -87,6 +103,7 @@ plan tests => 19;
     ok( ! $user->has_username(), 'username is cleared when update value is a reference' );
     is( $user->username(), 'updated2', 'username = updated2' );
 }
+
 
 {
     package Email;
