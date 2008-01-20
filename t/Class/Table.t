@@ -110,7 +110,10 @@ my $Schema = schema();
     ok( User->HasInflator('email'), 'User has an inflator coderef for email' );
     ok( User->HasDeflator('email'), 'User has a deflator coderef for email' );
 
-    my $user = User->new( user_id => 1, email => 'test@example.com' );
+    my $user = User->new( user_id     => 1,
+                          email       => 'test@example.com',
+                          _from_query => 1,
+                        );
 
     ok( ! ref $user->email_raw(),
         'email_raw() returns a plain string' );
