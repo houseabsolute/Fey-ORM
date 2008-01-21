@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_live_classes();
 
-plan tests => 23;
+plan tests => 27;
 
 
 {
@@ -133,6 +133,11 @@ plan tests => 23;
         return bless \$_[1], $_[0];
     }
 
+    sub as_string
+    {
+        return ${ $_[0] };
+    }
+
     package User;
 
     use Fey::Class::Table;
@@ -146,4 +151,41 @@ plan tests => 23;
     my $user = User->new( user_id => 1 );
 
     isa_ok( $user->email(), 'Email' );
+}
+
+{
+    my $user = User->new( user_id => 1 );
+
+    my $email = Email->new( 'another@example.com' );
+
+    $user->update( email => $email );
+
+    is ( $user->email()->as_string(), $email->as_string(),
+         'deflator intercepts Email object passed to update and turns it into a string' );
+
+    my $dbh = $user->_dbh();
+    my $sql = q{SELECT email FROM "User" WHERE user_id = ?};
+    my $email_in_dbms = ( $dbh->selectcol_arrayref( $sql, {}, $user->user_id() ) )->[0];
+
+    is( $email_in_dbms, $email->as_string(),
+        'check email in dbms after update with deflator' );
+}
+
+{
+    my $email = Email->new( 'inserting@example.com' );
+
+    my $user =
+        User->insert( username => 'inserting',
+                      email    => $email,
+                    );
+
+    is( $user->email()->as_string(), $email->as_string(),
+         'deflator intercepts Email object passed to insert and turns it into a string' );
+
+    my $dbh = $user->_dbh();
+    my $sql = q{SELECT email FROM "User" WHERE user_id = ?};
+    my $email_in_dbms = ( $dbh->selectcol_arrayref( $sql, {}, $user->user_id() ) )->[0];
+
+    is( $email_in_dbms, $email->as_string(),
+        'check email in dbms after insert with deflator' );
 }

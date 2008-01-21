@@ -178,27 +178,35 @@ sub insert_many
 
     my $table_name = $class->Table()->name();
 
-    my @non_ref_row_keys;
+    my @non_literal_row_keys;
+    my @literal_row_keys;
     my @ref_row_keys;
 
     for my $key ( sort keys %{ $rows[0] } )
     {
-        if ( ref $rows[0]->{$key} )
+        if ( blessed $rows[0]{$key} && $rows[0]{$key}->isa('Fey::Literal') )
         {
+            push @literal_row_keys, $key;
             push @ref_row_keys, $key;
         }
         else
         {
-            push @non_ref_row_keys, $key;
+            push @non_literal_row_keys, $key;
+            push @ref_row_keys, $key
+                if ref $rows[0]{$key};
         }
     }
+
+    my $deflators = $class->Deflators();
 
     my $wantarray = wantarray;
 
     my @objects;
     for my $row (@rows)
     {
-        $sth->execute( @{ $row }{ @non_ref_row_keys } );
+        $sth->execute( map { my $meth = $deflators->{$_};
+                             $meth ? $class->$meth( $row->{$_} ) : $row->{$_} }
+                       @non_literal_row_keys );
 
         next unless defined $wantarray;
 
@@ -229,7 +237,11 @@ sub _insert_for_data
 
     my $ph = Fey::Placeholder->new();
 
-    $insert->values( map { $_ => ref $data->{$_} ? $data->{$_} : $ph } sort keys %{ $data } );
+    my @vals =
+        ( map { $_ => ( blessed $data->{$_} && $data->{$_}->isa('Fey::Literal') ? $data->{$_} : $ph ) }
+          sort keys %{ $data }
+        );
+    $insert->values(@vals);
 
     return $insert;
 }
@@ -250,10 +262,21 @@ sub update
     my @bind;
     for my $k ( keys %p )
     {
-        $update->set( $table->column($k) => ref $p{$k} ? $p{$k} : $ph );
+        my $val;
+        if ( blessed $p{$k} && $p{$k}->isa('Fey::Literal') )
+        {
+            $val = $p{$k};
+        }
+        else
+        {
+            $val = $ph;
 
-        push @bind, $p{$k}
-            unless ref $p{$k};
+            my $deflator = $self->GetDeflator($k);
+
+            push @bind, $deflator ? $self->$deflator( $p{$k} ) : $p{$k};
+        }
+
+        $update->set( $table->column($k) => $val );
     }
 
     for my $col ( $table->primary_key() )
