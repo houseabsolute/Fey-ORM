@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_live_classes();
 
-plan tests => 21;
+plan tests => 23;
 
 
 {
@@ -104,6 +104,26 @@ plan tests => 21;
     is( $user->username(), 'updated2', 'username = updated2' );
 }
 
+{
+    my $load_from_dbms_called = 0;
+    my $user;
+
+    {
+        no warnings 'redefine', 'once';
+        local *User::_load_from_dbms = sub { $load_from_dbms_called = 1 };
+
+        $user = User->new( user_id     => 99,
+                           username    => 'not in dbms',
+                           email       => 'notindbms@example.com',
+                           _from_query => 1,
+                         );
+    }
+
+    ok( ! $load_from_dbms_called,
+        '_load_from_dbms() is not called when _from_query is passed to the constructor' );
+    is( $user->username(), 'not in dbms',
+        'data passed to constructor is available from object' );
+}
 
 {
     package Email;
