@@ -278,11 +278,13 @@ sub add_transform
         my $cache_name      = q{_inflated_} . $name;
         my $cache_set       = q{_set_inflated_} . $name;
         my $cache_predicate = q{_has} . $cache_name;
+        my $cache_clear     = q{_clear_} . $cache_name;
 
         $self->_process_attribute( $cache_name,
                                    is        => 'rw',
                                    writer    => $cache_set,
                                    predicate => $cache_predicate,
+                                   clearer   => $cache_clear,
                                    init_arg  => "\0$cache_name",
                                  );
 
@@ -303,6 +305,17 @@ sub add_transform
                 };
 
         $self->add_around_method_modifier( $name => $inflator );
+
+        my $clear_inflator =
+            sub { my $orig = shift;
+                  my $self = shift;
+
+                  $self->$cache_clear();
+
+                  $self->$orig();
+                };
+
+        $self->add_around_method_modifier( $attr->clearer(), $clear_inflator );
 
         $self->name()->SetInflator( $name => $inflate_sub );
     }
