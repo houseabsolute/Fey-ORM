@@ -112,7 +112,8 @@ sub _make_attribute_map
 {
     my $self = shift;
 
-    return { map { $_ => [ map { lc } $_->meta()->get_attribute_list() ] }
+    return { map { $_ => [ map { lc } grep { ! /^_/ }
+                           $_->meta()->get_attribute_list() ] }
              @{ $self->classes() }
            };
 }
