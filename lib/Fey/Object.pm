@@ -24,32 +24,6 @@ use MooseX::StrictConstructor;
 extends 'Moose::Object';
 
 
-sub new
-{
-    my $class = shift;
-
-    if ( $class->ObjectCacheIsEnabled() )
-    {
-        my $object = $class->SearchCache( ref $_[0] ? $_[0] : { @_ } );
-
-        return $object if $object;
-    }
-
-    my $self = eval { $class->SUPER::new(@_) };
-
-    if ( my $e = $@ )
-    {
-        return if blessed $e && $e->isa('Fey::Exception::NoSuchRow');
-
-        die $e;
-    }
-
-    $class->WriteToCache($self)
-        if $class->ObjectCacheIsEnabled();
-
-    return $self;
-}
-
 sub BUILD
 {
     my $self = shift;
@@ -62,54 +36,25 @@ sub BUILD
     return;
 }
 
-sub SearchCache
-{
-    my $class = shift;
-    my $p     = shift;
-
-    my $cache = $class->_ObjectCache();
-
-    for my $key ( $class->Table()->candidate_keys() )
-    {
-        my @names = map { $_->name() } @{ $key };
-        next unless all { defined $p->{$_} } @names;
-
-        my $cache_key = join "\0", map { $_, $p->{$_} } sort @names;
-
-        return $cache->{$cache_key}
-            if exists $cache->{$cache_key};
-    }
-}
-
-sub WriteToCache
-{
-    my $class  = shift;
-    my $object = shift;
-
-    my $cache = $class->_ObjectCache();
-
-    for my $key ( $class->Table()->candidate_keys() )
-    {
-        my @names = map { $_->name() } @{ $key };
-
-        my $cache_key = join "\0", map { $_, $object->$_() } sort @names;
-
-        $cache->{$cache_key} = $object;
-    }
-}
-
 sub EnableObjectCache
 {
     my $class = shift;
 
-    $class->_ObjectCacheIsEnabled(1);
+    $class->meta()->set_object_cache_is_enabled(1);
 }
 
 sub DisableObjectCache
 {
     my $class = shift;
 
-    $class->_ObjectCacheIsEnabled(0);
+    $class->meta()->set_object_cache_is_enabled(0);
+}
+
+sub ClearObjectCache
+{
+    my $class = shift;
+
+    $class->meta()->clear_object_cache();
 }
 
 sub _load_from_dbms

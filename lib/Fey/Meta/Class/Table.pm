@@ -8,6 +8,7 @@ use Fey::Validate qw( validate TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 
 use Fey::Hash::ColumnsKey;
 use Fey::Meta::Class::Schema;
+use List::MoreUtils qw( all );
 
 use Moose;
 use MooseX::AttributeHelpers;
@@ -27,6 +28,22 @@ class_has '_TableClassMap' =>
                    },
     );
 
+has 'object_cache_is_enabled' =>
+    ( is      => 'rw',
+      isa     => 'Bool',
+      lazy    => 1,
+      default => 0,
+      writer  => 'set_object_cache_is_enabled',
+    );
+
+has '_object_cache' =>
+    ( is      => 'ro',
+      isa     => 'HashRef',
+      lazy    => 1,
+      default => sub { {} },
+      clearer => 'clear_object_cache',
+    );
+
 sub ClassForTable
 {
     my $class = shift;
@@ -41,6 +58,69 @@ sub ClassForTable
     }
 
     return;
+}
+
+sub new_object
+{
+    my $self = shift;
+    my %p    = @_;
+
+    if ( $self->object_cache_is_enabled() )
+    {
+        my $object = $self->_search_cache( ref $_[0] ? $_[0] : { @_ } );
+
+        return $object if $object;
+    }
+
+    my $object = eval { $self->SUPER::new_object(@_) };
+
+    if ( my $e = $@ )
+    {
+        return if blessed $e && $e->isa('Fey::Exception::NoSuchRow');
+
+        die $e;
+    }
+
+    $self->_write_to_cache($object)
+        if $self->object_cache_is_enabled();
+
+    return $object;
+}
+
+sub _search_cache
+{
+    my $self = shift;
+    my $p    = shift;
+
+    my $cache = $self->_object_cache();
+
+    for my $key ( $self->name()->Table()->candidate_keys() )
+    {
+        my @names = map { $_->name() } @{ $key };
+        next unless all { defined $p->{$_} } @names;
+
+        my $cache_key = join "\0", map { $_, $p->{$_} } sort @names;
+
+        return $cache->{$cache_key}
+            if exists $cache->{$cache_key};
+    }
+}
+
+sub _write_to_cache
+{
+    my $self   = shift;
+    my $object = shift;
+
+    my $cache = $self->_object_cache();
+
+    for my $key ( $self->name()->Table()->candidate_keys() )
+    {
+        my @names = map { $_->name() } @{ $key };
+
+        my $cache_key = join "\0", map { $_, $object->$_() } sort @names;
+
+        $cache->{$cache_key} = $object;
+    }
 }
 
 sub has_table
@@ -201,28 +281,6 @@ sub _make_class_attributes
             isa       => 'Fey::SQL::Select',
             lazy      => 1,
             default   => sub { return $caller->_MakeCountSQL() },
-          ),
-        );
-
-    MooseX::ClassAttribute::process_class_attribute
-        ( $caller,
-          'ObjectCacheIsEnabled',
-          ( is      => 'rw',
-            isa     => 'Bool',
-            lazy    => 1,
-            default => 0,
-            writer  => '_ObjectCacheIsEnabled',
-          ),
-        );
-
-    MooseX::ClassAttribute::process_class_attribute
-        ( $caller,
-          '_ObjectCache',
-          ( is      => 'ro',
-            isa     => 'HashRef',
-            lazy    => 1,
-            default => sub { {} },
-            clearer => 'ClearObjectCache',
           ),
         );
 }
