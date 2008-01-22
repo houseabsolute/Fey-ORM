@@ -114,7 +114,7 @@ sub _make_column_attributes
         $attr_p{clearer}   = q{_clear_} . $name;
         $attr_p{predicate} = q{has_} . $name;
 
-        $self->_process_attribute( $name, %attr_p );
+        $self->add_attribute( $name, %attr_p );
     }
 }
 
@@ -280,13 +280,13 @@ sub add_transform
         my $cache_predicate = q{_has} . $cache_name;
         my $cache_clear     = q{_clear_} . $cache_name;
 
-        $self->_process_attribute( $cache_name,
-                                   is        => 'rw',
-                                   writer    => $cache_set,
-                                   predicate => $cache_predicate,
-                                   clearer   => $cache_clear,
-                                   init_arg  => "\0$cache_name",
-                                 );
+        $self->add_attribute( $cache_name,
+                              is        => 'rw',
+                              writer    => $cache_set,
+                              predicate => $cache_predicate,
+                              clearer   => $cache_clear,
+                              init_arg  => "\0$cache_name",
+                            );
 
         my $inflator =
             sub { my $orig = shift;
@@ -400,7 +400,7 @@ sub _make_has_one_attribute
         # the related class being loaded. It doesn't really matter, since
         # this accessor is read-only, so there's really no typing issue to
         # deal with.
-        $self->_process_attribute
+        $self->add_attribute
             ( $name,
               is      => 'ro',
               isa     => 'Fey::Object',
