@@ -67,8 +67,13 @@ sub _load_from_dbms
         my @names = map { $_->name() } @{ $key };
         next unless all { defined $p->{$_} } @names;
 
-        $self->_load_from_key( $key, [ @{ $p }{ @names } ] );
+        return if $self->_load_from_key( $key, [ @{ $p }{ @names } ] );
     }
+
+    my $error = 'Could not find a row in ' . $self->Table()->name();
+    $error .= ' matching the values you provided to the constructor.';
+
+    no_such_row $error;
 }
 
 sub _load_from_key
@@ -79,7 +84,7 @@ sub _load_from_key
 
     my $select = $self->_SelectSQLForKey($key);
 
-    return if $self->_get_column_values( $select, $bind );
+    return 1 if $self->_get_column_values( $select, $bind );
 
     my $error = 'Could not find a row in ' . $self->Table()->name();
     $error .= ' where ';

@@ -165,30 +165,17 @@ sub _make_column_attributes
 
     my $table = $self->name()->Table();
 
-    my %pk = map { $_->name() => 1 } $table->primary_key();
-
     for my $column ( $table->columns() )
     {
         my $name = $column->name();
 
         next if $self->has_method($name);
 
-        my %attr_p;
-
-        if ( $pk{$name} )
-        {
-            %attr_p = ( is       => 'ro',
-                        required => 1,
-                      );
-        }
-        else
-        {
-            %attr_p = ( is        => 'rw',
-                        writer    => q{_set_} . $name,
-                        lazy      => 1,
-                        default => sub { $_[0]->_get_column_value($name) },
-                      );
-        }
+        my %attr_p = ( is        => 'rw',
+                       writer    => q{_set_} . $name,
+                       lazy      => 1,
+                       default => sub { $_[0]->_get_column_value($name) },
+                     );
 
         $attr_p{isa}       = $self->_type_for_column($column);
         $attr_p{clearer}   = q{_clear_} . $name;

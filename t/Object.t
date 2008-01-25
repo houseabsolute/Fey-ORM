@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_live_classes();
 
-plan tests => 27;
+plan tests => 30;
 
 
 {
@@ -70,6 +70,22 @@ plan tests => 27;
 
     is( $user->username(), 'literal',
         'literals are handled correctly in an insert' );
+}
+
+{
+    my $user = User->new( username => 'autarch' );
+    is( $user->user_id(), 1,
+        'got expected user when creating object via username' );
+}
+
+{
+    eval { User->new( username => 'does not exist at all' ) };
+    like( $@, qr/Could not find a row in User where username =/i,
+          'error message when we cannot find a matching row in the dbms' );
+
+    eval { User->new() };
+    like( $@, qr/Could not find a row in User matching the values you provided/i,
+          'error message when we cannot find a matching row for any keys' );
 }
 
 {
