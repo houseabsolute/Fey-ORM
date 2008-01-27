@@ -12,38 +12,44 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_live_classes();
 
-plan tests => 3;
+plan tests => 6;
 
+run_tests();
+User->meta()->make_immutable();
+run_tests();
 
+sub run_tests
 {
-    User->EnableObjectCache();
+    {
+        User->EnableObjectCache();
 
-    my $user1 = User->new( user_id => 1 );
-    my $user2 = User->new( user_id => 1 );
+        my $user1 = User->new( user_id => 1 );
+        my $user2 = User->new( user_id => 1 );
 
-    is( $user1, $user2,
-        'two objects for the same id are identical when the object cache is enabled' );
-}
+        is( $user1, $user2,
+            'two objects for the same id are identical when the object cache is enabled' );
+    }
 
-{
-    User->DisableObjectCache();
+    {
+        User->DisableObjectCache();
 
-    my $user1 = User->new( user_id => 1 );
-    my $user2 = User->new( user_id => 1 );
+        my $user1 = User->new( user_id => 1 );
+        my $user2 = User->new( user_id => 1 );
 
-    isnt( $user1, $user2,
-          'two objects for the same id are not identical when the object cache is disabled' );
-}
+        isnt( $user1, $user2,
+              'two objects for the same id are not identical when the object cache is disabled' );
+    }
 
-{
-    User->EnableObjectCache();
+    {
+        User->EnableObjectCache();
 
-    my $user1 = User->new( user_id => 1 );
+        my $user1 = User->new( user_id => 1 );
 
-    User->ClearObjectCache();
+        User->ClearObjectCache();
 
-    my $user2 = User->new( user_id => 1 );
+        my $user2 = User->new( user_id => 1 );
 
-    isnt( $user1, $user2,
-          'two objects for the same id are not identical when the object cache is enabled but cleared between calls to new()' );
-}
+        isnt( $user1, $user2,
+              'two objects for the same id are not identical when the object cache is enabled but cleared between calls to new()' );
+    }
+};

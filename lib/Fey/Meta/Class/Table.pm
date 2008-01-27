@@ -477,6 +477,18 @@ sub _make_has_one_default_sub
             };
 }
 
+use Fey::Meta::Method::Constructor;
+
+sub make_immutable
+{
+    my $self = shift;
+
+    $self->SUPER::make_immutable
+      ( constructor_class => 'Fey::Meta::Method::Constructor',
+      );
+}
+
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 
