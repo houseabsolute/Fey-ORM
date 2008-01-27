@@ -13,134 +13,213 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_live_classes();
 
-plan tests => 30;
+plan tests => 60;
 
 
+basic_tests();
+add_transform();
+tests_with_transform();
+
+Fey::Class::Test::insert_user_data();
+
+User->meta()->make_immutable();
+basic_tests();
+tests_with_transform();
+
+
+sub basic_tests
 {
-    is( User->Count(), 2, 'Count() finds two rows' );
-}
-
-{
-    my $user1 = User->new( user_id => 1 );
-    ok( $user1, 'was able to load user where user_id = 1' );
-
-    is( $user1->username(), 'autarch',
-        'username is set as side effect of calling _get_column_values()' );
-    is( $user1->email(), 'autarch@example.com',
-        'email is set as side effect of calling _get_column_values()' );
-
-    my $user2 = User->new( user_id => 1 );
-    isnt( $user1, $user2,
-          'calling User->new() twice with the same user_id returns two different objects' );
-
-    is( $user2->username(), 'autarch',
-        'username is fetched as needed' );
-    ok( $user2->has_email(),
-        'email is set as side effect of calling username()' );
-}
-
-{
-    my $new_called = 0;
 
     {
-        no warnings 'redefine', 'once';
-        local *User::new = sub { $new_called = 1 };
-
-        User->insert( username => 'new',
-                      email    => 'new@example.com' );
+        is( User->Count(), 2, 'Count() finds two rows' );
     }
 
-    ok( ! $new_called, 'new() is not called when insert() is done in void context' );
+    {
+        my $user1 = User->new( user_id => 1 );
+        ok( $user1, 'was able to load user where user_id = 1' );
 
-    is( User->Count(), 3, 'Count() is now 3' );
+        is( $user1->username(), 'autarch',
+            'username is set as side effect of calling _get_column_values()' );
 
-    my $user = User->insert( username => 'new2',
-                             email    => 'new@example.com' );
+        if ( User->meta()->is_immutable() )
+        {
+            is( $user1->email()->as_string(), 'autarch@example.com',
+                'email is set as side effect of calling _get_column_values()' );
+        }
+        else
+        {
+            is( $user1->email(), 'autarch@example.com',
+                'email is set as side effect of calling _get_column_values()' );
+        }
 
-    is( $user->username(), 'new2',
-        'object returned from insert() has username = new2' );
-    cmp_ok( $user->user_id(), '>', 0,
-            'object returned from insert() has a user id > 0 (fetched via last_insert_id())' );
-    is( User->Count(), 4, 'Count() is now 4' );
+        my $user2 = User->new( user_id => 1 );
+        isnt( $user1, $user2,
+              'calling User->new() twice with the same user_id returns two different objects' );
 
-    my $string = Fey::Literal::String->new( 'literal' );
+        is( $user2->username(), 'autarch',
+            'username is fetched as needed' );
+        ok( $user2->has_email(),
+            'email is set as side effect of calling username()' );
+    }
 
-    $user = User->insert( username => $string,
+    {
+        my $new_called = 0;
+
+        {
+            no warnings 'redefine', 'once';
+            local *User::new = sub { $new_called = 1 };
+
+            User->insert( username => 'new',
                           email    => 'new@example.com' );
+        }
 
-    is( $user->username(), 'literal',
-        'literals are handled correctly in an insert' );
-}
+        ok( ! $new_called, 'new() is not called when insert() is done in void context' );
 
-{
-    my $user = User->new( username => 'autarch' );
-    is( $user->user_id(), 1,
-        'got expected user when creating object via username' );
-}
+        is( User->Count(), 3, 'Count() is now 3' );
 
-{
-    eval { User->new( username => 'does not exist at all' ) };
-    like( $@, qr/Could not find a row in User where username =/i,
-          'error message when we cannot find a matching row in the dbms' );
+        my $user = User->insert( username => 'new2',
+                                 email    => 'new@example.com' );
 
-    eval { User->new() };
-    like( $@, qr/Could not find a row in User matching the values you provided/i,
-          'error message when we cannot find a matching row for any keys' );
-}
+        is( $user->username(), 'new2',
+            'object returned from insert() has username = new2' );
+        cmp_ok( $user->user_id(), '>', 0,
+                'object returned from insert() has a user id > 0 (fetched via last_insert_id())' );
+        is( User->Count(), 4, 'Count() is now 4' );
 
-{
-    my @users = User->insert_many( { username => 'new3',
-                                     email    => 'new3@example.com',
-                                   },
-                                   { username => 'new4',
-                                     email    => 'new4@example.com',
-                                   },
-                                 );
+        my $string = Fey::Literal::String->new( 'literal' );
 
-    is( @users, 2, 'two new users were inserted' );
-    is_deeply( [ map { $_->username() } @users ],
-               [ qw( new3 new4 ) ],
-               'users were returned with expected data in the order they were provided'
-             );
-}
+        $user = User->insert( username => $string,
+                              email    => 'new@example.com' );
 
-{
-    my $user = User->new( user_id => 1 );
-    $user->update( username => 'updated',
-                   email    => 'updated@example.com' );
-
-    ok( $user->has_email(), 'email is not cleared when update value is a non-reference' );
-    is( $user->username(), 'updated', 'username = updated' );
-    is( $user->email(), 'updated@example.com', 'email = updated@example.com' );
-
-    my $string = Fey::Literal::String->new( 'updated2' );
-    $user->update( username => $string );
-
-    ok( ! $user->has_username(), 'username is cleared when update value is a reference' );
-    is( $user->username(), 'updated2', 'username = updated2' );
-}
-
-{
-    my $load_from_dbms_called = 0;
-    my $user;
-
-    {
-        no warnings 'redefine', 'once';
-        local *User::_load_from_dbms = sub { $load_from_dbms_called = 1 };
-
-        $user = User->new( user_id     => 99,
-                           username    => 'not in dbms',
-                           email       => 'notindbms@example.com',
-                           _from_query => 1,
-                         );
+        is( $user->username(), 'literal',
+            'literals are handled correctly in an insert' );
     }
 
-    ok( ! $load_from_dbms_called,
-        '_load_from_dbms() is not called when _from_query is passed to the constructor' );
-    is( $user->username(), 'not in dbms',
-        'data passed to constructor is available from object' );
+    {
+        my $user = User->new( username => 'autarch' );
+        is( $user->user_id(), 1,
+            'got expected user when creating object via username' );
+    }
+
+    {
+        User->new( username => 'does not exist at all' );
+        like( $@, qr/Could not find a row in User where username =/i,
+              'error message when we cannot find a matching row in the dbms' );
+
+        User->new();
+        like( $@, qr/Could not find a row in User matching the values you provided/i,
+              'error message when we cannot find a matching row for any keys' );
+    }
+
+    {
+        my @users = User->insert_many( { username => 'new3',
+                                         email    => 'new3@example.com',
+                                       },
+                                       { username => 'new4',
+                                         email    => 'new4@example.com',
+                                       },
+                                     );
+
+        is( @users, 2, 'two new users were inserted' );
+        is_deeply( [ map { $_->username() } @users ],
+                   [ qw( new3 new4 ) ],
+                   'users were returned with expected data in the order they were provided'
+                 );
+    }
+
+    {
+        my $user = User->new( user_id => 1 );
+        $user->update( username => 'updated',
+                       email    => 'updated@example.com' );
+
+        ok( $user->has_email(), 'email is not cleared when update value is a non-reference' );
+        is( $user->username(), 'updated', 'username = updated' );
+
+        if ( User->meta()->is_immutable() )
+        {
+            is( $user->email()->as_string(), 'updated@example.com', 'email = updated@example.com' );
+        }
+        else
+        {
+            is( $user->email(), 'updated@example.com', 'email = updated@example.com' );
+        }
+
+        my $string = Fey::Literal::String->new( 'updated2' );
+        $user->update( username => $string );
+
+        ok( ! $user->has_username(), 'username is cleared when update value is a reference' );
+        is( $user->username(), 'updated2', 'username = updated2' );
+    }
+
+    {
+        my $load_from_dbms_called = 0;
+        my $user;
+
+        {
+            no warnings 'redefine', 'once';
+            local *User::_load_from_dbms = sub { $load_from_dbms_called = 1 };
+
+            $user = User->new( user_id     => 99,
+                               username    => 'not in dbms',
+                               email       => 'notindbms@example.com',
+                               _from_query => 1,
+                             );
+        }
+
+        ok( ! $load_from_dbms_called,
+            '_load_from_dbms() is not called when _from_query is passed to the constructor' );
+        is( $user->username(), 'not in dbms',
+            'data passed to constructor is available from object' );
+    }
 }
 
+sub tests_with_transform
+{
+    {
+        my $user = User->new( user_id => 1 );
+
+        isa_ok( $user->email(), 'Email' );
+    }
+
+    {
+        my $user = User->new( user_id => 1 );
+
+        my $email = Email->new( 'another@example.com' );
+
+        $user->update( email => $email );
+
+        is ( $user->email()->as_string(), $email->as_string(),
+             'deflator intercepts Email object passed to update and turns it into a string' );
+
+        my $dbh = $user->_dbh();
+        my $sql = q{SELECT email FROM "User" WHERE user_id = ?};
+        my $email_in_dbms = ( $dbh->selectcol_arrayref( $sql, {}, $user->user_id() ) )->[0];
+
+        is( $email_in_dbms, $email->as_string(),
+            'check email in dbms after update with deflator' );
+    }
+
+    {
+        my $email = Email->new( 'inserting@example.com' );
+
+        my $user =
+            User->insert( username => 'inserting',
+                          email    => $email,
+                        );
+
+        is( $user->email()->as_string(), $email->as_string(),
+            'deflator intercepts Email object passed to insert and turns it into a string' );
+
+        my $dbh = $user->_dbh();
+        my $sql = q{SELECT email FROM "User" WHERE user_id = ?};
+        my $email_in_dbms = ( $dbh->selectcol_arrayref( $sql, {}, $user->user_id() ) )->[0];
+
+        is( $email_in_dbms, $email->as_string(),
+            'check email in dbms after insert with deflator' );
+    }
+}
+
+sub add_transform
 {
     package Email;
 
@@ -156,52 +235,11 @@ plan tests => 30;
 
     package User;
 
+    use Scalar::Util qw( blessed );
+
     use Fey::Class::Table;
 
     transform 'email'
         => inflate { return Email->new( $_[1] ) }
-        => deflate { return $_[1]->as_string() };
-}
-
-{
-    my $user = User->new( user_id => 1 );
-
-    isa_ok( $user->email(), 'Email' );
-}
-
-{
-    my $user = User->new( user_id => 1 );
-
-    my $email = Email->new( 'another@example.com' );
-
-    $user->update( email => $email );
-
-    is ( $user->email()->as_string(), $email->as_string(),
-         'deflator intercepts Email object passed to update and turns it into a string' );
-
-    my $dbh = $user->_dbh();
-    my $sql = q{SELECT email FROM "User" WHERE user_id = ?};
-    my $email_in_dbms = ( $dbh->selectcol_arrayref( $sql, {}, $user->user_id() ) )->[0];
-
-    is( $email_in_dbms, $email->as_string(),
-        'check email in dbms after update with deflator' );
-}
-
-{
-    my $email = Email->new( 'inserting@example.com' );
-
-    my $user =
-        User->insert( username => 'inserting',
-                      email    => $email,
-                    );
-
-    is( $user->email()->as_string(), $email->as_string(),
-         'deflator intercepts Email object passed to insert and turns it into a string' );
-
-    my $dbh = $user->_dbh();
-    my $sql = q{SELECT email FROM "User" WHERE user_id = ?};
-    my $email_in_dbms = ( $dbh->selectcol_arrayref( $sql, {}, $user->user_id() ) )->[0];
-
-    is( $email_in_dbms, $email->as_string(),
-        'check email in dbms after insert with deflator' );
+        => deflate { return blessed $_[1] ? $_[1]->as_string() : $_[1] };
 }

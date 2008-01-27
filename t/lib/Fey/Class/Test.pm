@@ -42,6 +42,8 @@ sub insert_user_data
 
     my $dbh = Fey::Test::SQLite->dbh();
 
+    $dbh->do( 'DELETE FROM User' );
+
     my $insert = 'INSERT INTO User ( user_id, username, email ) VALUES ( ?, ?, ? )';
     my $sth = $dbh->prepare($insert);
 

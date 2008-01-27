@@ -102,7 +102,7 @@ sub _search_cache
     my $self = shift;
 
     my $source = "\n" . 'if ( $meta->object_cache_is_enabled() ) {';
-    $source .= "\n" . '    my $instance = $meta->_search_cache(\\%params);';
+    $source .= "\n" . '    my $instance = $meta->search_cache(\\%params);';
     $source .= "\n" . '    return $instance if $instance;';
     $source .= "\n" . '}';
 }
@@ -111,7 +111,7 @@ sub _write_to_cache
 {
     my $self = shift;
 
-    return "\n" . '$meta->_write_to_cache($instance) if $class->meta()->object_cache_is_enabled();';
+    return "\n" . '$meta->write_to_cache($instance) if $class->meta()->object_cache_is_enabled();';
 }
 
 no Moose;

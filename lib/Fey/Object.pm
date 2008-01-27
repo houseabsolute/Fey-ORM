@@ -24,6 +24,32 @@ use MooseX::StrictConstructor;
 extends 'Moose::Object';
 
 
+sub new
+{
+    my $class = shift;
+
+    if ( $class->meta()->object_cache_is_enabled() )
+    {
+        my $object = $class->meta()->search_cache( ref $_[0] ? $_[0] : { @_ } );
+
+        return $object if $object;
+    }
+
+    my $object = eval { $class->SUPER::new(@_) };
+
+    if ( my $e = $@ )
+    {
+        return if blessed $e && $e->isa('Fey::Exception::NoSuchRow');
+
+        die $e;
+    }
+
+    $class->meta()->write_to_cache($object)
+        if $class->meta()->object_cache_is_enabled();
+
+    return $object;
+}
+
 sub BUILD
 {
     my $self = shift;

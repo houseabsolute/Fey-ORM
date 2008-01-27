@@ -7,7 +7,10 @@ my $builder =
     Module::Build->new
         ( module_name        => 'Fey::Class',
           license            => 'perl',
-          requires           => { 'Test::More' => 0 },
+          requires           => { 'Scalar::Util' => 0,
+                                },
+          build_requires     => { 'Test::More' => 0,
+                                },
           create_makefile_pl => 'passthrough',
           create_readme      => 1,
           sign               => 1,

@@ -60,34 +60,7 @@ sub ClassForTable
     return;
 }
 
-sub new_object
-{
-    my $self = shift;
-    my %p    = @_;
-
-    if ( $self->object_cache_is_enabled() )
-    {
-        my $object = $self->_search_cache( ref $_[0] ? $_[0] : { @_ } );
-
-        return $object if $object;
-    }
-
-    my $object = eval { $self->SUPER::new_object(@_) };
-
-    if ( my $e = $@ )
-    {
-        return if blessed $e && $e->isa('Fey::Exception::NoSuchRow');
-
-        die $e;
-    }
-
-    $self->_write_to_cache($object)
-        if $self->object_cache_is_enabled();
-
-    return $object;
-}
-
-sub _search_cache
+sub search_cache
 {
     my $self = shift;
     my $p    = shift;
@@ -106,7 +79,7 @@ sub _search_cache
     }
 }
 
-sub _write_to_cache
+sub write_to_cache
 {
     my $self   = shift;
     my $object = shift;
