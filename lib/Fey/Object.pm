@@ -236,7 +236,7 @@ sub update
     my $ph = Fey::Placeholder->new();
 
     my @bind;
-    for my $k ( keys %p )
+    for my $k ( sort keys %p )
     {
         my $val;
         if ( blessed $p{$k} && $p{$k}->isa('Fey::Literal') )
@@ -268,7 +268,7 @@ sub update
 
     $dbh->do( $update->sql($dbh), {}, @bind );
 
-    for my $k ( keys %p )
+    for my $k ( sort keys %p )
     {
         if ( ref $p{$k} )
         {
@@ -375,10 +375,10 @@ sub _SelectSQLForKey
 
     my %key = map { $_->name() => 1 } @{ $key };
 
-    my @non_key = grep { ! $key{ $_->name() } } $table->columns();
+    my @non_key = grep { ! $key{$_} } $table->columns();
 
     $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
-    $select->select(@non_key);
+    $select->select( sort { $a->name() cmp $b->name() } @non_key );
     $select->from($table);
     $select->where( $_, '=', Fey::Placeholder->new() ) for @{ $key };
 
