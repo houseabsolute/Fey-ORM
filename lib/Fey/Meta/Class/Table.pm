@@ -421,7 +421,7 @@ sub _make_has_one_attribute
         # this accessor is read-only, so there's really no typing issue to
         # deal with.
         my $type = 'Fey::Object';
-        $type .= ' | undef' if $can_be_undef;
+        $type .= ' | Undef' if $can_be_undef;
 
         $self->add_attribute
             ( $name,
