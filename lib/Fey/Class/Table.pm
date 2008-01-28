@@ -110,6 +110,10 @@ sub deflate (&)
         {
             ( $p{table} ) = validate_pos( @_, $simple_spec );
         }
+        else
+        {
+            %p = @_;
+        }
 
         my $caller = caller();
 

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
-use Fey::Validate qw( validate TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
+use Fey::Validate qw( validate SCALAR_TYPE TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 
 use Fey::Hash::ColumnsKey;
 use Fey::Meta::Class::Schema;
@@ -348,7 +348,8 @@ sub add_transform
 }
 
 {
-    my $spec = { table => TABLE_TYPE,
+    my $spec = { name  => SCALAR_TYPE( default => undef ),
+                 table => TABLE_TYPE,
                  cache => BOOLEAN_TYPE( default => 1 ),
                  fk    => FK_TYPE( default => undef ),
                };
@@ -406,22 +407,26 @@ sub _make_has_one_attribute
     my $self = shift;
     my %p    = @_;
 
-    # XXX - names should be settable via a Fey::Class::Policy
     my $name = $p{name} || lc $p{table}->name();
 
-    my $default_sub = _make_has_one_default_sub(%p);
+    my $default_sub = $self->_make_has_one_default_sub(%p);
 
     if ( $p{cache} )
     {
+        my $can_be_undef = grep { $_->is_nullable() } $p{fk}->source_columns();
+
         # It'd be nice to set isa to the actual foreign class, but we may
         # not be able to map a table to a class yet, since that depends on
         # the related class being loaded. It doesn't really matter, since
         # this accessor is read-only, so there's really no typing issue to
         # deal with.
+        my $type = 'Fey::Object';
+        $type .= ' | undef' if $can_be_undef;
+
         $self->add_attribute
             ( $name,
               is      => 'ro',
-              isa     => 'Fey::Object',
+              isa     => $type,
               lazy    => 1,
               default => $default_sub,
             );
@@ -434,7 +439,8 @@ sub _make_has_one_attribute
 
 sub _make_has_one_default_sub
 {
-    my %p = @_;
+    my $self = shift;
+    my %p    = @_;
 
     my $table = $p{table};
     my @column_names = map { $_->name() } $p{fk}->source_columns();
@@ -443,7 +449,7 @@ sub _make_has_one_default_sub
         sub { my $self = shift;
 
               return
-                  Fey::Meta::Class
+                  $self->meta()
                       ->ClassForTable($table)
                       ->new( map { $_ => $self->$_() }
                              @column_names );
