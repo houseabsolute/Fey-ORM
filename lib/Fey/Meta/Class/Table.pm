@@ -7,6 +7,8 @@ use Fey::Exceptions qw( param_error );
 use Fey::Validate qw( validate SCALAR_TYPE TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 
 use Fey::Hash::ColumnsKey;
+use Fey::Object::Iterator;
+use Fey::Object::Iterator::Cached;
 use Fey::Meta::Class::Schema;
 use List::MoreUtils qw( all );
 
@@ -371,6 +373,30 @@ sub add_transform
     }
 }
 
+{
+    my $spec = { name  => SCALAR_TYPE( default => undef ),
+                 table => TABLE_TYPE,
+                 cache => BOOLEAN_TYPE( default => 1 ),
+                 fk    => FK_TYPE( default => undef ),
+               };
+
+    sub add_has_many_relationship
+    {
+        my $self = shift;
+        my %p    = validate( @_, $spec );
+
+        param_error 'A table object passed to has_many() must have a schema'
+            unless $p{table}->has_schema();
+
+        param_error 'You must call has_table() before calling has_many().'
+            unless $self->name()->HasTable();
+
+        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_many' );
+
+        $self->_make_has_one_attribute(%p);
+    }
+}
+
 sub _find_one_fk
 {
     my $self = shift;
@@ -443,7 +469,7 @@ sub _make_has_one_default_sub
     my %p    = @_;
 
     my $table = $p{table};
-    my @column_names = map { $_->name() } $p{fk}->source_columns();
+    my %column_map = map { $_->[0]->name() => $_->[1]->name() } $p{fk}->column_pairs();
 
     return
         sub { my $self = shift;
@@ -451,8 +477,76 @@ sub _make_has_one_default_sub
               return
                   $self->meta()
                       ->ClassForTable($table)
-                      ->new( map { $_ => $self->$_() }
-                             @column_names );
+                      ->new( map { $column_map{$_} => $self->$_() }
+                             keys %column_map );
+            };
+}
+
+sub _make_has_many_attribute
+{
+    my $self = shift;
+    my %p    = @_;
+
+    my $name = $p{name} || lc $p{table}->name();
+
+    my $iterator_class = $p{cache} ? 'Fey::Object::Iterator::Cached' : 'Fey::Object::Iterator';
+
+    my $default_sub = $self->_make_has_many_default_sub( %p, iterator_class => $iterator_class );
+
+    if ( $p{cache} )
+    {
+        $self->add_attribute
+            ( $name,
+              is      => 'ro',
+              isa     => $iterator_class,
+              lazy    => 1,
+              default => $default_sub,
+            );
+    }
+    else
+    {
+        $self->add_method( $name => $default_sub );
+    }
+}
+
+sub _make_has_many_default_sub
+{
+    my $self = shift;
+    my %p    = @_;
+
+    my $table = $p{table};
+
+    my %column_map = map { $_->[0]->name() => $_->[1] } $p{fk}->column_pairs();
+
+    my $iterator = $p{iterator_class};
+
+    return
+        sub { my $self = shift;
+
+              my $class = $self->meta()->ClassForTable($table);
+
+              my $select = $self->SchemaClass()->SQLFactoryClass()->new_select();
+              $select->select($table)
+                     ->from($table);
+
+              my $ph = Fey::Placeholder->new();
+
+              my @bind;
+              for my $k ( keys %column_map )
+              {
+                  $select->where( $column_map{$k}, '=', $ph );
+
+                  push @bind, $self->$k();
+              }
+
+              my $dbh = $self->_dbh($select);
+
+              my $sth = $dbh->prepare( $select->sql($dbh) );
+
+              return $iterator->new( classes     => $class,
+                                     handle      => $sth,
+                                     bind_params => \@bind,
+                                   );
             };
 }
 

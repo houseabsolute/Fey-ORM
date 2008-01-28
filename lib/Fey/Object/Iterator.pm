@@ -7,7 +7,7 @@ use Fey::Exceptions qw( param_error );
 use List::MoreUtils qw( pairwise );
 
 use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
-use Moose;
+use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
 
 subtype 'ArrayRefOfClasses'
@@ -18,7 +18,7 @@ subtype 'ArrayRefOfClasses'
              };
 
 coerce 'ArrayRefOfClasses'
-    => from 'Str'
+    => from 'ClassName'
     => via { return [ $_ ] };
 
 has classes =>
@@ -30,6 +30,12 @@ has classes =>
 has handle =>
     ( is  => 'ro',
       isa => 'DBI::st',
+    );
+
+has bind_params =>
+    ( is      => 'ro',
+      isa     => 'ArrayRef',
+      default => sub { [] },
     );
 
 has index =>
@@ -99,9 +105,9 @@ sub _executed_handle
 
     my $row = $self->_row();
 
-    $sth->bind_columns( \( @{ $row }{ @{ $sth->{NAME_lc} } } ) );
+    $sth->execute( @{ $self->bind_params() } );
 
-    $sth->execute();
+    $sth->bind_columns( \( @{ $row }{ @{ $sth->{NAME_lc} } } ) );
 
     $self->_set_executed(1);
 
@@ -149,5 +155,7 @@ sub DEMOLISH
     }
 }
 
+no Moose;
+__PACKAGE__->meta()->make_immutable();
 
 1;

@@ -14,7 +14,7 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_basic_classes();
 
-Test::More::plan tests => 20;
+Test::More::plan tests => 22;
 
 {
     eval { Fey::Object::Iterator->new( classes => [] ) };
@@ -30,7 +30,6 @@ my $dbh = Fey::Test::SQLite->dbh();
 
 {
     my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User ORDER BY user_id' );
-    $sth->execute();
 
     my $iterator = Fey::Object::Iterator->new( classes => 'User',
                                                handle  => $sth,
@@ -88,7 +87,6 @@ my $dbh = Fey::Test::SQLite->dbh();
 
 {
     my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User ORDER BY user_id' );
-    $sth->execute();
 
     my $iterator = Fey::Object::Iterator->new( classes => 'User',
                                                handle  => $sth,
@@ -102,3 +100,21 @@ my $dbh = Fey::Test::SQLite->dbh();
         'found expected user via next_as_hash()' );
 }
 
+{
+    my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User WHERE user_id IN (?, ?) ORDER BY user_id' );
+
+    my $iterator = Fey::Object::Iterator->new( classes     => 'User',
+                                               handle      => $sth,
+                                               bind_params => [ 1, 42 ],
+                                             );
+
+    my $user = $iterator->next();
+
+    is( $user->user_id(), 1,
+        'first user_id with bind params' );
+
+    $user = $iterator->next();
+
+    is( $user->user_id(), 42,
+        'second user_id with bind params' );
+}

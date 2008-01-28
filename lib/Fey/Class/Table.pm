@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 our @EXPORT = ## no critic ProhibitAutomaticExportation
-    qw( has_table has_one transform inflate deflate );
+    qw( has_table has_one has_many transform inflate deflate );
 use base 'Exporter';
 
 use Fey::Meta::Class::Table;
@@ -118,6 +118,27 @@ sub deflate (&)
         my $caller = caller();
 
         $caller->meta()->add_has_one_relationship(%p);
+    }
+}
+
+{
+    my $simple_spec = ( TABLE_TYPE );
+
+    sub has_many
+    {
+        my %p;
+        if ( @_ == 1 )
+        {
+            ( $p{table} ) = validate_pos( @_, $simple_spec );
+        }
+        else
+        {
+            %p = @_;
+        }
+
+        my $caller = caller();
+
+        $caller->meta()->add_has_many_relationship(%p);
     }
 }
 
