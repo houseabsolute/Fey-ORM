@@ -112,7 +112,9 @@ sub deflate (&)
         }
         else
         {
-            %p = @_;
+            $p{name} = shift;
+
+            %p = ( %p, @_ );
         }
 
         my $caller = caller();
@@ -133,7 +135,9 @@ sub deflate (&)
         }
         else
         {
-            %p = @_;
+            $p{name} = shift;
+
+            %p = ( %p, @_ );
         }
 
         my $caller = caller();

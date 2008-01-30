@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 27;
+use Test::More tests => 26;
 
 use lib 't/lib';
 
@@ -132,8 +132,6 @@ my $Schema = schema();
 
     has_table $Schema->table('Message');
 
-    has_one $Schema->table('User');
-
     # Testing passing >1 attribute to transform
     transform qw( message quality )
         => inflate { $_[0] }
@@ -159,8 +157,6 @@ my $Schema = schema();
 }
 
 {
-    can_ok( 'Message', 'user' );
-
     ok( Message->HasDeflator('message'), 'Message has a deflator coderef for message' );
     ok( Message->HasDeflator('quality'), 'Message has a deflator coderef for quality' );
 }

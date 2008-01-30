@@ -468,17 +468,55 @@ sub _make_has_one_default_sub
     my $self = shift;
     my %p    = @_;
 
-    my $table = $p{table};
-    my %column_map = map { $_->[0]->name() => $_->[1]->name() } $p{fk}->column_pairs();
+    my $target_table = $p{table};
+
+    # We may need to reverse the meaning of source & target since
+    # source & target for an FK object are sort of arbitrary. The
+    # source should be "our" table, and the target the foreign table.
+    my $reverse;
+
+    my $fk = $p{fk};
+
+    if ( $fk->is_self_referential() )
+    {
+        # A self-referential key is a special case. If the target
+        # columns are _not_ a key, then we need to reverse source &
+        # target so we do our select by a key. This doesn't address a
+        # pathological case where neither source nor target column
+        # sets make up a key. That shouldn't happen, though ;)
+        $reverse = $fk->target_table()->has_candidate_key( $fk->target_columns() ) ? 0 : 1;
+    }
+    else
+    {
+        $reverse = $p{fk}->target_table()->name() eq $target_table->name() ? 1 : 0;
+    }
+
+    my %column_map;
+    for my $pair ( $p{fk}->column_pairs() )
+    {
+        my ( $from, $to ) = $reverse ? @{ $pair }[ 1, 0 ] : @{ $pair };
+
+        $column_map{ $from->name() } = [ $to->name(), $to->is_nullable() ];
+    }
 
     return
         sub { my $self = shift;
 
+              my %new_p;
+
+              for my $from ( keys %column_map )
+              {
+                  my $target_name = $column_map{$from}[0];
+
+                  $new_p{$target_name} = $self->$from();
+
+                  return unless defined $new_p{$target_name} || $column_map{$from}[1];
+              }
+
               return
                   $self->meta()
-                      ->ClassForTable($table)
-                      ->new( map { $column_map{$_} => $self->$_() }
-                             keys %column_map );
+                      ->ClassForTable($target_table)
+                      ->new(%new_p);
             };
 }
 

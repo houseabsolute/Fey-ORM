@@ -12,21 +12,7 @@ use Fey::Test;
 
 sub schema
 {
-    my $schema = Fey::Test->mock_test_schema_with_fks();
-
-    $schema->table('Message')->add_column
-        ( Fey::Column->new( name => 'user_id',
-                            type => 'integer',
-                          ) );
-
-    $schema->add_foreign_key
-        ( Fey::FK->new
-          ( source_columns => [ $schema->table('Message')->column('user_id') ],
-            target_columns => [ $schema->table('User')->column('user_id') ],
-          )
-        );
-
-    return $schema;
+    return Fey::Test->mock_test_schema_with_fks();
 }
 
 sub require_sqlite
@@ -89,7 +75,10 @@ sub define_live_classes
 
     require_sqlite();
 
-    Schema->DBIManager()->add_source( dbh => Fey::Test::SQLite->dbh() );
+    my $dbh = Fey::Test::SQLite->dbh();
+    $dbh->{ShowErrorStatement} = 1;
+
+    Schema->DBIManager()->add_source( dbh => $dbh );
 }
 
 1;
