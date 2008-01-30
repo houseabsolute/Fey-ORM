@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::Class::Test::define_live_classes();
 Fey::Class::Test::insert_user_data();
 
-plan tests => 1;
+plan tests => 6;
 
 
 {
