@@ -420,7 +420,7 @@ sub _find_one_fk
     elsif ( @fk == 2 )
     {
         param_error
-            'There is more than one foreign keys between the table for this class, '
+            'There is more than one foreign key between the table for this class, '
             . $from->name()
             . " and the table you passed to $func(), "
             . $to->name()
@@ -439,7 +439,7 @@ sub _make_has_one_attribute
 
     if ( $p{cache} )
     {
-        my $can_be_undef = grep { $_->is_nullable() } $p{fk}->source_columns();
+        my $can_be_undef = grep { $_->is_nullable() } @{ $p{fk}->source_columns() };
 
         # It'd be nice to set isa to the actual foreign class, but we may
         # not be able to map a table to a class yet, since that depends on
@@ -447,7 +447,7 @@ sub _make_has_one_attribute
         # this accessor is read-only, so there's really no typing issue to
         # deal with.
         my $type = 'Fey::Object';
-        $type .= ' | Undef' if $can_be_undef;
+        $type = "Maybe[$type]" if $can_be_undef;
 
         $self->add_attribute
             ( $name,
@@ -485,7 +485,7 @@ sub _make_has_one_default_sub
         # pathological case where neither source nor target column
         # sets make up a key. That shouldn't happen, though ;)
         $reverse = 1
-            unless $fk->target_table()->has_candidate_key( $fk->target_columns() );
+            unless $fk->target_table()->has_candidate_key( @{ $fk->target_columns() } );
     }
     else
     {
