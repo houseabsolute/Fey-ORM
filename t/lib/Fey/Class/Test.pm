@@ -13,6 +13,7 @@ use Fey::Test;
 sub schema
 {
     my $schema = Fey::Test->mock_test_schema_with_fks();
+
     $schema->table('Message')->add_column
         ( Fey::Column->new( name => 'user_id',
                             type => 'integer',
@@ -30,6 +31,8 @@ sub schema
 
 sub require_sqlite
 {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     unless ( eval "use Fey::Test::SQLite; 1" )
     {
         Test::More::plan skip_all => 'These tests require Fey::Test::SQLite';
@@ -83,6 +86,8 @@ EOF
 sub define_live_classes
 {
     define_basic_classes();
+
+    require_sqlite();
 
     Schema->DBIManager()->add_source( dbh => Fey::Test::SQLite->dbh() );
 }
