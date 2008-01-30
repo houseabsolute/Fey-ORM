@@ -473,7 +473,7 @@ sub _make_has_one_default_sub
     # We may need to reverse the meaning of source & target since
     # source & target for an FK object are sort of arbitrary. The
     # source should be "our" table, and the target the foreign table.
-    my $reverse;
+    my $reverse = 0;
 
     my $fk = $p{fk};
 
@@ -484,11 +484,13 @@ sub _make_has_one_default_sub
         # target so we do our select by a key. This doesn't address a
         # pathological case where neither source nor target column
         # sets make up a key. That shouldn't happen, though ;)
-        $reverse = $fk->target_table()->has_candidate_key( $fk->target_columns() ) ? 0 : 1;
+        $reverse = 1
+            unless $fk->target_table()->has_candidate_key( $fk->target_columns() );
     }
     else
     {
-        $reverse = $p{fk}->target_table()->name() eq $target_table->name() ? 1 : 0;
+        $reverse = 1
+            if $p{fk}->target_table()->name() eq $target_table->name();
     }
 
     my %column_map;
