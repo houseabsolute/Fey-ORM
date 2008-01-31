@@ -365,35 +365,11 @@ sub add_transform
             unless $p{table}->has_schema();
 
         param_error 'You must call has_table() before calling has_one().'
-            unless $self->name()->HasTable();
+            unless $self->name()->can('HasTable') && $self->name()->HasTable();
 
         $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
 
-        $self->_make_has_one_attribute(%p);
-    }
-}
-
-{
-    my $spec = { name  => SCALAR_TYPE( default => undef ),
-                 table => TABLE_TYPE,
-                 cache => BOOLEAN_TYPE( default => 1 ),
-                 fk    => FK_TYPE( default => undef ),
-               };
-
-    sub add_has_many_relationship
-    {
-        my $self = shift;
-        my %p    = validate( @_, $spec );
-
-        param_error 'A table object passed to has_many() must have a schema'
-            unless $p{table}->has_schema();
-
-        param_error 'You must call has_table() before calling has_many().'
-            unless $self->name()->HasTable();
-
-        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_many' );
-
-        $self->_make_has_one_attribute(%p);
+        $self->_make_has_one(%p);
     }
 }
 
@@ -428,7 +404,7 @@ sub _find_one_fk
     }
 }
 
-sub _make_has_one_attribute
+sub _make_has_one
 {
     my $self = shift;
     my %p    = @_;
@@ -522,7 +498,31 @@ sub _make_has_one_default_sub
             };
 }
 
-sub _make_has_many_attribute
+{
+    my $spec = { name  => SCALAR_TYPE( default => undef ),
+                 table => TABLE_TYPE,
+                 cache => BOOLEAN_TYPE( default => 0 ),
+                 fk    => FK_TYPE( default => undef ),
+               };
+
+    sub add_has_many_relationship
+    {
+        my $self = shift;
+        my %p    = validate( @_, $spec );
+
+        param_error 'A table object passed to has_many() must have a schema'
+            unless $p{table}->has_schema();
+
+        param_error 'You must call has_table() before calling has_many().'
+            unless $self->name()->can('HasTable') && $self->name()->HasTable();
+
+        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_many' );
+
+        $self->_make_has_many(%p);
+    }
+}
+
+sub _make_has_many
 {
     my $self = shift;
     my %p    = @_;
