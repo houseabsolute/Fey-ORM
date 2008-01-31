@@ -62,6 +62,10 @@ my $dbh = Fey::Test::SQLite->dbh();
 
     $iterator->reset();
 
+    # This means we can only get results from the cache.
+    no warnings 'redefine';
+    local *Fey::Object::Iterator::_get_next_result = sub {};
+
     $user = $iterator->next();
 
     is( $iterator->index(), 1,
@@ -73,4 +77,23 @@ my $dbh = Fey::Test::SQLite->dbh();
         'username = autarch' );
     is( $user->email(), 'autarch@example.com',
         'email = autarch@example.com' );
+
+    $user = $iterator->next();
+
+    is( $iterator->index(), 2,
+        'index() is 2 after second row has been fetched' );
+
+    is( $user->user_id(), 42,
+        'user_id = 42' );
+    is( $user->username(), 'bubba',
+        'username = bubba' );
+    is( $user->email(), 'bubba@example.com',
+        'email = bubba@example.com' );
+
+    $user = $iterator->next();
+
+    is( $iterator->index(), 2,
+        'index() is 2 after attempt to fetch another row' );
+    is( $user, undef,
+        '$user is undef when there are no more objects to fetch' );
 }
