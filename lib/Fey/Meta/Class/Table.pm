@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
-use Fey::Validate qw( validate SCALAR_TYPE TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
+use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
 
 use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
@@ -446,33 +446,33 @@ sub _make_has_one_default_sub
 
     my $target_table = $p{table};
 
-    # We may need to reverse the meaning of source & target since
+    # We may need to invert the meaning of source & target since
     # source & target for an FK object are sort of arbitrary. The
     # source should be "our" table, and the target the foreign table.
-    my $reverse = 0;
+    my $invert = 0;
 
     my $fk = $p{fk};
 
     if ( $fk->is_self_referential() )
     {
         # A self-referential key is a special case. If the target
-        # columns are _not_ a key, then we need to reverse source &
+        # columns are _not_ a key, then we need to invert source &
         # target so we do our select by a key. This doesn't address a
         # pathological case where neither source nor target column
         # sets make up a key. That shouldn't happen, though ;)
-        $reverse = 1
+        $invert = 1
             unless $fk->target_table()->has_candidate_key( @{ $fk->target_columns() } );
     }
     else
     {
-        $reverse = 1
+        $invert = 1
             if $p{fk}->target_table()->name() eq $target_table->name();
     }
 
     my %column_map;
     for my $pair ( $p{fk}->column_pairs() )
     {
-        my ( $from, $to ) = $reverse ? @{ $pair }[ 1, 0 ] : @{ $pair };
+        my ( $from, $to ) = $invert ? @{ $pair }[ 1, 0 ] : @{ $pair };
 
         $column_map{ $from->name() } = [ $to->name(), $to->is_nullable() ];
     }
@@ -499,10 +499,11 @@ sub _make_has_one_default_sub
 }
 
 {
-    my $spec = { name  => SCALAR_TYPE( default => undef ),
-                 table => TABLE_TYPE,
-                 cache => BOOLEAN_TYPE( default => 0 ),
-                 fk    => FK_TYPE( default => undef ),
+    my $spec = { name     => SCALAR_TYPE( default => undef ),
+                 table    => TABLE_TYPE,
+                 cache    => BOOLEAN_TYPE( default => 0 ),
+                 fk       => FK_TYPE( default => undef ),
+                 order_by => ARRAYREF_TYPE( default => undef ),
                };
 
     sub add_has_many_relationship
@@ -554,30 +555,61 @@ sub _make_has_many_default_sub
     my $self = shift;
     my %p    = @_;
 
-    my $table = $p{table};
+    my $target_table = $p{table};
 
-    my %column_map = map { $_->[0]->name() => $_->[1] } $p{fk}->column_pairs();
+    # This is just like has_one, except the logic is inverted when
+    # determining whether or not to invert the FK.
+    my $invert = 0;
+
+    my $fk = $p{fk};
+
+    if ( $fk->is_self_referential() )
+    {
+        $invert = 1
+            unless $fk->source_table()->has_candidate_key( @{ $fk->source_columns() } );
+    }
+    else
+    {
+        $invert = 1
+            if $p{fk}->source_table()->name() eq $target_table->name();
+    }
+
+    my %column_map;
+    for my $pair ( $p{fk}->column_pairs() )
+    {
+        my ( $from, $to ) = $invert ? @{ $pair }[ 1, 0 ] : @{ $pair };
+
+        $column_map{ $from->name() } = [ $to, $to->is_nullable() ];
+    }
 
     my $iterator = $p{iterator_class};
+    my $order_by = $p{order_by};
 
     return
         sub { my $self = shift;
 
-              my $class = $self->meta()->ClassForTable($table);
+              my $class = $self->meta()->ClassForTable($target_table);
 
               my $select = $self->SchemaClass()->SQLFactoryClass()->new_select();
-              $select->select($table)
-                     ->from($table);
+              $select->select($target_table)
+                     ->from($target_table);
 
               my $ph = Fey::Placeholder->new();
 
               my @bind;
-              for my $k ( keys %column_map )
+              for my $from ( keys %column_map )
               {
-                  $select->where( $column_map{$k}, '=', $ph );
+                  my $bind = $self->$from();
 
-                  push @bind, $self->$k();
+                  return unless defined $bind || $column_map{$from}[1];
+
+                  push @bind, $bind;
+
+                  $select->where( $column_map{$from}[0], '=', $ph );
               }
+
+              $select->order_by( @{ $order_by } )
+                  if $order_by;
 
               my $dbh = $self->_dbh($select);
 
