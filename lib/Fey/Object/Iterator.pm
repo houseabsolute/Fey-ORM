@@ -7,6 +7,7 @@ use Fey::Exceptions qw( param_error );
 use List::MoreUtils qw( pairwise );
 
 use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
+use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
 
@@ -39,11 +40,14 @@ has bind_params =>
     );
 
 has index =>
-    ( is       => 'rw',
+    ( metaclass => 'Counter',
+      is       => 'ro',
       isa      => 'Int',
-      writer   => '_set_index',
       default  => 0,
       init_arg => "\0index",
+      provides => { 'inc'   => '_inc_index',
+                    'reset' => '_reset_index',
+                  },
     );
 
 has _executed =>
@@ -73,26 +77,37 @@ sub next
 {
     my $self = shift;
 
+    my $result = $self->_get_next_result();
+
+    return unless $result;
+
+    $self->_inc_index();
+
+    return wantarray ? @{ $result } : $result->[0];
+}
+
+sub _get_next_result
+{
+    my $self = shift;
+
     my $sth = $self->_executed_handle();
 
     return unless $sth->fetch();
-
-    $self->_set_index( $self->index() + 1 );
 
     my $map = $self->_attribute_map();
 
     my $row = $self->_row();
 
-    my @return;
+    my @result;
     for my $class ( keys %{ $map } )
     {
         my %attr = map { $_ => $row->{$_} } grep { exists $row->{$_ } } @{ $map->{$class} };
         $attr{_from_query} = 1;
 
-        push @return, $class->new( \%attr );
+        push @result, $class->new( \%attr );
     }
 
-    return wantarray ? @return : $return[0];
+    return \@result;
 }
 
 sub _executed_handle
@@ -140,7 +155,7 @@ sub reset
     my $self = shift;
 
     $self->_set_executed(0);
-    $self->_set_index(0);
+    $self->_reset_index();
 
     return;
 }
