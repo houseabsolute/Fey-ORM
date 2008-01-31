@@ -116,7 +116,7 @@ my $Schema = schema();
 {
     package Message;
 
-    __PACKAGE__->meta()->remove_attribute('user');
+    __PACKAGE__->meta()->remove_method('user');
 
     eval { has_one 'editor' => ( table => $Schema->table('User') ) };
 
