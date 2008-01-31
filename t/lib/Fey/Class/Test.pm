@@ -42,6 +42,25 @@ sub insert_user_data
     $sth->finish();
 }
 
+sub insert_message_data
+{
+    require_sqlite();
+
+    my $dbh = Fey::Test::SQLite->dbh();
+
+    $dbh->do( 'DELETE FROM Message' );
+
+    my $insert = 'INSERT INTO Message ( message_id, message, user_id ) VALUES ( ?, ?, ? )';
+    my $sth = $dbh->prepare($insert);
+
+    $sth->execute( 1,  'body 1', 1 );
+    $sth->execute( 2,  'body 2', 1 );
+    $sth->execute( 10, 'body 10', 42 );
+    $sth->execute( 99, 'body 99', 42 );
+
+    $sth->finish();
+}
+
 sub define_basic_classes
 {
     my $schema = schema();

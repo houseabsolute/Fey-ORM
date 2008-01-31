@@ -99,7 +99,7 @@ sub _get_next_result
     my $row = $self->_row();
 
     my @result;
-    for my $class ( keys %{ $map } )
+    for my $class ( @{ $self->classes() } )
     {
         my %attr = map { $_ => $row->{$_} } grep { exists $row->{$_ } } @{ $map->{$class} };
         $attr{_from_query} = 1;
@@ -139,15 +139,43 @@ sub _make_attribute_map
            };
 }
 
+sub all
+{
+    my $self = shift;
+
+    my @result;
+    while ( my @r = $self->next() )
+    {
+        push @result, @r == 1 ? @r : \@r;
+    }
+
+    return @result;
+}
+
 sub next_as_hash
 {
     my $self = shift;
 
-    my @objects = $self->next();
+    my @result = $self->next();
+
+    return unless @result;
 
     return
         pairwise { $a->Table()->name() => $b }
-        @{ $self->classes() }, @objects;
+        @{ $self->classes() }, @result;
+}
+
+sub all_as_hashes
+{
+    my $self = shift;
+
+    my @result;
+    while ( my %r = $self->next_as_hash() )
+    {
+        push @result, \%r;
+    }
+
+    return @result;
 }
 
 sub reset

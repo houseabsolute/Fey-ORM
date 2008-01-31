@@ -7,14 +7,14 @@ use Fey::Object::Iterator::Cached;
 
 use lib 't/lib';
 
-use Fey::Class::Test;
+use Fey::Class::Test::Iterator;
 use Fey::Test;
 
 
-Fey::Class::Test::insert_user_data();
-Fey::Class::Test::define_basic_classes();
+Test::More::plan tests => 41;
 
-Test::More::plan tests => 22;
+
+Fey::Class::Test::Iterator::run_shared_tests('Fey::Object::Iterator::Cached');
 
 my $dbh = Fey::Test::SQLite->dbh();
 
@@ -25,48 +25,16 @@ my $dbh = Fey::Test::SQLite->dbh();
                                                        handle  => $sth,
                                                      );
 
-    is( $iterator->index(), 0,
-        'index() is 0 before any data has been fetched' );
-
-    my $user = $iterator->next();
-    isa_ok( $user, 'User' );
-
-    is( $iterator->index(), 1,
-        'index() is 1 after first row has been fetched' );
-
-    is( $user->user_id(), 1,
-        'user_id = 1' );
-    is( $user->username(), 'autarch',
-        'username = autarch' );
-    is( $user->email(), 'autarch@example.com',
-        'email = autarch@example.com' );
-
-    $user = $iterator->next();
-
-    is( $iterator->index(), 2,
-        'index() is 2 after second row has been fetched' );
-
-    is( $user->user_id(), 42,
-        'user_id = 42' );
-    is( $user->username(), 'bubba',
-        'username = bubba' );
-    is( $user->email(), 'bubba@example.com',
-        'email = bubba@example.com' );
-
-    $user = $iterator->next();
-
-    is( $iterator->index(), 2,
-        'index() is 2 after attempt to fetch another row' );
-    is( $user, undef,
-        '$user is undef when there are no more objects to fetch' );
-
-    $iterator->reset();
+    # Just empty the iterator
+    while ( $iterator->next() ) { }
 
     # This means we can only get results from the cache.
     no warnings 'redefine';
     local *Fey::Object::Iterator::_get_next_result = sub {};
 
-    $user = $iterator->next();
+    $iterator->reset();
+
+    my $user = $iterator->next();
 
     is( $iterator->index(), 1,
         'index() is 1 after reset and first row has been fetched' );
