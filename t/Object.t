@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::Class::Test::insert_user_data();
 Fey::Class::Test::define_live_classes();
 
-plan tests => 60;
+plan tests => 61;
 
 
 basic_tests();
@@ -217,6 +217,14 @@ sub tests_with_transform
         is( $email_in_dbms, $email->as_string(),
             'check email in dbms after insert with deflator' );
     }
+}
+
+{
+    my $user = User->new( user_id => 1 );
+    $user->delete();
+
+    ok( ! User->new( user_id => 1 ),
+        'after delete() user is no longer in dbms' );
 }
 
 sub add_transform

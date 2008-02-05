@@ -97,7 +97,7 @@ sub define_live_classes
     my $dbh = Fey::Test::SQLite->dbh();
     $dbh->{ShowErrorStatement} = 1;
 
-    Schema->DBIManager()->add_source( dbh => $dbh );
+    Schema->DBIManager()->add_source( dbh => $dbh, dsn => Fey::Test::SQLite->dsn() );
 }
 
 1;

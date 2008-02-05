@@ -285,6 +285,39 @@ sub update
     return;
 }
 
+sub delete
+{
+    my $self = shift;
+
+    my $delete = $self->SchemaClass()->SQLFactoryClass()->new_delete();
+
+    my $table = $self->Table();
+
+    $delete->from($table);
+
+    my $ph = Fey::Placeholder->new();
+
+    my @bind;
+    for my $col ( $table->primary_key() )
+    {
+        my $val = $ph;
+
+        my $name = $col->name();
+
+        my $deflator = $self->GetDeflator($name);
+
+        push @bind, $deflator ? $self->$deflator( $self->name() ) : $self->$name();
+
+        $delete->where( $col, '=', $val );
+    }
+
+    my $dbh = $self->_dbh($delete);
+
+    $dbh->do( $delete->sql($dbh), {}, @bind );
+
+    return;
+}
+
 sub _get_column_value
 {
     my $self = shift;
