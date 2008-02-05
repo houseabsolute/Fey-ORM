@@ -5,7 +5,7 @@ use warnings;
 
 use VegGuide::Schema;
 
-use Fey::Class;
+use Fey::ORM;
 
 
 cache_objects;
@@ -49,14 +49,14 @@ has_sql 'weighted_rating' =>
       default => sub { $_[0]->_weighted_rating() },
     );
 
-no Fey::Class;
+no Fey::ORM;
 
 package VegGuide::Location;
 
 
 package VegGuide::Fey::Policy;
 
-use Fey::Class::Policy;
+use Fey::ORM::Policy;
 
 use DateTime::Format::MySQL;
 

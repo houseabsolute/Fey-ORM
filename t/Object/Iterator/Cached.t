@@ -7,14 +7,14 @@ use Fey::Object::Iterator::Cached;
 
 use lib 't/lib';
 
-use Fey::Class::Test::Iterator;
+use Fey::ORM::Test::Iterator;
 use Fey::Test;
 
 
 Test::More::plan tests => 41;
 
 
-Fey::Class::Test::Iterator::run_shared_tests('Fey::Object::Iterator::Cached');
+Fey::ORM::Test::Iterator::run_shared_tests('Fey::Object::Iterator::Cached');
 
 my $dbh = Fey::Test::SQLite->dbh();
 

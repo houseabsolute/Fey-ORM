@@ -1,4 +1,4 @@
-package Fey::Class::Test;
+package Fey::ORM::Test;
 
 use strict;
 use warnings;
@@ -68,19 +68,19 @@ sub define_basic_classes
     eval <<'EOF';
 package Schema;
 
-use Fey::Class::Schema;
+use Fey::ORM::Schema;
 
 has_schema $schema;
 
 package User;
 
-use Fey::Class::Table;
+use Fey::ORM::Table;
 
 has_table $schema->table('User');
 
 package Message;
 
-use Fey::Class::Table;
+use Fey::ORM::Table;
 
 has_table $schema->table('Message');
 EOF

@@ -1,4 +1,4 @@
-package Fey::Class::Table;
+package Fey::ORM::Table;
 
 use strict;
 use warnings;

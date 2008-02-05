@@ -5,13 +5,13 @@ use Test::More;
 
 use lib 't/lib';
 
-use Fey::Class::Test;
+use Fey::ORM::Test;
 use Fey::Literal::String;
 use Fey::Test;
 
 
-Fey::Class::Test::insert_user_data();
-Fey::Class::Test::define_live_classes();
+Fey::ORM::Test::insert_user_data();
+Fey::ORM::Test::define_live_classes();
 
 plan tests => 61;
 
@@ -20,7 +20,7 @@ basic_tests();
 add_transform();
 tests_with_transform();
 
-Fey::Class::Test::insert_user_data();
+Fey::ORM::Test::insert_user_data();
 
 User->meta()->make_immutable();
 basic_tests();
@@ -245,7 +245,7 @@ sub add_transform
 
     use Scalar::Util qw( blessed );
 
-    use Fey::Class::Table;
+    use Fey::ORM::Table;
 
     transform 'email'
         => inflate { return Email->new( $_[1] ) }

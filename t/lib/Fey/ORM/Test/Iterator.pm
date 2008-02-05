@@ -1,12 +1,12 @@
-package Fey::Class::Test::Iterator;
+package Fey::ORM::Test::Iterator;
 
 use strict;
 use warnings;
 
-use Fey::Class::Test;
+use Fey::ORM::Test;
 use Test::More;
 
-Fey::Class::Test::require_sqlite();
+Fey::ORM::Test::require_sqlite();
 
 
 sub run_shared_tests
@@ -15,9 +15,9 @@ sub run_shared_tests
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    Fey::Class::Test::insert_user_data();
-    Fey::Class::Test::insert_message_data();
-    Fey::Class::Test::define_basic_classes();
+    Fey::ORM::Test::insert_user_data();
+    Fey::ORM::Test::insert_message_data();
+    Fey::ORM::Test::define_basic_classes();
 
     my $dbh = Fey::Test::SQLite->dbh();
 

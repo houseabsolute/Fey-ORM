@@ -5,14 +5,14 @@ use Test::More tests => 5;
 
 use lib 't/lib';
 
-use Fey::Class::Test qw( schema );
+use Fey::ORM::Test qw( schema );
 
 my $Schema = schema();
 
 {
     package Schema;
 
-    use Fey::Class::Schema;
+    use Fey::ORM::Schema;
 
     has_schema $Schema;
 }

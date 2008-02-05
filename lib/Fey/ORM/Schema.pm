@@ -1,4 +1,4 @@
-package Fey::Class::Schema;
+package Fey::ORM::Schema;
 
 use strict;
 use warnings;

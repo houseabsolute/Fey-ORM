@@ -5,7 +5,7 @@ use Test::More tests => 26;
 
 use lib 't/lib';
 
-use Fey::Class::Test qw( schema );
+use Fey::ORM::Test qw( schema );
 
 my $Schema = schema();
 
@@ -13,7 +13,7 @@ my $Schema = schema();
 {
     package Group;
 
-    use Fey::Class::Table;
+    use Fey::ORM::Table;
 
     eval { has_table $Schema->table('Group') };
 
@@ -24,7 +24,7 @@ my $Schema = schema();
 {
     package Schema;
 
-    use Fey::Class::Schema;
+    use Fey::ORM::Schema;
 
     has_schema $Schema;
 
@@ -44,7 +44,7 @@ my $Schema = schema();
 
     package User;
 
-    use Fey::Class::Table;
+    use Fey::ORM::Table;
 
     has_table $Schema->table('User');
 
@@ -59,7 +59,7 @@ my $Schema = schema();
 
     package User2;
 
-    use Fey::Class::Table;
+    use Fey::ORM::Table;
 
     eval { has_table $Schema->table('User') };
     ::like( $@, qr/associate the same table with multiple classes/,
@@ -128,7 +128,7 @@ my $Schema = schema();
 {
     package Message;
 
-    use Fey::Class::Table;
+    use Fey::ORM::Table;
 
     has_table $Schema->table('Message');
 

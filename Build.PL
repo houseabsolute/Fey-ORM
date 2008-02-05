@@ -5,7 +5,7 @@ use Module::Build;
 
 my $builder =
     Module::Build->new
-        ( module_name        => 'Fey::Class',
+        ( module_name        => 'Fey::ORM',
           license            => 'perl',
           requires           => { 'Scalar::Util' => 0,
                                 },

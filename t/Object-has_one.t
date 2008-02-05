@@ -5,13 +5,13 @@ use Test::More;
 
 use lib 't/lib';
 
-use Fey::Class::Test;
+use Fey::ORM::Test;
 use Fey::Literal::String;
 use Fey::Test;
 
 
-Fey::Class::Test::define_live_classes();
-Fey::Class::Test::insert_user_data();
+Fey::ORM::Test::define_live_classes();
+Fey::ORM::Test::insert_user_data();
 
 plan tests => 9;
 
@@ -19,7 +19,7 @@ plan tests => 9;
 {
     package Message;
 
-    use Fey::Class::Table;
+    use Fey::ORM::Table;
 
     has_one Schema->Schema()->table('User');
 

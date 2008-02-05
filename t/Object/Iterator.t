@@ -7,7 +7,7 @@ use Fey::Object::Iterator;
 
 use lib 't/lib';
 
-use Fey::Class::Test::Iterator;
+use Fey::ORM::Test::Iterator;
 use Fey::Test;
 
 
@@ -24,4 +24,4 @@ Test::More::plan tests => 33;
 }
 
 
-Fey::Class::Test::Iterator::run_shared_tests('Fey::Object::Iterator');
+Fey::ORM::Test::Iterator::run_shared_tests('Fey::Object::Iterator');
