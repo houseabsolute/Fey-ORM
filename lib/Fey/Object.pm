@@ -173,15 +173,12 @@ sub insert_many
         }
     }
 
-    my $deflators = $class->Deflators();
-
     my $wantarray = wantarray;
 
     my @objects;
     for my $row (@rows)
     {
-        $sth->execute( map { my $meth = $deflators->{$_};
-                             $meth ? $class->$meth( $row->{$_} ) : $row->{$_} }
+        $sth->execute( map { $class->_deflated_value( $_, $row->{$_} ) }
                        @non_literal_row_keys );
 
         next unless defined $wantarray;
@@ -198,6 +195,19 @@ sub insert_many
     }
 
     return $wantarray ? @objects : $objects[0];
+}
+
+sub _deflated_value
+{
+    my $self = shift;
+    my $name = shift;
+    my $val  = @_ ? shift : $self->$name();
+
+    my $deflators = $self->Deflators();
+
+    my $meth = $deflators->{$name};
+
+    return $meth ? $self->$meth($val) : $val;
 }
 
 sub _insert_for_data
@@ -233,40 +243,18 @@ sub update
 
     $update->update($table);
 
-    my $ph = Fey::Placeholder->new();
-
-    my @bind;
-    for my $k ( sort keys %p )
-    {
-        my $val;
-        if ( blessed $p{$k} && $p{$k}->isa('Fey::Literal') )
-        {
-            $val = $p{$k};
-        }
-        else
-        {
-            $val = $ph;
-
-            my $deflator = $self->GetDeflator($k);
-
-            push @bind, $deflator ? $self->$deflator( $p{$k} ) : $p{$k};
-        }
-
-        $update->set( $table->column($k) => $val );
-    }
+    $update->set( map { $table->column($_) => $self->_deflated_value( $_, $p{$_} ) } keys %p );
 
     for my $col ( $table->primary_key() )
     {
         my $name = $col->name();
 
-        $update->where( $col, '=', $ph );
-
-        push @bind, $self->$name();
+        $update->where( $col, '=', $self->_deflated_value($name) );
     }
 
     my $dbh = $self->_dbh($update);
 
-    $dbh->do( $update->sql($dbh), {}, @bind );
+    $dbh->do( $update->sql($dbh), {}, $update->bind_params() );
 
     for my $k ( sort keys %p )
     {
@@ -295,25 +283,16 @@ sub delete
 
     $delete->from($table);
 
-    my $ph = Fey::Placeholder->new();
-
-    my @bind;
     for my $col ( $table->primary_key() )
     {
-        my $val = $ph;
-
         my $name = $col->name();
 
-        my $deflator = $self->GetDeflator($name);
-
-        push @bind, $deflator ? $self->$deflator( $self->name() ) : $self->$name();
-
-        $delete->where( $col, '=', $val );
+        $delete->where( $col, '=', $self->_deflated_value($name) );
     }
 
     my $dbh = $self->_dbh($delete);
 
-    $dbh->do( $delete->sql($dbh), {}, @bind );
+    $dbh->do( $delete->sql($dbh), {}, $delete->bind_params() );
 
     return;
 }
