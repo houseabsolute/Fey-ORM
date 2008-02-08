@@ -56,8 +56,8 @@ my $Schema = schema();
     ok( $attr, 'found attribute for messages' );
     is( ref $attr->default(), 'CODE',
         'messages attribute default is a coderef' );
-    is( $attr->type_constraint()->name(), 'Fey::Object::Iterator::Cached',
-        'messages attribute type constraint is Fey::Object::Iterator::Cached' );
+    is( $attr->type_constraint()->name(), 'Fey::Object::Iterator::Caching',
+        'messages attribute type constraint is Fey::Object::Iterator::Caching' );
 }
 
 {

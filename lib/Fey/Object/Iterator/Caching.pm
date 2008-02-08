@@ -1,4 +1,4 @@
-package Fey::Object::Iterator::Cached;
+package Fey::Object::Iterator::Caching;
 
 use strict;
 use warnings;

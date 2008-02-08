@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
-plan tests => 6;
+plan tests => 7;
 
 
 {
@@ -97,7 +97,7 @@ plan tests => 6;
 {
     my $user = User->new( user_id => 1 );
 
-    isa_ok( $user->messages(), 'Fey::Object::Iterator::Cached' );
+    isa_ok( $user->messages(), 'Fey::Object::Iterator::Caching' );
 }
 
 {
@@ -156,5 +156,20 @@ plan tests => 6;
 
     is_deeply( [ sort map { $_->message_id() } $messages->all() ],
                [ 3, 6, 9 ],
-               'child_messages() method returns iterator with expected message data' );
+               'messages() method returns iterator with expected message data' );
+}
+
+{
+    my $user = User->new( user_id => 1 );
+
+    my $messages = $user->messages();
+
+    $messages->next();
+    $messages->next();
+
+    $messages = $user->messages();
+
+    is_deeply( [ sort map { $_->message_id() } $messages->all() ],
+               [ 1, 3, 6, 9 ],
+               'messages() method resets iterator with each call' );
 }

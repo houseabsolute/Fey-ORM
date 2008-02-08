@@ -3,7 +3,7 @@ use warnings;
 
 use Test::More;
 
-use Fey::Object::Iterator::Cached;
+use Fey::Object::Iterator::Caching;
 
 use lib 't/lib';
 
@@ -14,16 +14,16 @@ use Fey::Test;
 Test::More::plan tests => 41;
 
 
-Fey::ORM::Test::Iterator::run_shared_tests('Fey::Object::Iterator::Cached');
+Fey::ORM::Test::Iterator::run_shared_tests('Fey::Object::Iterator::Caching');
 
 my $dbh = Fey::Test::SQLite->dbh();
 
 {
     my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User ORDER BY user_id' );
 
-    my $iterator = Fey::Object::Iterator::Cached->new( classes => 'User',
-                                                       handle  => $sth,
-                                                     );
+    my $iterator = Fey::Object::Iterator::Caching->new( classes => 'User',
+                                                        handle  => $sth,
+                                                      );
 
     # Just empty the iterator
     while ( $iterator->next() ) { }

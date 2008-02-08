@@ -8,7 +8,7 @@ use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE TABLE_TYPE FK_TYPE BOOL
 
 use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
-use Fey::Object::Iterator::Cached;
+use Fey::Object::Iterator::Caching;
 use Fey::Meta::Class::Schema;
 use List::MoreUtils qw( all );
 
@@ -530,19 +530,28 @@ sub _make_has_many
 
     my $name = $p{name} || lc $p{table}->name();
 
-    my $iterator_class = $p{cache} ? 'Fey::Object::Iterator::Cached' : 'Fey::Object::Iterator';
+    my $iterator_class = $p{cache} ? 'Fey::Object::Iterator::Caching' : 'Fey::Object::Iterator';
 
     my $default_sub = $self->_make_has_many_default_sub( %p, iterator_class => $iterator_class );
 
     if ( $p{cache} )
     {
+        my $attr_name = q{_} . $name;
+
         $self->add_attribute
-            ( $name,
+            ( $attr_name,
               is      => 'ro',
               isa     => $iterator_class,
               lazy    => 1,
               default => $default_sub,
             );
+
+        my $method = sub { my $iterator = $_[0]->$attr_name();
+                           $iterator->reset();
+                           return $iterator; };
+
+        $self->add_method( $name => $method );
+
     }
     else
     {
