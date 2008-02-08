@@ -72,7 +72,7 @@ Of course, you need to create a C<Fey::Schema> object to pass to
 C<has_schema()>. You might as well create a C<Fey::DBIManager::Source>
 object along the way.
 
-  package Forum::Model::Schema;
+  package Forum::Model::User;
 
   use Fey::DBIManager;
   use Fey::DBIManager::Source;
@@ -275,6 +275,46 @@ C<Fey::ORM> can also handle self-referential relationships:
 
   has_many 'child_messages' =>
       ( table => Forum::Model::Schema->Schema()->table('Message') );
+
+=head1 USING Fey
+
+One of the advantages of using C<Fey::ORM> is that you can use the
+power of the core Fey SQL generation tools with your classes:
+
+  package Forum::Model::Message;
+
+  use DateTime;
+  use Fey::Object::Iterator;
+
+  sub RecentMessages
+  {
+      my $class = shift;
+
+      my $schema = $class->SchemaClass()->Schema();
+
+      my $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
+
+      my ( $message_t, $user_t ) = $schema->tables( 'Message', 'User' )
+
+      $select->select( $message_t, $user_t )
+             ->from( $message_t, $user_t )
+             ->where( $message_t->column('message_date'), '>=',
+                      DateTime->today()->subtract( days => 7 )->strftime( '%Y-%m-%d' ) );
+
+      my $dbh = $class->_dbh($select);
+
+      my $sth = $dbh->prepare( $select->sql($dbh) );
+
+      return
+          Fey::Object::Iterator->new
+              ( classes     => [ $class->meta()->ClassForTable( $message_t, $user_t ) ],
+                handle      => $sth,
+                bind_params => [ $select->bind_params() ],
+              );
+  }
+
+This is all a bit verbose for now, but future versions of C<Fey::ORM>
+will probably provide sugar to trim it down.
 
 =head1 AUTHOR
 
