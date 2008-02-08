@@ -1,3 +1,7 @@
+# This isn't really an example, so much as some ideas I had when I
+# started. Some have been done in a different way already, and some
+# still need implementation.
+
 package VegGuide::Vendor;
 
 use strict;
