@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 10;
+use Test::More tests => 11;
 
 use lib 't/lib';
 
@@ -52,12 +52,15 @@ my $Schema = schema();
 {
     can_ok( 'User', 'messages' );
 
-    my $attr = User->meta()->get_attribute('messages');
-    ok( $attr, 'found attribute for messages' );
+    my $attr = User->meta()->get_attribute('_messages');
+    ok( $attr, 'found attribute for _messages' );
     is( ref $attr->default(), 'CODE',
         'messages attribute default is a coderef' );
     is( $attr->type_constraint()->name(), 'Fey::Object::Iterator::Caching',
         'messages attribute type constraint is Fey::Object::Iterator::Caching' );
+
+    ok( User->meta()->get_method('messages'),
+        'found method for messages' );
 }
 
 {
