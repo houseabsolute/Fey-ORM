@@ -1,0 +1,29 @@
+=head1 NAME
+
+Fey::ORM::Manual - Fey::ORM Manual Index
+
+=head1 DESCRIPTION
+
+The index for the C<Fey::ORM> manual.
+
+=head1 INDEX
+
+=head2 L<Fey::ORM::Manual::Intro>
+
+An introduction to using C<Fey::ORM>.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut
+
+

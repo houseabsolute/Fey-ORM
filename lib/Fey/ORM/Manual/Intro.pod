@@ -1,0 +1,291 @@
+=head1 NAME
+
+Fey::ORM::Manual::Intro - Introduction to Fey::ORM
+
+=head1 DESCRIPTION
+
+This documentation will walk you through the steps needed to start
+using C<Fey::ORM>.
+
+You should go ahead and make sure you have C<Fey::Loader> installed if
+you want to follow along with this introduction.
+
+=head1 SAMPLE SCHEMA
+
+In these examples, we will use a very simple schema for a web forum
+type of application. Here is that schema for SQLite:
+
+  CREATE TABLE User (
+      user_id   integer  not null  primary key autoincrement,
+      username  text     not null,
+      email     text     null,
+      group_id  integer  not null,
+      UNIQUE (username)
+  );
+
+  CREATE TABLE "Group" (
+      group_id   integer  not null  primary key autoincrement,
+      name       text     not null,
+      UNIQUE (name)
+  );
+
+  CREATE TABLE Message (
+      message_id    integer     not null  primary key autoincrement,
+      message       text        not null  default 'Some message ''" text',
+      message_date  date        not null  default current_date,
+      parent_message_id  integer  null,
+      user_id       integer     not null
+  );
+
+=head1 LOADING A SCHEMA
+
+To do anything with C<Fey::ORM>, you need to define a schema using
+C<Fey::Schema> and C<Fey::Table>. While you can do this by using the
+C<Fey> API directly, it's much easier to load a schema from a DBMS
+using C<Fey::Loader>:
+
+  my $schema = Fey::Loader->new( dbh => $dbh )->make_schema();
+
+The loader will create tables, columns, views, and foreign keys that
+match the schema found in the DBMS.
+
+=head1 YOUR SCHEMA CLASS
+
+You need to define a schema class which contains the schema you've
+loaded.
+
+Your schema class will also contain your C<Fey::DBIManager> object,
+which manages your database handle(s). C<Fey::ORM> is smart enough to
+connect a table-based class to your schema class automatically, and
+from that find an appropriate database handle when it needs to execute
+queries.
+
+To define your schema class you'll use the C<Fey::Schema::Class>:
+
+  package Forum::Model::Schema;
+
+  use Fey::Class::Schema;
+
+  has_schema $schema;
+
+Of course, you need to create a C<Fey::Schema> object to pass to
+C<has_schema()>. You might as well create a C<Fey::DBIManager::Source>
+object along the way.
+
+  package Forum::Model::Schema;
+
+  use Fey::DBIManager;
+  use Fey::DBIManager::Source;
+  use Fey::Loader;
+  use Fey::Class::Schema;
+
+  my $source = Fey::DBIManager::Source->new( dsn => 'dbi:SQLite:dbname=/tmp/forum.sqlite' );
+
+  my $schema = Fey::Loader->new( dbh => $source->dbh() )->make_schema();
+
+  has_schema $schema;
+
+  __PACKAGE__->DBIManager()->add_source($source);
+
+Now you can use C<Forum::Model::Schema> in other classes to get the
+C<Fey::Table> objects from your schema.
+
+=head1 YOUR TABLE CLASSES
+
+With C<Fey::ORM>, each of your model classes has an associated
+C<Fey::Table> object. For example, the User table would belong to the
+C<Forum::Model::User> class.
+
+  package Forum::Model::User;
+
+  use Forum::Model::Schema;
+
+  use Fey::Class::Table;
+
+  has_table( Forum::Model::Schema->Schema()->table('User') );
+
+When you call C<has_table>, C<Fey::ORM> does a number of things behind
+the scenes. It defines Moose attributes for each column in the
+associated table and makes your class a subclass of C<Fey::Object>.
+
+At this point, we can start using C<Forum::Model::User> for basic CRUD
+operations. For example, to retrieve an existing user, you can simply
+pass any unique key to the constructor:
+
+  my $user = Forum::Model::User->new( user_id => 1 );
+  my $user = Forum::Model::User->new( username => 'faye' );
+
+C<Fey::Object> knows that both of those columns represent unique keys
+for the associated table, and so will be able to load the associated
+user from the DBMS, if it exists.
+
+You can also modify or delete existing users:
+
+  $user->update( username => 'bubba' );
+
+  $user->delete();
+
+Finally, you can create new users:
+
+  my $user = Fey::Model::User->insert( username => 'autarch',
+                                       email    => 'autarch@urth.org',
+                                     );
+
+You'll notice that we didn't provide a C<user_id> value. When a column
+is auto-incremented, as is the case with C<User.user_id>,
+C<Fey::Object> is smart enough to notice and simply retrieve the value
+after the insert.
+
+When your class calls C<has_table()>, it also gets a bunch of
+attributes for free, one for each column in the associated table:
+
+  print $user->username();
+
+These attributes are only loaded from the DBMS once, and then are
+cached. Calling C<< $user->update() >> will clear any attributes being
+updated so they are reloaded from the DBMS when they are next
+accessed.
+
+Of course, C<Fey::ORM> actually loads all of the columns at once,
+rather than once per column, since anytihng else would be grossly
+inefficient.
+
+=head1 INFLATE/DEFLATE
+
+C<Fey::ORM> allows you to define an inflator and/or deflator for each
+column. An inflator is used to convert the value received from the
+database into some other value, usually an object. A deflator does the
+opposite, turning the object into a value suitable for the DBMS when
+doing updates or inserts. The inflator and deflator are both declared
+with C<transform()>:
+
+  package Forum::Model::User;
+
+  use Forum::Model::Schema;
+
+  use Email::Address;
+  use Fey::Class::Table;
+
+  has_table( Forum::Model::Schema->Schema()->table('User') );
+
+  transform 'email' =>
+      inflate { defined $_[1] ? Email::Address->new( $_[1] ) : undef },
+      deflate { defined $_[1] && blessed $_[1] ? $_[1]->address() : $_[1] };
+
+The C<transform()> above inflates the email column's value to an
+C<Email::Address> object, if it defined. Similarly, the deflator takes
+an C<Email::Address> object and converts it back to a string.
+
+The inflator and deflator are both called as methods on the object or
+class, which is why they use C<$_[1]> to get at the email. The
+inflator has to handle the case the email address is undefined, since
+the column is nullable. The deflator handles the case where it is
+passed a plain scalar, which allows you to pass a plain string or
+undef to C<< $user->update() >> or C<< $user->insert() >>.
+
+=head1 HAS-A RELATIONSHIPS
+
+With C<Fey::ORM>, you can also declare has-a relationships with other
+tables as C<has_one()> or C<has_many()>:
+
+  package Forum::Model::Message;
+
+  use Forum::Model::Schema;
+
+  use Fey::Class::Table;
+
+  has_one( Forum::Model::Schema->Schema()->table('User') );
+
+This creates a C<< $message->user() >> attribute which returns the
+associated user object. If the source table's column is nullable, the
+attribute may simply return false. In the case of this particular
+relationship, that should never happen, since C<Message.user_id> is
+not nullable.
+
+By default, the name of the attribute created via C<has_one()> is
+simple C<< lc $table->name() >>. Depending on your table naming
+scheme, this may or may not work. If two tables have more than one
+foreign key between them, you will also need to specify the foreign
+key to use explicitly:
+
+  has_one 'user' =>
+      ( table => Forum::Model::Schema->Schema()->table('User'),
+        fk    => ...,
+      );
+
+Also by default, C<has_one()> attributes cache the result of the
+lookup, so that future calls to the same attribute method return the
+object already created.
+
+The C<has_many()> declaration works more or less exactly like
+C<has_one()>:
+
+  package Forum::Model::User;
+
+  use Forum::Model::Schema;
+
+  use Fey::Class::Table;
+
+  has_many( Forum::Model::Schema->Schema()->table('Message') );
+
+The default name is still C<< lc $table->name() >>. In the case of the
+naming scheme in this example, that doesn't really work, so we should
+provide an explicit name:
+
+  has_many 'messages' =>
+      ( table => Forum::Model::Schema->Schema()->table('Message') );
+
+Now we have a C<< $user->messages() >> method (not an
+attribute!). This method returns a C<Fey::Object::Iterator> which
+iterates over the user's messages.
+
+  my $messages = $user->messages();
+
+  while ( my $message = $messages->next() )
+  {
+      print $message->message_id();
+  }
+
+By default, C<has_many()> creates a I<non-caching> iterator. The
+reason for this is that it cannot know how many foreign objects could
+be created, and in the case where this is a very large number, caching
+could be very problematic. However, you can turn caching on
+explicitly:
+
+  has_many 'messages' =>
+      ( table => Forum::Model::Schema->Schema()->table('Message'),
+        cache => 1,
+      );
+
+In this case, a C<< $user->messages() >> I<attribute> is created which
+returns a C<Fey::Object::Iterator::Caching> object. Subsequent calls
+to this attribute will return the same iterator, and that iterator in
+turn caches any objects it has already created.
+
+C<Fey::ORM> can also handle self-referential relationships:
+
+  package Forum::Model::Message;
+
+  use Forum::Model::Schema;
+
+  use Fey::Class::Table;
+
+  has_one 'parent_message' =>
+      ( table => Forum::Model::Schema->Schema()->table('Message') );
+
+  has_many 'child_messages' =>
+      ( table => Forum::Model::Schema->Schema()->table('Message') );
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut
