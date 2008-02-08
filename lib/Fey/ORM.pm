@@ -79,8 +79,8 @@ releases without notice. You have been warned.>
 
 =head1 GETTING STARTED
 
-You should start by reading L<Fey::ORM::Intro>. This will walk you
-through creating a set of classes based on a schema. Then look at
+You should start by reading L<Fey::ORM::Manual::Intro>. This will walk
+you through creating a set of classes based on a schema. Then look at
 L<Fey::ORM::Manual> for a list of additional documentation.
 
 =head1 AUTHOR
