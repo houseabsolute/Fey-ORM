@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 26;
+use Test::More tests => 28;
 
 use lib 't/lib';
 
@@ -79,6 +79,14 @@ my $Schema = schema();
 }
 
 {
+    package Group;
+
+    use Fey::ORM::Table;
+
+    has_table $Schema->table('Group');
+}
+
+{
     ok( User->isa('Fey::Object'),
         q{User->isa('Fey::Object')} );
     can_ok( 'User', 'Table' );
@@ -87,6 +95,13 @@ my $Schema = schema();
 
     is( Fey::Meta::Class::Table->TableForClass('User')->name(), 'User',
         q{Fey::Meta::Class::Table->TableForClass('User') returns User table} );
+
+    is( Fey::Meta::Class::Table->ClassForTable( $Schema->table('User') ), 'User',
+        q{Fey::Meta::Class::Table->ClassForTable('User') returns User class} );
+
+    is_deeply( [ Fey::Meta::Class::Table->ClassForTable( $Schema->tables( 'User', 'Group' ) ) ],
+               [ 'User', 'Group' ],
+               q{Fey::Meta::Class::Table->ClassForTable( 'User', 'Group' ) returns expected classes} );
 
     for my $column ( $Schema->table('User')->columns() )
     {

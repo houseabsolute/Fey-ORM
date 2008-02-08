@@ -49,6 +49,13 @@ has '_object_cache' =>
 sub ClassForTable
 {
     my $class = shift;
+
+    return @_ == 1 ? $class->_ClassForTable(@_) : map { $class->_ClassForTable($_) } @_;
+}
+
+sub _ClassForTable
+{
+    my $class = shift;
     my $table = shift;
 
     my $map = $class->_TableClassMap();
@@ -56,7 +63,7 @@ sub ClassForTable
     for my $class_name ( keys %{ $map } )
     {
         return $class_name
-            if $map->{$class_name}->name() eq $table->name();
+            if $map->{$class_name} && $map->{$class_name}->name() eq $table->name();
     }
 
     return;
