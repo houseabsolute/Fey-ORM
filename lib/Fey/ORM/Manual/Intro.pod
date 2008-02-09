@@ -319,7 +319,51 @@ will probably provide sugar to trim it down.
 
 =head1 OBJECT CACHING
 
-To be written ...
+L<Fey::ORM> provides a built-in simple in-memory object caching
+system. This system is very handy in a webapp environment where you
+may end up trying to load the same objects more than once in the same
+request.
+
+L<Fey::ORM>'s caching makes no attempt to expire objects, so you need
+to be careful to clear the object cache regularly to avoid stale
+data. In practice, I've found that a good way to do this is to simply
+clear the cache once per "request". In a web app environment, this is
+simple to do. If you are writing a daemon or other long-running
+application, you will need to find a similar place to clear the cache.
+
+You can turn on caching for all of your table-based classes through
+your schema class:
+
+  Forum::Model::Schema->EnableObjectCaches();
+
+Similarly, you can clear the cache for all the table-based classes
+through your schema class:
+
+  Forum::Model::Schema->ClearObjectCaches();
+
+You can also enable or disable caching on a per-class basis, as well
+as clear the cache for just one class at a time.
+
+If you were writing a Catalyst application and wanted to ensure that
+the cache was cleared at the beginning of each request, there are a
+number of places to do this. If you have a base controller class, you
+can do this in its C<begin()> method, as long as all your controllers
+inherit from that class:
+
+  package MyApp::Controller::Base;
+
+  sub begin : Private
+  {
+      my $self = shift;
+      my $c    = shift;
+
+      MyApp::Model::Schema->ClearObjectCaches();
+
+      ...
+  }
+
+You could also provide your own C<Catalyst::Request> subclass and do
+the cache clearing in its constructor, or in a plugin of some sort.
 
 =head1 AUTHOR
 
