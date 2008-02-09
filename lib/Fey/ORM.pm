@@ -77,6 +77,10 @@ course, it uses C<Moose> under the hood for its implementation.
 B<This is still very new software, and APIs may change in future
 releases without notice. You have been warned.>
 
+Moreover, this software is still missing a number of features which
+will be needed to make it more easily usable and competitive with
+other ORM packages.
+
 =head1 GETTING STARTED
 
 You should start by reading L<Fey::ORM::Manual::Intro>. This will walk
