@@ -5,7 +5,7 @@ Fey::ORM::Manual::Intro - Introduction to Fey::ORM
 =head1 DESCRIPTION
 
 This documentation will walk you through the steps needed to start
-using C<Fey::ORM>.
+using L<Fey::ORM>.
 
 You should go ahead and make sure you have C<Fey::Loader> installed if
 you want to follow along with this introduction.
@@ -39,7 +39,7 @@ type of application. Here is that schema for SQLite:
 
 =head1 LOADING A SCHEMA
 
-To do anything with C<Fey::ORM>, you need to define a schema using
+To do anything with L<Fey::ORM>, you need to define a schema using
 C<Fey::Schema> and C<Fey::Table>. While you can do this by using the
 C<Fey> API directly, it's much easier to load a schema from a DBMS
 using C<Fey::Loader>:
@@ -55,7 +55,7 @@ You need to define a schema class which contains the schema you've
 loaded.
 
 Your schema class will also contain your C<Fey::DBIManager> object,
-which manages your database handle(s). C<Fey::ORM> is smart enough to
+which manages your database handle(s). L<Fey::ORM> is smart enough to
 connect a table-based class to your schema class automatically, and
 from that find an appropriate database handle when it needs to execute
 queries.
@@ -92,7 +92,7 @@ C<Fey::Table> objects from your schema.
 
 =head1 YOUR TABLE CLASSES
 
-With C<Fey::ORM>, each of your model classes has an associated
+With L<Fey::ORM>, each of your model classes has an associated
 C<Fey::Table> object. For example, the User table would belong to the
 C<Forum::Model::User> class.
 
@@ -104,9 +104,10 @@ C<Forum::Model::User> class.
 
   has_table( Forum::Model::Schema->Schema()->table('User') );
 
-When you call C<has_table>, C<Fey::ORM> does a number of things behind
+When you call C<has_table>, L<Fey::ORM> does a number of things behind
 the scenes. It defines Moose attributes for each column in the
-associated table and makes your class a subclass of C<Fey::Object>.
+associated table and makes your class a subclass of
+L<Fey::Object::Table>.
 
 At this point, we can start using C<Forum::Model::User> for basic CRUD
 operations. For example, to retrieve an existing user, you can simply
@@ -115,9 +116,9 @@ pass any unique key to the constructor:
   my $user = Forum::Model::User->new( user_id => 1 );
   my $user = Forum::Model::User->new( username => 'faye' );
 
-C<Fey::Object> knows that both of those columns represent unique keys
-for the associated table, and so will be able to load the associated
-user from the DBMS, if it exists.
+L<Fey::Object::Table> knows that both of those columns represent
+unique keys for the associated table, and so will be able to load the
+associated user from the DBMS, if it exists.
 
 You can also modify or delete existing users:
 
@@ -133,8 +134,8 @@ Finally, you can create new users:
 
 You'll notice that we didn't provide a C<user_id> value. When a column
 is auto-incremented, as is the case with C<User.user_id>,
-C<Fey::Object> is smart enough to notice and simply retrieve the value
-after the insert.
+L<Fey::Object::Table> is smart enough to notice and simply retrieve
+the value after the insert.
 
 When your class calls C<has_table()>, it also gets a bunch of
 attributes for free, one for each column in the associated table:
@@ -146,13 +147,13 @@ cached. Calling C<< $user->update() >> will clear any attributes being
 updated so they are reloaded from the DBMS when they are next
 accessed.
 
-Of course, C<Fey::ORM> actually loads all of the columns at once,
+Of course, L<Fey::ORM> actually loads all of the columns at once,
 rather than once per column, since anytihng else would be grossly
 inefficient.
 
 =head1 INFLATE/DEFLATE
 
-C<Fey::ORM> allows you to define an inflator and/or deflator for each
+L<Fey::ORM> allows you to define an inflator and/or deflator for each
 column. An inflator is used to convert the value received from the
 database into some other value, usually an object. A deflator does the
 opposite, turning the object into a value suitable for the DBMS when
@@ -185,7 +186,7 @@ undef to C<< $user->update() >> or C<< $user->insert() >>.
 
 =head1 HAS-A RELATIONSHIPS
 
-With C<Fey::ORM>, you can also declare has-a relationships with other
+With L<Fey::ORM>, you can also declare has-a relationships with other
 tables as C<has_one()> or C<has_many()>:
 
   package Forum::Model::Message;
@@ -262,7 +263,7 @@ returns a C<Fey::Object::Iterator::Caching> object. Subsequent calls
 to this attribute will return the same iterator, and that iterator in
 turn caches any objects it has already created.
 
-C<Fey::ORM> can also handle self-referential relationships:
+L<Fey::ORM> can also handle self-referential relationships:
 
   package Forum::Model::Message;
 
@@ -278,7 +279,7 @@ C<Fey::ORM> can also handle self-referential relationships:
 
 =head1 USING Fey
 
-One of the advantages of using C<Fey::ORM> is that you can use the
+One of the advantages of using L<Fey::ORM> is that you can use the
 power of the core Fey SQL generation tools with your classes:
 
   package Forum::Model::Message;
@@ -313,8 +314,12 @@ power of the core Fey SQL generation tools with your classes:
               );
   }
 
-This is all a bit verbose for now, but future versions of C<Fey::ORM>
+This is all a bit verbose for now, but future versions of L<Fey::ORM>
 will probably provide sugar to trim it down.
+
+=head1 OBJECT CACHING
+
+To be written ...
 
 =head1 AUTHOR
 

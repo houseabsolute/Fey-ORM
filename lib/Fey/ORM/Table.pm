@@ -180,9 +180,9 @@ Given a C<Fey::Table> object, this method associates that table with
 the calling class.
 
 Calling C<has_table()> will make your class a subclass of
-L<Fey::Object>, which provides basic CRUD operations for
+L<Fey::Object::Table>, which provides basic CRUD operations for
 L<Fey::ORM>. You should make sure to review the docs for
-L<Fey::Object>.
+L<Fey::Object::Table>.
 
 Calling this function also generates a number of methods and
 attributes in the calling class.
