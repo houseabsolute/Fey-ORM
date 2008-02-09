@@ -1,4 +1,4 @@
-package Fey::Object;
+package Fey::Object::Table;
 
 use strict;
 use warnings;

@@ -8,6 +8,7 @@ our @EXPORT = ## no critic ProhibitAutomaticExportation
 use base 'Exporter';
 
 use Fey::Meta::Class::Schema;
+use Fey::Object::Schema;
 use Fey::Validate qw( validate_pos SCHEMA_TYPE );
 use Moose ();
 
@@ -19,7 +20,7 @@ sub import
     return if $caller eq 'main';
 
     Moose::init_meta( $caller,
-                      'Moose::Object',
+                      'Fey::Object::Schema',
                       'Fey::Meta::Class::Schema',
                     );
 

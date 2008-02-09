@@ -427,7 +427,7 @@ sub _make_has_one
         # the related class being loaded. It doesn't really matter, since
         # this accessor is read-only, so there's really no typing issue to
         # deal with.
-        my $type = 'Fey::Object';
+        my $type = 'Fey::Object::Table';
         $type = "Maybe[$type]" if $can_be_undef;
 
         $self->add_attribute

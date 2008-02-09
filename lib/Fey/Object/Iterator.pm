@@ -14,7 +14,7 @@ use Moose::Util::TypeConstraints;
 subtype 'ArrayRefOfClasses'
     => as 'ArrayRef',
     => where { return unless @{$_};
-               return if grep { ! $_->isa('Fey::Object') } @{ $_ };
+               return if grep { ! $_->isa('Fey::Object::Table') } @{ $_ };
                return 1;
              };
 

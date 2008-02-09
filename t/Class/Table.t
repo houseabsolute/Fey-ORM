@@ -87,8 +87,8 @@ my $Schema = schema();
 }
 
 {
-    ok( User->isa('Fey::Object'),
-        q{User->isa('Fey::Object')} );
+    ok( User->isa('Fey::Object::Table'),
+        q{User->isa('Fey::Object::Table')} );
     can_ok( 'User', 'Table' );
     is( User->Table()->name(), 'User',
         'User->Table() returns User table' );

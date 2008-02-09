@@ -37,8 +37,8 @@ my $Schema = schema();
     ok( $attr, 'found attribute for user' );
     is( ref $attr->default(), 'CODE',
         'user attribute default is a coderef' );
-    is( $attr->type_constraint()->name(), 'Fey::Object',
-        'user attribute type constraint is Fey::Object' );
+    is( $attr->type_constraint()->name(), 'Fey::Object::Table',
+        'user attribute type constraint is Fey::Object::Table' );
 }
 
 {
@@ -59,8 +59,8 @@ my $Schema = schema();
     ok( $attr, 'found attribute for my_user' );
     is( ref $attr->default(), 'CODE',
         'my_user attribute default is a coderef' );
-    is( $attr->type_constraint()->name(), 'Fey::Object',
-        'my_user attribute type constraint is Fey::Object' );
+    is( $attr->type_constraint()->name(), 'Fey::Object::Table',
+        'my_user attribute type constraint is Fey::Object::Table' );
 }
 
 {
