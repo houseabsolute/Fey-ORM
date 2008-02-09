@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 28;
+use Test::More tests => 30;
 
 use lib 't/lib';
 
@@ -174,4 +174,26 @@ my $Schema = schema();
 {
     ok( Message->HasDeflator('message'), 'Message has a deflator coderef for message' );
     ok( Message->HasDeflator('quality'), 'Message has a deflator coderef for quality' );
+}
+
+my $Schema2 = schema();
+$Schema2->set_name('Schema2');
+
+{
+    package Schema2;
+
+    use Fey::ORM::Schema;
+
+    has_schema $Schema2;
+
+    package User2;
+
+    has_table $Schema2->table('User');
+}
+
+{
+    is( User2->Table()->name(), 'User',
+        'table for User2 class is User' );
+    is( User2->Table()->schema()->name(), 'Schema2',
+        'schema for User2 class table is Schema2' );
 }

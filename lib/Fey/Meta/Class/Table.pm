@@ -18,7 +18,7 @@ use MooseX::ClassAttribute;
 
 extends 'MooseX::StrictConstructor::Meta::Class';
 
-class_has '_TableClassMap' =>
+class_has '_ClassToTableMap' =>
     ( metaclass => 'Collection::Hash',
       is        => 'rw',
       isa       => 'HashRef[Fey::Table]',
@@ -58,12 +58,15 @@ sub _ClassForTable
     my $class = shift;
     my $table = shift;
 
-    my $map = $class->_TableClassMap();
+    my $map = $class->_ClassToTableMap();
 
     for my $class_name ( keys %{ $map } )
     {
+        my $potential_table = $map->{$class_name};
+
         return $class_name
-            if $map->{$class_name} && $map->{$class_name}->name() eq $table->name();
+            if $potential_table->name()           eq $table->name()
+            && $potential_table->schema()->name() eq $table->schema()->name();
     }
 
     return;
@@ -116,7 +119,7 @@ sub _has_table
         if $caller->can('_HasTable') && $caller->_HasTable();
 
     param_error 'Cannot associate the same table with multiple classes'
-        if __PACKAGE__->ClassForTable($table);
+        if $self->ClassForTable($table);
 
     param_error 'A table object passed to has_table() must have a schema'
         unless $table->has_schema();
@@ -132,7 +135,7 @@ sub _has_table
     param_error 'A table object passed to has_table() must have at least one key'
         unless $table->primary_key();
 
-    __PACKAGE__->_SetTableForClass( $self->name() => $table );
+    $self->_SetTableForClass( $self->name() => $table );
 
     $self->_make_class_attributes();
 
