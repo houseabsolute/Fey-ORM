@@ -62,11 +62,84 @@ sub unimport ## no critic RequireFinalReturn
 
         my $caller = caller();
 
-        $caller->meta()->has_schema($schema);
+        $caller->meta()->_has_schema($schema);
     }
 }
-
 
 1;
 
 __END__
+
+=head1 NAME
+
+Fey::ORM::Schema - Provides sugar for schema-based classes
+
+=head1 SYNOPSIS
+
+  package MyApp::Schema;
+
+  use Fey::ORM::Schema;
+
+  has_schema ...;
+
+  no Fey::ORM::Schema;
+
+=head1 DESCRIPTION
+
+Use this class to associate your class with a schema. It exports a
+number of sugar functions to allow you to define things in a
+declarative manner.
+
+=head1 EXPORTED FUNCTIONS
+
+This package exports the following functions:
+
+=head2 has_schema($schema)
+
+Given a C<Fey::Schema> object, this method associates that schema with
+the calling class.
+
+Calling this function generates several methods and attributes in the
+calling class:
+
+=head3 CallingClass->Schema()
+
+Returns the C<Fey::Schema> object associated with the class.
+
+=head3 CallingClass->DBIManager()
+
+Returns the C<Fey::Schema> object associated with the class.
+
+=head3 CallingClass->SetDBIManager($manager)
+
+Set the C<Fey::DBIManager> object associated with the class. If you
+don't set one explicitly, then the first call to C<<
+CallingClass->DBIManager() >> will simply create one by calling C<<
+Fey::DBIManager->new() >>.
+
+=head3 CallingClass->SQLFactoryClass()
+
+Returns the SQL factory class associated with the class. This defaults
+to C<Fey::SQL>.
+
+=head3 CallingClass->SetSQLFactoryClass()
+
+Set the SQL factory class associated with the class.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+See L<Fey::ORM> for details.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut

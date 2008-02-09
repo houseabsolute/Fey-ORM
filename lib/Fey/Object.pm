@@ -28,9 +28,9 @@ sub new
 {
     my $class = shift;
 
-    if ( $class->meta()->object_cache_is_enabled() )
+    if ( $class->meta()->_object_cache_is_enabled() )
     {
-        my $object = $class->meta()->search_cache( ref $_[0] ? $_[0] : { @_ } );
+        my $object = $class->meta()->_search_cache( ref $_[0] ? $_[0] : { @_ } );
 
         return $object if $object;
     }
@@ -44,8 +44,8 @@ sub new
         die $e;
     }
 
-    $class->meta()->write_to_cache($object)
-        if $class->meta()->object_cache_is_enabled();
+    $class->meta()->_write_to_cache($object)
+        if $class->meta()->_object_cache_is_enabled();
 
     return $object;
 }
@@ -66,21 +66,21 @@ sub EnableObjectCache
 {
     my $class = shift;
 
-    $class->meta()->set_object_cache_is_enabled(1);
+    $class->meta()->_set_object_cache_is_enabled(1);
 }
 
 sub DisableObjectCache
 {
     my $class = shift;
 
-    $class->meta()->set_object_cache_is_enabled(0);
+    $class->meta()->_set_object_cache_is_enabled(0);
 }
 
 sub ClearObjectCache
 {
     my $class = shift;
 
-    $class->meta()->clear_object_cache();
+    $class->meta()->_clear_object_cache();
 }
 
 sub _load_from_dbms

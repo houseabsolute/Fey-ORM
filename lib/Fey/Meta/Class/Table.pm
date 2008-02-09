@@ -30,12 +30,12 @@ class_has '_TableClassMap' =>
                    },
     );
 
-has 'object_cache_is_enabled' =>
+has '_object_cache_is_enabled' =>
     ( is      => 'rw',
       isa     => 'Bool',
       lazy    => 1,
       default => 0,
-      writer  => 'set_object_cache_is_enabled',
+      writer  => '_set_object_cache_is_enabled',
     );
 
 has '_object_cache' =>
@@ -43,7 +43,7 @@ has '_object_cache' =>
       isa     => 'HashRef',
       lazy    => 1,
       default => sub { {} },
-      clearer => 'clear_object_cache',
+      clearer => '_clear_object_cache',
     );
 
 sub ClassForTable
@@ -69,7 +69,7 @@ sub _ClassForTable
     return;
 }
 
-sub search_cache
+sub _search_cache
 {
     my $self = shift;
     my $p    = shift;
@@ -88,7 +88,7 @@ sub search_cache
     }
 }
 
-sub write_to_cache
+sub _write_to_cache
 {
     my $self   = shift;
     my $object = shift;
@@ -105,7 +105,7 @@ sub write_to_cache
     }
 }
 
-sub has_table
+sub _has_table
 {
     my $self  = shift;
     my $table = shift;
@@ -113,7 +113,7 @@ sub has_table
     my $caller = $self->name();
 
     param_error 'Cannot call has_table() more than once per class'
-        if $caller->can('HasTable') && $caller->HasTable();
+        if $caller->can('_HasTable') && $caller->_HasTable();
 
     param_error 'Cannot associate the same table with multiple classes'
         if __PACKAGE__->ClassForTable($table);
@@ -179,20 +179,19 @@ sub _make_class_attributes
           ( is        => 'rw',
             isa       => 'Fey::Table',
             writer    => '_SetTable',
-            predicate => 'HasTable',
+            predicate => '_HasTable',
           ),
         );
 
     MooseX::ClassAttribute::process_class_attribute
         ( $caller,
-          'Inflators',
+          '_Inflators',
           ( metaclass => 'Collection::Hash',
             is        => 'rw',
             isa       => 'HashRef[CodeRef]',
             default   => sub { {} },
             lazy      => 1,
-            provides  => { get    => 'GetInflator',
-                           set    => 'SetInflator',
+            provides  => { set    => '_SetInflator',
                            exists => 'HasInflator',
                          },
           ),
@@ -200,14 +199,13 @@ sub _make_class_attributes
 
     MooseX::ClassAttribute::process_class_attribute
         ( $caller,
-          'Deflators',
+          '_Deflators',
           ( metaclass => 'Collection::Hash',
             is        => 'rw',
             isa       => 'HashRef[CodeRef]',
             default   => sub { {} },
             lazy      => 1,
-            provides  => { get    => 'GetDeflator',
-                           set    => 'SetDeflator',
+            provides  => { set    => '_SetDeflator',
                            exists => 'HasDeflator',
                          },
           ),
@@ -282,7 +280,7 @@ sub _make_class_attributes
     }
 }
 
-sub add_transform
+sub _add_transform
 {
     my $self = shift;
     my $name = shift;
@@ -344,7 +342,7 @@ sub add_transform
 
         $self->add_around_method_modifier( $attr->clearer(), $clear_inflator );
 
-        $self->name()->SetInflator( $name => $inflate_sub );
+        $self->name()->_SetInflator( $name => $inflate_sub );
     }
 
     if ( $p{deflate} )
@@ -352,7 +350,7 @@ sub add_transform
         param_error "Cannot provide more than one deflator for a column ($name)"
             if $self->name()->HasDeflator($name);
 
-        $self->name()->SetDeflator( $name => $p{deflate} );
+        $self->name()->_SetDeflator( $name => $p{deflate} );
     }
 }
 
@@ -363,7 +361,7 @@ sub add_transform
                  fk    => FK_TYPE( default => undef ),
                };
 
-    sub add_has_one_relationship
+    sub _add_has_one_relationship
     {
         my $self = shift;
         my %p    = validate( @_, $spec );
@@ -372,7 +370,7 @@ sub add_transform
             unless $p{table}->has_schema();
 
         param_error 'You must call has_table() before calling has_one().'
-            unless $self->name()->can('HasTable') && $self->name()->HasTable();
+            unless $self->name()->can('_HasTable') && $self->name()->_HasTable();
 
         $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
 
@@ -513,7 +511,7 @@ sub _make_has_one_default_sub
                  order_by => ARRAYREF_TYPE( default => undef ),
                };
 
-    sub add_has_many_relationship
+    sub _add_has_many_relationship
     {
         my $self = shift;
         my %p    = validate( @_, $spec );
@@ -522,7 +520,7 @@ sub _make_has_one_default_sub
             unless $p{table}->has_schema();
 
         param_error 'You must call has_table() before calling has_many().'
-            unless $self->name()->can('HasTable') && $self->name()->HasTable();
+            unless $self->name()->can('_HasTable') && $self->name()->_HasTable();
 
         $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_many' );
 
@@ -654,3 +652,60 @@ no Moose;
 __PACKAGE__->meta()->make_immutable();
 
 1;
+
+__END__
+
+=head1 NAME
+
+Fey::Meta::Class::Table - A metaclass for table classes
+
+=head1 SYNOPSIS
+
+  package MyApp::User;
+
+  use Fey::ORM::Table;
+
+  print __PACKAGE__->meta()->ClassForTable($table);
+
+=head1 DESCRIPTION
+
+This is the metaclass for table classes. When you use
+L<Fey::ORM::Table> in your class, it uses this class to do all the
+heavy lifting.
+
+=head1 METHODS
+
+This class provides the following methods:
+
+=head2 Fey::Meta::Class::Table->ClassForTable( $table1, $table2 )
+
+Given one or more C<Fey::Table> objects, this method returns the name
+of the class which "has" that table, if any.
+
+=head2 Fey::Meta::Class::Table->TableForClass($class)
+
+Given a class, this method returns the C<Fey::Table> object associated
+with that class, if any.
+
+=head2 $meta->make_immutable()
+
+This class overrides C<< Moose::Meta::Class->make_immutable() >> in
+order to do its own optimizations for immutability.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+See L<Fey::ORM> for details.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut

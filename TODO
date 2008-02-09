@@ -6,3 +6,7 @@
 * Fey::ORM::Policy - define a set of transforms, naming conventions for has_one/has_many, enable caching
 * Sugar for SQL generation - use example in Fey::ORM::Manual::Intro as guide
 * Objects represent "potential" rows (data not yet in DBMS)
+* TableClass->All()
+** probably needs a default sort order or something as well
+* TableClass->Count()
+* has_many ( ..., via => $linking_table )
