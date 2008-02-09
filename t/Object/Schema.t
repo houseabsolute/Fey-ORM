@@ -17,27 +17,27 @@ Fey::ORM::Test::define_live_classes();
 
 
 {
-    Schema->EnableObjectCache();
+    Schema->EnableObjectCaches();
 
     for my $class ( qw( User Message ) )
     {
         ok( $class->meta()->_object_cache_is_enabled(),
-            "object cache is enabled in $class after Schema->EnableObjectCache()" );
+            "object cache is enabled in $class after Schema->EnableObjectCaches()" );
     }
 }
 
 {
-    Schema->DisableObjectCache();
+    Schema->DisableObjectCaches();
 
     for my $class ( qw( User Message ) )
     {
         ok( ! $class->meta()->_object_cache_is_enabled(),
-            "object cache is disabled in $class after Schema->DisableObjectCache()" );
+            "object cache is disabled in $class after Schema->DisableObjectCaches()" );
     }
 }
 
 {
-    Schema->EnableObjectCache();
+    Schema->EnableObjectCaches();
 
     # seed the cache
     User->new( user_id => 1 );
@@ -53,12 +53,12 @@ Fey::ORM::Test::define_live_classes();
             "$class has two unique objects in its cache" );
     }
 
-    Schema->ClearObjectCache();
+    Schema->ClearObjectCaches();
 
     for my $class ( qw( User Message ) )
     {
         my $count = scalar uniq values %{ $class->meta()->_object_cache() };
         is( $count, 0,
-            "$class has no objects in its cache after Schema->ClearObjectCache()" );
+            "$class has no objects in its cache after Schema->ClearObjectCaches()" );
     }
 }

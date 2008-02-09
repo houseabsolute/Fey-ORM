@@ -8,21 +8,21 @@ use MooseX::StrictConstructor;
 extends 'Moose::Object';
 
 
-sub EnableObjectCache
+sub EnableObjectCaches
 {
     my $class = shift;
 
     $_->EnableObjectCache() for $class->_TableClasses();
 }
 
-sub DisableObjectCache
+sub DisableObjectCaches
 {
     my $class = shift;
 
     $_->DisableObjectCache() for $class->_TableClasses();
 }
 
-sub ClearObjectCache
+sub ClearObjectCaches
 {
     my $class = shift;
 
@@ -62,17 +62,17 @@ This class is a the base class for all schema-based objects.
 
 This class provides the following methods:
 
-=head2 $class->EnableObjectCache()
+=head2 $class->EnableObjectCaches()
 
 Enables the object class for all of the table classes associated with
 this class's schema.
 
-=head2 $class->DisableObjectCache()
+=head2 $class->DisableObjectCaches()
 
 Disables the object class for all of the table classes associated with
 this class's schema.
 
-=head2 $class->ClearObjectCache()
+=head2 $class->ClearObjectCaches()
 
 Clears the object class for all of the table classes associated with
 this class's schema.
