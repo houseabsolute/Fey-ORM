@@ -126,8 +126,8 @@ sub _has_table
     param_error 'You must load your schema class before calling has_table()'
         unless $class
         && $class->can('meta')
-        && $class->can('HasSchema')
-        && $class->HasSchema();
+        && $class->can('_HasSchema')
+        && $class->_HasSchema();
 
     param_error 'A table object passed to has_table() must have at least one key'
         unless $table->primary_key();

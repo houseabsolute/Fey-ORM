@@ -203,7 +203,7 @@ sub _deflated_value
     my $name = shift;
     my $val  = @_ ? shift : $self->$name();
 
-    my $deflators = $self->Deflators();
+    my $deflators = $self->_Deflators();
 
     my $meth = $deflators->{$name};
 
