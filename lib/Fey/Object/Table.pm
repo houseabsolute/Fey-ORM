@@ -452,7 +452,7 @@ __END__
 
 =head1 NAME
 
-Fey::Object - Base class for table-based objects
+Fey::Object::Table - Base class for table-based objects
 
 =head1 SYNOPSIS
 

@@ -10,4 +10,4 @@
 ** probably needs a default sort order or something as well
 * has_many ( ..., via => $linking_table )
 * prefixes for iterator ("User_user_id")
-* Enable/Disable cache for all tables via schema class
+

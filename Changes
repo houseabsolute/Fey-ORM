@@ -1,3 +1,11 @@
+0.02
+
+- Renamed Fey::Object to Fey::Object::Table and added Fey::Object::Schema.
+
+- Fey::Object::Schema lets you control caching for all table classes
+  in a schema at once.
+
+
 0.01    2008-02-09
 
 - First version, released on an unsuspecting world.
