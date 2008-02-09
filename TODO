@@ -8,5 +8,6 @@
 * Objects represent "potential" rows (data not yet in DBMS)
 * TableClass->All()
 ** probably needs a default sort order or something as well
-* TableClass->Count()
 * has_many ( ..., via => $linking_table )
+* prefixes for iterator ("User_user_id")
+* Enable/Disable cache for all tables via schema class

@@ -178,6 +178,23 @@ sub run_shared_tests
                    ],
                    'all_as_hashes() returns expected set of objects' );
     }
+
+    {
+        # Simulates what can happen with an outer join, where one or
+        # more of the tables ends up returning NULL for its pk.
+        my $sth = $dbh->prepare( 'SELECT U.user_id, U.username, NULL AS message_id'
+                                 . ' FROM User AS U'
+                                 . ' LIMIT 1' );
+
+        my $iterator = $class->new( classes => [ 'Message', 'User' ],
+                                    handle  => $sth,
+                                  );
+
+        my ( $message, $user ) = $iterator->next();
+
+        is( $message, undef, 'message object is undefined' );
+        ok( $user, 'user object is defined' );
+    }
 }
 
 1;

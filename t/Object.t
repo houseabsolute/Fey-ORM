@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::define_live_classes();
 
-plan tests => 61;
+plan tests => 65;
 
 
 basic_tests();
@@ -170,6 +170,25 @@ sub basic_tests
             '_load_from_dbms() is not called when _from_query is passed to the constructor' );
         is( $user->username(), 'not in dbms',
             'data passed to constructor is available from object' );
+    }
+
+    {
+        eval
+        {
+            User->new( email       => 'notindbms@example.com',
+                       _from_query => 1,
+                     );
+        };
+
+        like( $@, qr/pass the primary key/,
+              'new() with _from_query requires the primary key' );
+
+        my $user = User->new( user_id     => 99,
+                              _from_query => 1,
+                            );
+
+        is( $user->user_id(), 99,
+            'new() with _from_query works when given a candidate key' );
     }
 }
 

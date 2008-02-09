@@ -10,7 +10,7 @@ use Fey::Table;
 use List::MoreUtils qw( all );
 use Scalar::Util qw( blessed );
 
-use Fey::Exceptions;
+use Fey::Exceptions qw( param_error );
 use Exception::Class
     ( 'Fey::Exception::NoSuchRow' =>
       { description => 'No row was found for a specified key.',
@@ -55,11 +55,27 @@ sub BUILD
     my $self = shift;
     my $p    = shift;
 
-    return if delete $p->{_from_query};
+    if ( delete $p->{_from_query} )
+    {
+        $self->_require_pk($p);
+
+        return;
+    };
 
     $self->_load_from_dbms($p);
 
     return;
+}
+
+sub _require_pk
+{
+    my $self = shift;
+    my $p    = shift;
+
+    return if all { defined $p->{$_} } map { $_->name() } $self->Table()->primary_key();
+
+    my $package = ref $self;
+    param_error "$package->new() requires that you pass the primary key if you set _from_query to true.";
 }
 
 sub EnableObjectCache
@@ -431,3 +447,163 @@ no Moose;
 __PACKAGE__->meta()->make_immutable();
 
 1;
+
+__END__
+
+=head1 NAME
+
+Fey::Object - Base class for table-based objects
+
+=head1 SYNOPSIS
+
+  package MyApp::User;
+
+  use Fey::ORM::Table;
+
+  has_table(...);
+
+=head1 DESCRIPTION
+
+This class is a the base class for all table-based objects. It
+implements a large amount of the core L<Fey::ORM> functionality,
+including CRUD (create, update, delete) and loading of data from the
+DBMS.
+
+=head1 METHODS
+
+This class provides the following methods:
+
+=head2 $class->new(...)
+
+This method overrides the default C<Moose::Object> constructor in
+order to implement cache management.
+
+By default, object caching is disabled. In that case, this method lets
+its parent class do most of the work. However, unlike the standard
+Moose constructor, this method may sometimes not return an object. If
+it attempts to load object data from the DBMS and cannot find anything
+matching the parameters given to the constructor, it will return
+false. When this happens you can check C<$@> for details on the error.
+
+If caching is enabled, then this method will attempt to find a
+matching object in the cache. A match is determined by looking for an
+object which has a candidate key with the same values as are passed to
+the constructor.
+
+If no match is found, it attempts to create a new object. If this
+succeeds, it stores it in the cache before returning it.
+
+=head3 Constructor Parameters
+
+The constructor accepts any attribute of the class as a
+parameter. This includes any column-based attributes, as well as any
+additional attributes defined by C<has_one()> or C<has_many()>. Of
+course, if you disabled caching for C<has_one()> or C<has_many()>
+relationships, then they are implemented as simple methods, not
+attributes.
+
+If you define additional methods via Moose's C<has()> function, and
+these will be accepted by the constructor as well.
+
+Finally, the constructor accepts a parameter C<_from_query>. This
+tells the constructor that the parameters passed to the constructor
+are the result of a C<SELECT>. This stops the C<BUILD()> method from
+attempting to load the object from the DBMS. However, you still must
+pass values for the primary key, so that the object is identifiable in
+the DBMS.
+
+=head2 $class->EnableObjectCache()
+
+=head2 $class->DisableObjectCache()
+
+These methods enable or disable the object cache for the calling
+class.
+
+=head2 $class->Count()
+
+Returns the number of rows in the class's associated table.
+
+=head2 $class->ClearObjectCache()
+
+Clears the object cache for the calling class.
+
+=head2 $class->insert(%values)
+
+Given a hash of column names and values, this method inserts a new row
+for the class's table, and returns a new object for that row.
+
+The values for the columns can be plain scalars or object. Values will
+be passed through the appropriate deflators. You can also pass
+C<Fey::Literal> objects of any type.
+
+As an optimization, no objects will be created in void context.
+
+=head2 $class->insert_many( \%values, \%values, ... )
+
+This method allows you to insert multiple rows efficiently. It expects
+an array of hash references. Each hash reference should contain the
+same set of column names as keys. The advantage of using this method
+is that under the head it uses the same C<DBI> statement handle
+repeatedly.
+
+In scalar context, it returns the first object created. In list
+context, it returns all the objects created.
+
+As an optimization, no objects will be created in void context.
+
+=head2 $object->update(%values)
+
+This method accepts a hash of column keys and values, just like C<<
+$class->insert() >>. However, it instead updates the values for an
+existing object's row. It will also make sure that the object's
+attributes are updated properly. In some cases, it will just clear the
+attribute, forcing it to be reloaded the next time it is
+accessed. This is necesasry when the update value was a
+C<Fey::Literal>, since that could be a function that gets interpreted
+by the DBMS, such as C<NOW()>.
+
+=head2 $object->delete()
+
+This method delete's the object's associated row from the DBMS.
+
+The object is still usable after this method is called, but if you
+attempt to call any method that tries to access the DBMS it will
+probably blow up.
+
+=head1 METHODS FOR SUBCLASSES
+
+Since your table-based class will be a subclass of this object, there
+are several methods you'll want to use that are not intended for use
+outside of your subclasses:
+
+=head2 $class->_dbh($sql)
+
+Given a C<Fey::SQL> object, this method returns an appropriate C<DBI>
+object for that SQL. Internally, it calls C<source_for_sql()> on the
+schema class's C<Fey::DBIManager> object and then calls C<<
+$source->dbh() >> on the source.
+
+If there is no source for the given SQL, it will die.
+
+=head2 $object->_pk_vals()
+
+This method returns an array of primary key values for the object's
+row.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+See L<Fey::ORM> for details.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut

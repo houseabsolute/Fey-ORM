@@ -11,7 +11,7 @@ use Fey::ORM::Test::Iterator;
 use Fey::Test;
 
 
-Test::More::plan tests => 33;
+Test::More::plan tests => 35;
 
 {
     eval { Fey::Object::Iterator->new( classes => [] ) };

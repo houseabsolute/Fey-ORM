@@ -11,7 +11,7 @@ use Fey::ORM::Test::Iterator;
 use Fey::Test;
 
 
-Test::More::plan tests => 41;
+Test::More::plan tests => 43;
 
 
 Fey::ORM::Test::Iterator::run_shared_tests('Fey::Object::Iterator::Caching');
