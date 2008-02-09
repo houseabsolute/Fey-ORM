@@ -66,23 +66,25 @@ sub define_basic_classes
     my $schema = schema();
 
     eval <<'EOF';
-package Schema;
+{
+    package Schema;
 
-use Fey::ORM::Schema;
+    use Fey::ORM::Schema;
 
-has_schema $schema;
+    has_schema $schema;
 
-package User;
+    package User;
 
-use Fey::ORM::Table;
+    use Fey::ORM::Table;
 
-has_table $schema->table('User');
+    has_table $schema->table('User');
 
-package Message;
+    package Message;
 
-use Fey::ORM::Table;
+    use Fey::ORM::Table;
 
-has_table $schema->table('Message');
+    has_table $schema->table('Message');
+}
 EOF
 
     die $@ if $@;
