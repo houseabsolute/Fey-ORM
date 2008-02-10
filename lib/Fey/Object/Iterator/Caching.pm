@@ -35,7 +35,7 @@ sub next
         $self->_cache_result($result);
     }
 
-    $self->_inc_index() if $result;
+    $self->_inc_index();
 
     return wantarray ? @{ $result } : $result->[0];
 }
