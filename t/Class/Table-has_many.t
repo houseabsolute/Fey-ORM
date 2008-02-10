@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11;
+use Test::More tests => 12;
 
 use lib 't/lib';
 
@@ -79,6 +79,12 @@ my $Schema = schema();
 
     ::is( $@, '',
           'no exception declaring a self-referential has_many' );
+
+    my $table = Fey::Table->new( name => 'NewTable' );
+    eval { has_many $table };
+
+    ::like( $@, qr/\QA table object passed to has_many() must have a schema/,
+            'table without a schema passed to has_many()' );
 }
 
 {

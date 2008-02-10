@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 30;
+use Test::More tests => 32;
 
 use lib 't/lib';
 
@@ -145,6 +145,11 @@ my $Schema = schema();
 
     use Fey::ORM::Table;
 
+    sub message_id
+    {
+        return 'foo';
+    }
+
     has_table $Schema->table('Message');
 
     # Testing passing >1 attribute to transform
@@ -169,11 +174,23 @@ my $Schema = schema();
 
     ::like( $@, qr/more than one deflator/,
             'cannot provide more than one deflator for a column' );
+
+    eval
+    {
+        transform 'nosuchcolumn'
+            => deflate { $_[0] }
+    };
+
+    ::like( $@, qr/\QThe column nosuchcolumn does not exist as an attribute/,
+            'cannot transform a nonexistent column' );
 }
 
 {
     ok( Message->HasDeflator('message'), 'Message has a deflator coderef for message' );
     ok( Message->HasDeflator('quality'), 'Message has a deflator coderef for quality' );
+
+    is( Message->message_id(), 'foo',
+        'column attributes do not overwrite existing methods' );
 }
 
 my $Schema2 = schema();

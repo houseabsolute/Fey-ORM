@@ -291,7 +291,7 @@ sub _add_transform
 
     my $attr = $self->get_attribute($name);
 
-    param_error "No such attribute $name"
+    param_error "The column $name does not exist as an attribute"
         unless $attr;
 
     if ( my $inflate_sub = $p{inflate} )
@@ -401,7 +401,7 @@ sub _find_one_fk
             . " and the table you passed to $func(), "
             . $to->name() . '.';
     }
-    elsif ( @fk == 2 )
+    elsif ( @fk > 1 )
     {
         param_error
             'There is more than one foreign key between the table for this class, '
