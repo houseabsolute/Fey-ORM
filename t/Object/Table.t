@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::define_live_classes();
 
-plan tests => 65;
+plan tests => 67;
 
 
 basic_tests();
@@ -60,6 +60,13 @@ sub basic_tests
             'username is fetched as needed' );
         ok( $user2->has_email(),
             'email is set as side effect of calling username()' );
+    }
+
+    {
+        my $user = User->new( user_id => 12458686 );
+
+        is( $user, undef,
+            'nonexistent user_id to new() returns undef' );
     }
 
     {
