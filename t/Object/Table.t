@@ -259,7 +259,9 @@ sub add_transform
 
     sub new
     {
-        return bless \$_[1], $_[0];
+        my $string = $_[1];
+
+        return bless \$string, $_[0];
     }
 
     sub as_string
