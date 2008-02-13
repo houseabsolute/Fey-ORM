@@ -403,10 +403,11 @@ sub _SelectSQLForKey
 
     my %key = map { $_->name() => 1 } @{ $key };
 
-    my @non_key = sort { $a->name() cmp $b->name() } grep { ! $key{$_} } $table->columns();
+    my @non_key =
+        sort { $a cmp $b } grep { ! $key{$_} } map { $_->name() } $table->columns();
 
     $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
-    $select->select( sort { $a->name() cmp $b->name() } @non_key );
+    $select->select(@non_key);
     $select->from($table);
     $select->where( $_, '=', Fey::Placeholder->new() ) for @{ $key };
 
