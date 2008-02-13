@@ -403,7 +403,7 @@ sub _SelectSQLForKey
 
     my %key = map { $_->name() => 1 } @{ $key };
 
-    my @non_key = grep { ! $key{$_} } $table->columns();
+    my @non_key = sort { $a->name() cmp $b->name() } grep { ! $key{$_} } $table->columns();
 
     $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
     $select->select( sort { $a->name() cmp $b->name() } @non_key );
