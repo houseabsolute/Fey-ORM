@@ -313,7 +313,7 @@ sub _add_transform
                               writer    => $cache_set,
                               predicate => $cache_predicate,
                               clearer   => $cache_clear,
-                              init_arg  => "\0$cache_name",
+                              init_arg  => undef,
                             );
 
         my $inflator =

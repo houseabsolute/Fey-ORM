@@ -44,7 +44,7 @@ has index =>
       is       => 'ro',
       isa      => 'Int',
       default  => 0,
-      init_arg => "\0index",
+      init_arg => undef,
       provides => { 'inc'   => '_inc_index',
                     'reset' => '_reset_index',
                   },
