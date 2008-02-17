@@ -38,14 +38,22 @@ sub _TableClasses
     return Fey::Meta::Class::Table->ClassForTable( $schema->tables() );
 }
 
-sub InTransaction
+sub RunInTransaction
 {
     my $class = shift;
     my $sub   = shift;
 
-    my $dbh = $class->DBIManager()->default_source();
+    my $source = $class->DBIManager()->default_source();
 
-    my $in_tran = $dbh->{AutoCommit} ? 0 : 1;
+    my $in_tran;
+
+    my $dbh = $source->dbh();
+
+    unless ( $source->allows_nested_transactions()
+             || $dbh->{AutoCommit} )
+    {
+        $in_tran = 1;
+    }
 
     eval
     {

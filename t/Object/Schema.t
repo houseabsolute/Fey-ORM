@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 12;
 
 use lib 't/lib';
 
@@ -62,3 +62,58 @@ Fey::ORM::Test::define_live_classes();
             "$class has no objects in its cache after Schema->ClearObjectCaches()" );
     }
 }
+
+{
+    my $sub =
+        sub
+        {
+            User->insert( username => 'foo' );
+        };
+
+    Schema->RunInTransaction($sub);
+
+    ok( User->new( username => 'foo' ),
+        'username of foo was inserted via RunInTransaction' );
+}
+
+{
+    my $sub =
+        sub
+        {
+            User->insert( username => 'bar' );
+            die 'should rollback';
+        };
+
+    eval { Schema->RunInTransaction($sub) };
+
+    ok( ! User->new( username => 'bar' ),
+        'username of bar was not inserted via RunInTransaction because of rollback' );
+}
+
+{
+    my $sub =
+        sub
+        {
+            Schema->RunInTransaction( sub { User->insert( username => 'baz' ) } );
+        };
+
+    Schema->RunInTransaction($sub);
+
+    ok( User->new( username => 'baz' ),
+        'username of baz was inserted via nested RunInTransaction' );
+}
+
+{
+    my $sub =
+        sub
+        {
+            Schema->RunInTransaction( sub { User->insert( username => 'quux' ) } );
+            die 'should rollback';
+        };
+
+    eval { Schema->RunInTransaction($sub) };
+
+    ok( ! User->new( username => 'quux' ),
+        'username of quux was not inserted via nested RunInTransaction because of rollback' );
+}
+
