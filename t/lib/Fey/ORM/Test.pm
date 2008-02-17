@@ -63,7 +63,28 @@ sub insert_message_data
 
 sub define_basic_classes
 {
-    my $schema = schema();
+    _eval_classes_with_schema( schema() );
+}
+
+sub define_live_classes
+{
+    require_sqlite();
+
+    my $dbh = Fey::Test::SQLite->dbh();
+    $dbh->{ShowErrorStatement} = 1;
+
+    require Fey::Loader;
+
+    my $schema = Fey::Loader->new( dbh => $dbh )->make_schema();
+
+    _eval_classes_with_schema($schema);
+
+    Schema->DBIManager()->add_source( dbh => $dbh, dsn => Fey::Test::SQLite->dsn() );
+}
+
+sub _eval_classes_with_schema
+{
+    my $schema = shift;
 
     eval <<'EOF';
 {
@@ -88,18 +109,6 @@ sub define_basic_classes
 EOF
 
     die $@ if $@;
-}
-
-sub define_live_classes
-{
-    define_basic_classes();
-
-    require_sqlite();
-
-    my $dbh = Fey::Test::SQLite->dbh();
-    $dbh->{ShowErrorStatement} = 1;
-
-    Schema->DBIManager()->add_source( dbh => $dbh, dsn => Fey::Test::SQLite->dsn() );
 }
 
 1;
