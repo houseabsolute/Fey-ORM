@@ -354,6 +354,7 @@ sub _get_column_values
     {
         my $set = q{_set_} . $col;
         my $has = q{has_} . $col;
+
         $self->$set( $col_values{$col} )
             unless $self->$has();
     }
@@ -404,10 +405,10 @@ sub _SelectSQLForKey
     my %key = map { $_->name() => 1 } @{ $key };
 
     my @non_key =
-        sort { $a cmp $b } grep { ! $key{$_} } map { $_->name() } $table->columns();
+        grep { ! $key{ $_->name() } } $table->columns();
 
     $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
-    $select->select(@non_key);
+    $select->select( sort { $a->name() cmp $b->name() } @non_key );
     $select->from($table);
     $select->where( $_, '=', Fey::Placeholder->new() ) for @{ $key };
 
