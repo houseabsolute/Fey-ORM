@@ -12,7 +12,7 @@ use Fey::Object::Iterator::Caching;
 use Fey::Meta::Class::Schema;
 use List::MoreUtils qw( all );
 
-use Moose;
+use Moose qw( extends has );
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
 
