@@ -38,6 +38,34 @@ sub _TableClasses
     return Fey::Meta::Class::Table->ClassForTable( $schema->tables() );
 }
 
+sub InTransaction
+{
+    my $class = shift;
+    my $sub   = shift;
+
+    my $dbh = $class->DBIManager()->default_source();
+
+    my $in_tran = $dbh->{AutoCommit} ? 0 : 1;
+
+    eval
+    {
+        $dbh->begin_work()
+            unless $in_tran;
+
+        $sub->();
+
+        $dbh->commit()
+            unless $in_tran;
+    };
+
+    if ( my $e = $@ )
+    {
+        $dbh->rollback
+            unless $in_tran;
+        die $e;
+    }
+}
+
 1;
 
 __END__
