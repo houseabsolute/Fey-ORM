@@ -4,7 +4,10 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
-use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
+use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE BOOLEAN_TYPE
+                      TABLE_TYPE FK_TYPE SELECT_TYPE
+                      ARRAYREF_OR_SCALAR_TYPE
+                    );
 
 use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
@@ -358,10 +361,12 @@ sub _add_transform
 }
 
 {
-    my $spec = { name  => SCALAR_TYPE( default => undef ),
-                 table => TABLE_TYPE,
-                 cache => BOOLEAN_TYPE( default => 1 ),
-                 fk    => FK_TYPE( default => undef ),
+    my $spec = { name        => SCALAR_TYPE( default => undef ),
+                 table       => TABLE_TYPE,
+                 cache       => BOOLEAN_TYPE( default => 1 ),
+                 fk          => FK_TYPE( default => undef ),
+                 select      => SELECT_TYPE( default => undef ),
+                 bind_params => ARRAYREF_OR_SCALAR_TYPE( default => [] ),
                };
 
     sub _add_has_one_relationship
@@ -376,6 +381,8 @@ sub _add_transform
             unless $self->name()->can('_HasTable') && $self->name()->_HasTable();
 
         $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
+
+        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table} );
 
         $self->_make_has_one(%p);
     }
@@ -412,6 +419,45 @@ sub _find_one_fk
     }
 }
 
+# We may need to invert the meaning of source & target since source &
+# target for an FK object are sort of arbitrary. The source should be
+# "our" table, and the target the foreign table.
+sub _invert_fk_if_necessary
+{
+    my $self         = shift;
+    my $fk           = shift;
+    my $target_table = shift;
+    my $has_many     = shift;
+
+    if ( $fk->is_self_referential() )
+    {
+        if ($has_many)
+        {
+
+        }
+        else
+        {
+            # A self-referential key is a special case. If the target
+            # columns are _not_ a key, then we need to invert source &
+            # target so we do our select by a key. This doesn't
+            # address a pathological case where neither source nor
+            # target column sets make up a key. That shouldn't happen,
+            # though ;)
+            return $fk
+                if $fk->target_table()->has_candidate_key( @{ $fk->target_columns() } );
+        }
+    }
+    else
+    {
+        return $fk
+            if $fk->target_table()->name() eq $target_table->name();
+    }
+
+    return Fey::FK->new( source_columns => $fk->target_columns(),
+                         target_columns => $fk->source_columns(),
+                       );
+}
+
 sub _make_has_one
 {
     my $self = shift;
@@ -419,7 +465,15 @@ sub _make_has_one
 
     my $name = $p{name} || lc $p{table}->name();
 
-    my $default_sub = $self->_make_has_one_default_sub(%p);
+    my $default_sub;
+    if ( $p{select} )
+    {
+        $default_sub = $self->_make_has_one_default_sub_via_sql(%p);
+    }
+    else
+    {
+        $default_sub = $self->_make_has_one_default_sub_via_fk(%p);
+    }
 
     if ( $p{cache} )
     {
@@ -447,40 +501,55 @@ sub _make_has_one
     }
 }
 
-sub _make_has_one_default_sub
+sub _make_has_one_default_sub_via_sql
 {
     my $self = shift;
     my %p    = @_;
 
     my $target_table = $p{table};
 
-    # We may need to invert the meaning of source & target since
-    # source & target for an FK object are sort of arbitrary. The
-    # source should be "our" table, and the target the foreign table.
-    my $invert = 0;
+    my $select = $p{select};
+    my $bind   = $p{bind_params};
+
+    # XXX - this is really similar to
+    # Fey::Object::Table->_get_column_values() and needs some serious
+    # cleanup.
+    return
+        sub { my $self = shift;
+
+              my $dbh = $self->_dbh($select);
+
+              my $sth = $dbh->prepare( $select->sql($dbh) );
+
+              $sth->execute( @{ $bind } );
+
+              my %col_values;
+              $sth->bind_columns( \( @col_values{ @{ $sth->{NAME} } } ) );
+
+              my $fetched = $sth->fetch();
+
+              $sth->finish();
+
+              return unless $fetched;
+
+              $self->meta()->ClassForTable($target_table)->new
+                  ( %col_values, _from_query => 1 );
+            };
+}
+
+sub _make_has_one_default_sub_via_fk
+{
+    my $self = shift;
+    my %p    = @_;
+
+    my $target_table = $p{table};
 
     my $fk = $p{fk};
-
-    if ( $fk->is_self_referential() )
-    {
-        # A self-referential key is a special case. If the target
-        # columns are _not_ a key, then we need to invert source &
-        # target so we do our select by a key. This doesn't address a
-        # pathological case where neither source nor target column
-        # sets make up a key. That shouldn't happen, though ;)
-        $invert = 1
-            unless $fk->target_table()->has_candidate_key( @{ $fk->target_columns() } );
-    }
-    else
-    {
-        $invert = 1
-            if $p{fk}->target_table()->name() eq $target_table->name();
-    }
 
     my %column_map;
     for my $pair ( $p{fk}->column_pairs() )
     {
-        my ( $from, $to ) = $invert ? @{ $pair }[ 1, 0 ] : @{ $pair };
+        my ( $from, $to ) = @{ $pair };
 
         $column_map{ $from->name() } = [ $to->name(), $to->is_nullable() ];
     }
@@ -501,8 +570,8 @@ sub _make_has_one_default_sub
 
               return
                   $self->meta()
-                      ->ClassForTable($target_table)
-                      ->new(%new_p);
+                       ->ClassForTable($target_table)
+                       ->new(%new_p);
             };
 }
 
