@@ -1,9 +1,18 @@
-0.02
+0.02    2008-02-21
 
 - Renamed Fey::Object to Fey::Object::Table and added Fey::Object::Schema.
 
+- Also created a Fey::Object::Schema->RunInTransaction() 
+
 - Fey::Object::Schema lets you control caching for all table classes
   in a schema at once.
+
+- Added support for arbitrary select statements being used with
+  has_one() and has_many(). See Fey::ORM::Manual::Intro for some
+  examples.
+
+- Fixed various bits of code to work properly when multiple schema
+  classes exist.
 
 
 0.01    2008-02-09
