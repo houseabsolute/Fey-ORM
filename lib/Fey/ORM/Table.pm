@@ -252,6 +252,18 @@ fetched once, and is cached afterwards. This is independent of the
 object caching for a particular class. If you turn off caching, then
 the object is fetched every time the method is called.
 
+=head2 has_one 'name' => ( table => $table, select => $select, bind_params => $sub, cache => $bool )
+
+This is an alternative form of C<has_one()> that lets you declare a
+relationship to another table via an arbitrary SELECT statement.
+
+In this form, you provide a C<Fey::SQL::Select> object to define the
+SQL used to fetch the foreign row. You can provide a C<bind_params>
+parameter as a code reference, which will be called as a method on
+your object. It is expected to return one or more bind parameters. The
+C<cache> parameter works exactly the same as in the first form of
+C<has_one()>.
+
 =head2 has_many($table)
 
 =head2 has_many 'name' => ( table => $table, fk => $fk, cache => $bool, order_by => [ ... ] )
