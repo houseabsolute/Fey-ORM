@@ -40,10 +40,9 @@ sub _TableClasses
 
 sub RunInTransaction
 {
-    my $class = shift;
-    my $sub   = shift;
-
-    my $source = $class->DBIManager()->default_source();
+    my $class  = shift;
+    my $sub    = shift;
+    my $source = shift || $class->DBIManager()->default_source();
 
     my $in_tran;
 
@@ -112,6 +111,19 @@ this class's schema.
 
 Clears the object class for all of the table classes associated with
 this class's schema.
+
+=head2 $class->RunInTransaction( $coderef, $source )
+
+Given a code ref, this method will begin a transaction and execute the
+coderef. If the coderef runs normally (no exceptions), it commits,
+otherwise it rolls back and rethrows the error.
+
+This method will handle nested transactions gracefully if your
+DBMS does not. It doesn't emulate actual partial commits, but it
+does prevent DBI from throwing an error.
+
+The second argument can be a C<Fey::DBIManager::Source> object. If no
+source is specified, then this method will use the default source.
 
 =head1 AUTHOR
 
