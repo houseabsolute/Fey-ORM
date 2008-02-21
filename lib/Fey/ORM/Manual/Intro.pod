@@ -64,7 +64,7 @@ To define your schema class you'll use the C<Fey::Schema::Class>:
 
   package Forum::Model::Schema;
 
-  use Fey::Class::Schema;
+  use Fey::ORM::Schema;
 
   has_schema $schema;
 
@@ -77,7 +77,7 @@ object along the way.
   use Fey::DBIManager;
   use Fey::DBIManager::Source;
   use Fey::Loader;
-  use Fey::Class::Schema;
+  use Fey::ORM::Schema;
 
   my $source = Fey::DBIManager::Source->new( dsn => 'dbi:SQLite:dbname=/tmp/forum.sqlite' );
 
@@ -100,7 +100,7 @@ C<Forum::Model::User> class.
 
   use Forum::Model::Schema;
 
-  use Fey::Class::Table;
+  use Fey::ORM::Table;
 
   has_table( Forum::Model::Schema->Schema()->table('User') );
 
@@ -165,7 +165,7 @@ with C<transform()>:
   use Forum::Model::Schema;
 
   use Email::Address;
-  use Fey::Class::Table;
+  use Fey::ORM::Table;
 
   has_table( Forum::Model::Schema->Schema()->table('User') );
 
@@ -193,7 +193,7 @@ tables as C<has_one()> or C<has_many()>:
 
   use Forum::Model::Schema;
 
-  use Fey::Class::Table;
+  use Fey::ORM::Table;
 
   has_one( Forum::Model::Schema->Schema()->table('User') );
 
@@ -225,7 +225,7 @@ C<has_one()>:
 
   use Forum::Model::Schema;
 
-  use Fey::Class::Table;
+  use Fey::ORM::Table;
 
   has_many( Forum::Model::Schema->Schema()->table('Message') );
 
@@ -269,13 +269,92 @@ L<Fey::ORM> can also handle self-referential relationships:
 
   use Forum::Model::Schema;
 
-  use Fey::Class::Table;
+  use Fey::ORM::Table;
 
   has_one 'parent_message' =>
       ( table => Forum::Model::Schema->Schema()->table('Message') );
 
   has_many 'child_messages' =>
       ( table => Forum::Model::Schema->Schema()->table('Message') );
+
+=head2 Arbitrary Relationships
+
+L<Fey::ORM>, also allows you to declare arbitrary relationships
+between any two tables by providing a SELECT statement to C<has_one()>
+or C<has_many()>, rather than a C<Fey::FK> object. Here is a
+straightforward example:
+
+  package Forum::Model::Message;
+
+  use Fey::Placeholder;
+  use Forum::Model::Schema;
+
+  use Fey::ORM::Table;
+
+  my $schema = Forum::Model::Schema->Schema();
+  my $message_table = $schema->table('Message');
+
+  #   SELECT *
+  #     FROM Message
+  #    WHERE parent_message_id = ?
+  # ORDER BY message_date DESC
+  #    LIMIT 1
+  my $select =
+      $schema->SQLFactoryClass()->new_select()
+             ->select( $message_table )
+             ->from( $message_table )
+             ->where( $message_table->column('user_id'),
+                      '=', Fey::Placeholder->new() )
+             ->order_by( $message_table->column('message_date'), 'DESC' )
+             ->limit(1);
+
+  has_one 'most_recent_child' =>
+      ( table       => $schema->table('Message')
+        select      => $select,
+        bind_params => sub { $_[0]->message_id() },
+      );
+
+With this declaration, the C<Forum::Model::Message> class now has an a
+C<< $message->most_recent_child() >> attribute. This attribute will
+return the most recent child message of the C<$message> object, if
+there is one to return. You can enable or disable caching of this data
+just as with the other form of C<has_one()>.
+
+You can use this arbitrary declaration to traverse your schema in
+arbitrary ways. For example, we might want to find all the messages
+for a group:
+
+  package Forum::Model::Group;
+
+  use Fey::Placeholder;
+  use Forum::Model::Schema;
+
+  use Fey::ORM::Table;
+
+  my $schema = Forum::Model::Schema->Schema();
+  my $message_table = $schema->table('Message');
+
+  #   SELECT Message.*
+  #     FROM Message
+  #          JOIN User USING (user_id)
+  #          JOIN Group USING (group_id)
+  #    WHERE Group.group_id = ?
+  # ORDER BY Message.message_date DESC
+
+  my $select =
+      $schema->SQLFactoryClass()->new_select()
+             ->select( $message_table )
+             ->from( $message_table, $user_table )
+             ->from( $user_table, $group_table )
+             ->where( $group_table->column('group_id'),
+                      '=', Fey::Placeholder->new() )
+             ->order_by( $message_table->column('message_date'), 'DESC' );
+
+  has_many 'messages' =>
+      ( table       => $message_table,
+        select      => $select,
+        bind_params => sub { $_[0]->group_id() },
+      );
 
 =head1 USING Fey
 
