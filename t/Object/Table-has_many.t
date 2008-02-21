@@ -7,13 +7,14 @@ use lib 't/lib';
 
 use Fey::ORM::Test;
 use Fey::Literal::String;
+use Fey::Placeholder;
 use Fey::Test;
 
 
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
-plan tests => 7;
+plan tests => 9;
 
 
 {
@@ -43,7 +44,7 @@ plan tests => 7;
         Message->insert( message_id        => $i * 3,
                          message           => 'child body',
                          parent_message_id => $parent->message_id(),
-                         user_id           => 1,
+                         user_id           => ( $i % 2 ? 1 : 42 ),
                        );
     }
 
@@ -52,7 +53,7 @@ plan tests => 7;
     my $messages = $user->messages();
 
     is_deeply( [ sort map { $_->message_id() } $messages->all() ],
-               [ 1, 3, 6, 9 ],
+               [ 1, 3, 9 ],
                'messages() method returns iterator with expected message data' );
 
     $messages = $parent->child_messages();
@@ -79,7 +80,7 @@ plan tests => 7;
     my $messages = $user->messages();
 
     is_deeply( [ map { $_->message_id() } $messages->all() ],
-               [ 9, 6, 3, 1 ],
+               [ 9, 3, 1 ],
                'messages() method returns iterator with expected message data, respecting order_by' );
 }
 
@@ -147,7 +148,7 @@ plan tests => 7;
     my $messages = $user->messages();
 
     is_deeply( [ sort map { $_->message_id() } $messages->all() ],
-               [ 1, 3, 6, 9 ],
+               [ 1, 3, 9 ],
                'messages() method returns iterator with expected message data' );
 
     my $parent = Message->new( message_id => 1 );
@@ -170,6 +171,39 @@ plan tests => 7;
     $messages = $user->messages();
 
     is_deeply( [ sort map { $_->message_id() } $messages->all() ],
-               [ 1, 3, 6, 9 ],
+               [ 1, 3, 9 ],
                'messages() method resets iterator with each call' );
+}
+
+{
+    package Message;
+
+    my $schema = Schema->Schema();
+
+    my $select =
+        Schema->SQLFactoryClass()->new_select()
+              ->select( $schema->table('User') )
+              ->from( $schema->table('User'), $schema->table('Message') )
+              ->where( $schema->table('Message')->column('parent_message_id'),
+                       '=', Fey::Placeholder->new() )
+              ->order_by( $schema->table('Message')->column('message_id') );
+
+    has_many 'child_message_users' =>
+        ( table       => $schema->table('User'),
+          select      => $select,
+          bind_params => sub { $_[0]->message_id() },
+        );
+}
+
+{
+    my $message = Message->new( message_id => 1 );
+
+    my @users = $message->child_message_users()->all();
+
+    is( scalar @users, 3,
+        'found two users from child_message_user()' );
+
+    is_deeply( [ map { $_->user_id() } @users ],
+               [ 1, 42, 1 ],
+               'users are returned in expected order' );
 }

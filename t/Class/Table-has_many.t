@@ -1,11 +1,12 @@
 use strict;
 use warnings;
 
-use Test::More tests => 12;
+use Test::More tests => 19;
 
 use lib 't/lib';
 
 use Fey::ORM::Test qw( schema );
+use Fey::Placeholder;
 use List::Util qw( first );
 
 
@@ -55,9 +56,9 @@ my $Schema = schema();
     my $attr = User->meta()->get_attribute('_messages');
     ok( $attr, 'found attribute for _messages' );
     is( ref $attr->default(), 'CODE',
-        'messages attribute default is a coderef' );
+        '_messages attribute default is a coderef' );
     is( $attr->type_constraint()->name(), 'Fey::Object::Iterator::Caching',
-        'messages attribute type constraint is Fey::Object::Iterator::Caching' );
+        '_messages attribute type constraint is Fey::Object::Iterator::Caching' );
 
     ok( User->meta()->get_method('messages'),
         'found method for messages' );
@@ -85,6 +86,64 @@ my $Schema = schema();
 
     ::like( $@, qr/\QA table object passed to has_many() must have a schema/,
             'table without a schema passed to has_many()' );
+}
+
+{
+    package Message;
+
+    my $select =
+        Schema->SQLFactoryClass()->new_select()
+              ->select( $Schema->table('User') )
+              ->from( $Schema->table('User'), $Schema->table('Message') )
+              ->where( $Schema->table('Message')->column('parent_message_id'),
+                       '=', Fey::Placeholder->new() );
+
+    has_many 'child_message_users' =>
+        ( table       => $Schema->table('User'),
+          select      => $select,
+          bind_params => sub { $_[0]->message_id() },
+        );
+}
+
+{
+    can_ok( 'Message', 'child_message_users' );
+
+    ok( ! Message->meta()->has_attribute('child_message_users'),
+        'without caching child_message_users is not an attribute of the Message class' );
+}
+
+{
+    package Message;
+
+    __PACKAGE__->meta()->remove_method('child_message_users');
+
+    my $select =
+        Schema->SQLFactoryClass()->new_select()
+              ->select( $Schema->table('User') )
+              ->from( $Schema->table('User'), $Schema->table('Message') )
+              ->where( $Schema->table('Message')->column('parent_message_id'),
+                       '=', Fey::Placeholder->new() );
+
+    has_many 'child_message_users' =>
+        ( table       => $Schema->table('User'),
+          select      => $select,
+          bind_params => sub { $_[0]->message_id() },
+          cache       => 1,
+        );
+}
+
+{
+    can_ok( 'Message', 'child_message_users' );
+
+    my $attr = Message->meta()->get_attribute('_child_message_users');
+    ok( $attr, 'found attribute for _child_message_users' );
+    is( ref $attr->default(), 'CODE',
+        '_child_message_users attribute default is a coderef' );
+    is( $attr->type_constraint()->name(), 'Fey::Object::Iterator::Caching',
+        '_child_message_users attribute type constraint is Fey::Object::Iterator::Caching' );
+
+    ok( Message->meta()->get_method('child_message_users'),
+        'found method for child_message_users' );
 }
 
 {
@@ -128,4 +187,3 @@ my $Schema = schema();
 
     ::is( $@, '', 'no error when specifying passing a disambiguating fk to has_many' );
 }
-

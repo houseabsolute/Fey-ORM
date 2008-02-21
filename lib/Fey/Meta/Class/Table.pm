@@ -384,6 +384,58 @@ sub _add_transform
     }
 }
 
+sub _make_has_one
+{
+    my $self = shift;
+    my %p    = @_;
+
+    my $name = $p{name} || lc $p{table}->name();
+
+    my $default_sub;
+    if ( $p{select} )
+    {
+        $default_sub = $self->_make_has_one_default_sub_via_sql(%p);
+    }
+    else
+    {
+
+        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
+
+        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table} );
+
+        $default_sub = $self->_make_has_one_default_sub_via_fk(%p);
+    }
+
+    if ( $p{cache} )
+    {
+        # If given a select SQL for the has_one relationship we assume
+        # it can always be undef, since we don't know the content of
+        # the SQL.
+        my $can_be_undef =
+            $p{select} || grep { $_->is_nullable() } @{ $p{fk}->source_columns() };
+
+        # It'd be nice to set isa to the actual foreign class, but we may
+        # not be able to map a table to a class yet, since that depends on
+        # the related class being loaded. It doesn't really matter, since
+        # this accessor is read-only, so there's really no typing issue to
+        # deal with.
+        my $type = 'Fey::Object::Table';
+        $type = "Maybe[$type]" if $can_be_undef;
+
+        $self->add_attribute
+            ( $name,
+              is      => 'ro',
+              isa     => $type,
+              lazy    => 1,
+              default => $default_sub,
+            );
+    }
+    else
+    {
+        $self->add_method( $name => $default_sub );
+    }
+}
+
 sub _find_one_fk
 {
     my $self = shift;
@@ -455,58 +507,6 @@ sub _invert_fk_if_necessary
     return Fey::FK->new( source_columns => $fk->target_columns(),
                          target_columns => $fk->source_columns(),
                        );
-}
-
-sub _make_has_one
-{
-    my $self = shift;
-    my %p    = @_;
-
-    my $name = $p{name} || lc $p{table}->name();
-
-    my $default_sub;
-    if ( $p{select} )
-    {
-        $default_sub = $self->_make_has_one_default_sub_via_sql(%p);
-    }
-    else
-    {
-
-        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
-
-        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table} );
-
-        $default_sub = $self->_make_has_one_default_sub_via_fk(%p);
-    }
-
-    if ( $p{cache} )
-    {
-        # If given a select SQL for the has_one relationship we assume
-        # it can always be undef, since we don't know the content of
-        # the SQL.
-        my $can_be_undef =
-            $p{select} || grep { $_->is_nullable() } @{ $p{fk}->source_columns() };
-
-        # It'd be nice to set isa to the actual foreign class, but we may
-        # not be able to map a table to a class yet, since that depends on
-        # the related class being loaded. It doesn't really matter, since
-        # this accessor is read-only, so there's really no typing issue to
-        # deal with.
-        my $type = 'Fey::Object::Table';
-        $type = "Maybe[$type]" if $can_be_undef;
-
-        $self->add_attribute
-            ( $name,
-              is      => 'ro',
-              isa     => $type,
-              lazy    => 1,
-              default => $default_sub,
-            );
-    }
-    else
-    {
-        $self->add_method( $name => $default_sub );
-    }
 }
 
 sub _make_has_one_default_sub_via_sql
@@ -589,6 +589,8 @@ sub _make_has_one_default_sub_via_fk
                  cache    => BOOLEAN_TYPE( default => 0 ),
                  fk       => FK_TYPE( default => undef ),
                  order_by => ARRAYREF_TYPE( default => undef ),
+                 select      => SELECT_TYPE( default => undef ),
+                 bind_params => CODEREF_TYPE( default => sub {} ),
                };
 
     sub _add_has_many_relationship
@@ -601,10 +603,6 @@ sub _make_has_one_default_sub_via_fk
 
         param_error 'You must call has_table() before calling has_many().'
             unless $self->name()->can('_HasTable') && $self->name()->_HasTable();
-
-        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_many' );
-
-        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table}, 'has many' );
 
         $self->_make_has_many(%p);
     }
@@ -619,7 +617,19 @@ sub _make_has_many
 
     my $iterator_class = $p{cache} ? 'Fey::Object::Iterator::Caching' : 'Fey::Object::Iterator';
 
-    my $default_sub = $self->_make_has_many_default_sub( %p, iterator_class => $iterator_class );
+    my $default_sub;
+    if ( $p{select} )
+    {
+        $default_sub = $self->_make_has_many_default_sub_via_sql( %p, iterator_class => $iterator_class );
+    }
+    else
+    {
+        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_many' );
+
+        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table}, 'has many' );
+
+        $default_sub = $self->_make_has_many_default_sub_via_fk( %p, iterator_class => $iterator_class );
+    }
 
     if ( $p{cache} )
     {
@@ -646,59 +656,73 @@ sub _make_has_many
     }
 }
 
-sub _make_has_many_default_sub
+sub _make_has_many_default_sub_via_sql
 {
     my $self = shift;
     my %p    = @_;
 
     my $target_table = $p{table};
 
-    my %column_map;
-    for my $pair ( $p{fk}->column_pairs() )
-    {
-        my ( $from, $to ) = @{ $pair };
+    my $select = $p{select};
+    my $bind   = $p{bind_params};
 
-        $column_map{ $from->name() } = [ $to, $to->is_nullable() ];
-    }
-
-    my $iterator = $p{iterator_class};
-    my $order_by = $p{order_by};
+    my $iterator_class = $p{iterator_class};
 
     return
         sub { my $self = shift;
 
               my $class = $self->meta()->ClassForTable($target_table);
 
-              my $select = $self->SchemaClass()->SQLFactoryClass()->new_select();
-              $select->select($target_table)
-                     ->from($target_table);
-
-              my $ph = Fey::Placeholder->new();
-
-              my @bind;
-              for my $from ( keys %column_map )
-              {
-                  my $bind = $self->$from();
-
-                  return unless defined $bind || $column_map{$from}[1];
-
-                  push @bind, $bind;
-
-                  $select->where( $column_map{$from}[0], '=', $ph );
-              }
-
-              $select->order_by( @{ $order_by } )
-                  if $order_by;
-
               my $dbh = $self->_dbh($select);
 
               my $sth = $dbh->prepare( $select->sql($dbh) );
 
-              return $iterator->new( classes     => $class,
-                                     handle      => $sth,
-                                     bind_params => \@bind,
-                                   );
+              return $iterator_class->new( classes     => $class,
+                                           handle      => $sth,
+                                           bind_params => [ $self->$bind() ],
+                                         );
             };
+
+}
+
+sub _make_has_many_default_sub_via_fk
+{
+    my $self = shift;
+    my %p    = @_;
+
+    my $target_table = $p{table};
+
+    my $select = $self->name()->SchemaClass()->SQLFactoryClass()->new_select();
+    $select->select($target_table)
+           ->from($target_table);
+
+    my @from_list;
+
+    my $ph = Fey::Placeholder->new();
+    for my $pair ( $p{fk}->column_pairs() )
+    {
+        my ( $from, $to ) = @{ $pair };
+
+        $select->where( $to, '=', $ph );
+
+        push @from_list, $from->name();
+    }
+
+    $select->order_by( @{ $p{order_by} } )
+        if $p{order_by};
+
+    my $bind_params_sub =
+        sub { my $self = shift;
+
+              return map { $self->$_() } @from_list;
+            };
+
+    return
+        $self->_make_has_many_default_sub_via_sql
+            ( %p,
+              select      => $select,
+              bind_params => $bind_params_sub,
+            );
 }
 
 use Fey::Meta::Method::Constructor;
