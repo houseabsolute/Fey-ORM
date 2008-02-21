@@ -297,6 +297,10 @@ setting C<cache> to a true value.
 When caching is enabled, the iterator returned is of the
 C<Fey::Object::Iterator::Caching> class.
 
+Note that you will always get an iterator object back from your
+has_many methods and attributes, even if there are no matching rows in
+the foreign table.
+
 You can also specify an C<order_by> parameter as an array
 reference. This should be an array like you would pass to C<<
 Fey::SQL::Select->order_by() >>.
