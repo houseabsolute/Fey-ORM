@@ -7,13 +7,14 @@ use lib 't/lib';
 
 use Fey::ORM::Test;
 use Fey::Literal::String;
+use Fey::Placeholder;
 use Fey::Test;
 
 
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
-plan tests => 9;
+plan tests => 12;
 
 
 {
@@ -139,4 +140,42 @@ plan tests => 9;
 
     is( $parent_from_attr->message_id(), $parent->message_id(),
         'parent_message() attribute created via has_one returns expected message' );
+}
+
+{
+    package User;
+
+    use Fey::ORM::Table;
+
+    my $select =
+        Schema->SQLFactoryClass()->new_select()
+              ->select( Schema->Schema()->table('Message') )
+              ->from( Schema->Schema()->table('Message') )
+              ->where( Schema->Schema()->table('Message')->column('user_id'),
+                       '=', Fey::Placeholder->new() )
+              ->order_by( Schema->Schema()->table('Message')->column('message_id'), 'DESC' )
+              ->limit(1);
+
+    has_one 'most_recent_message' =>
+        ( table       => Schema->Schema()->table('Message'),
+          select      => $select,
+          bind_params => sub { $_[0]->user_id() },
+        );
+}
+
+{
+    my $user = User->new( user_id => 1 );
+    my $message = $user->most_recent_message();
+
+    isa_ok( $message, 'Message',
+            'most_recent_message() returns Message object' );
+
+    my ($most_recent_message_id) =
+        ( Schema->DBIManager()->default_source()->dbh()->selectcol_arrayref
+              ( 'SELECT MAX(message_id) FROM Message' ) )->[0];
+
+    is( $message->message_id(), $most_recent_message_id,
+        'message object is the most recently inserted message' );
+    is( $message->user_id(), $user->user_id(),
+        'message belongs to the user' );
 }

@@ -6,7 +6,7 @@ use warnings;
 use Fey::Exceptions qw( param_error );
 use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE BOOLEAN_TYPE
                       TABLE_TYPE FK_TYPE SELECT_TYPE
-                      ARRAYREF_OR_SCALAR_TYPE
+                      CODEREF_TYPE
                     );
 
 use Fey::Hash::ColumnsKey;
@@ -366,7 +366,7 @@ sub _add_transform
                  cache       => BOOLEAN_TYPE( default => 1 ),
                  fk          => FK_TYPE( default => undef ),
                  select      => SELECT_TYPE( default => undef ),
-                 bind_params => ARRAYREF_OR_SCALAR_TYPE( default => [] ),
+                 bind_params => CODEREF_TYPE( default => sub {} ),
                };
 
     sub _add_has_one_relationship
@@ -379,10 +379,6 @@ sub _add_transform
 
         param_error 'You must call has_table() before calling has_one().'
             unless $self->name()->can('_HasTable') && $self->name()->_HasTable();
-
-        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
-
-        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table} );
 
         $self->_make_has_one(%p);
     }
@@ -429,11 +425,14 @@ sub _invert_fk_if_necessary
     my $target_table = shift;
     my $has_many     = shift;
 
+    # Self-referential keys are a special case, and that case differs
+    # for has_one vs has_many.
     if ( $fk->is_self_referential() )
     {
         if ($has_many)
         {
-
+            return $fk
+                unless $fk->target_table()->has_candidate_key( @{ $fk->target_columns() } );
         }
         else
         {
@@ -472,12 +471,21 @@ sub _make_has_one
     }
     else
     {
+
+        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
+
+        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table} );
+
         $default_sub = $self->_make_has_one_default_sub_via_fk(%p);
     }
 
     if ( $p{cache} )
     {
-        my $can_be_undef = grep { $_->is_nullable() } @{ $p{fk}->source_columns() };
+        # If given a select SQL for the has_one relationship we assume
+        # it can always be undef, since we don't know the content of
+        # the SQL.
+        my $can_be_undef =
+            $p{select} || grep { $_->is_nullable() } @{ $p{fk}->source_columns() };
 
         # It'd be nice to set isa to the actual foreign class, but we may
         # not be able to map a table to a class yet, since that depends on
@@ -521,7 +529,7 @@ sub _make_has_one_default_sub_via_sql
 
               my $sth = $dbh->prepare( $select->sql($dbh) );
 
-              $sth->execute( @{ $bind } );
+              $sth->execute( $self->$bind() );
 
               my %col_values;
               $sth->bind_columns( \( @col_values{ @{ $sth->{NAME} } } ) );
@@ -542,17 +550,17 @@ sub _make_has_one_default_sub_via_fk
     my $self = shift;
     my %p    = @_;
 
-    my $target_table = $p{table};
-
     my $fk = $p{fk};
 
     my %column_map;
-    for my $pair ( $p{fk}->column_pairs() )
+    for my $pair ( $fk->column_pairs() )
     {
         my ( $from, $to ) = @{ $pair };
 
         $column_map{ $from->name() } = [ $to->name(), $to->is_nullable() ];
     }
+
+    my $target_table = $p{table};
 
     return
         sub { my $self = shift;
@@ -595,6 +603,8 @@ sub _make_has_one_default_sub_via_fk
             unless $self->name()->can('_HasTable') && $self->name()->_HasTable();
 
         $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_many' );
+
+        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table}, 'has many' );
 
         $self->_make_has_many(%p);
     }
@@ -643,27 +653,10 @@ sub _make_has_many_default_sub
 
     my $target_table = $p{table};
 
-    # This is just like has_one, except the logic is inverted when
-    # determining whether or not to invert the FK.
-    my $invert = 0;
-
-    my $fk = $p{fk};
-
-    if ( $fk->is_self_referential() )
-    {
-        $invert = 1
-            unless $fk->source_table()->has_candidate_key( @{ $fk->source_columns() } );
-    }
-    else
-    {
-        $invert = 1
-            if $p{fk}->source_table()->name() eq $target_table->name();
-    }
-
     my %column_map;
     for my $pair ( $p{fk}->column_pairs() )
     {
-        my ( $from, $to ) = $invert ? @{ $pair }[ 1, 0 ] : @{ $pair };
+        my ( $from, $to ) = @{ $pair };
 
         $column_map{ $from->name() } = [ $to, $to->is_nullable() ];
     }
