@@ -264,6 +264,9 @@ your object. It is expected to return one or more bind parameters. The
 C<cache> parameter works exactly the same as in the first form of
 C<has_one()>.
 
+Note that if you want to provide bind_params for the SQL you provide,
+you need to make sure it has placeholders.
+
 =head2 has_many($table)
 
 =head2 has_many 'name' => ( table => $table, fk => $fk, cache => $bool, order_by => [ ... ] )
