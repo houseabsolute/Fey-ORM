@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 12;
+use Test::More;
 
 use lib 't/lib';
 
@@ -14,6 +14,8 @@ use List::MoreUtils qw( uniq );
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::insert_message_data();
 Fey::ORM::Test::define_live_classes();
+
+plan tests => 12;
 
 
 {
