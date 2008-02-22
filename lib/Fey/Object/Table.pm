@@ -207,7 +207,7 @@ sub insert_many
         delete @{ $row }{ @ref_row_keys }
             if @ref_row_keys;
 
-        push @objects, $class->new($row);
+        push @objects, $class->new( %{ $row }, _from_query => 1 );
     }
 
     return $wantarray ? @objects : $objects[0];

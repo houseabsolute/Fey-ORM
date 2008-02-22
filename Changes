@@ -1,3 +1,13 @@
+0.03
+
+- Fix tests so that they skip without blowing up when DBD::SQLite is
+  not installed.
+
+- Fey::Object::Table would always issue a SELECT immediately after an
+  INSERT. Now this will be delayed until it is needed. In some cases
+  it will never be needed.
+
+
 0.02    2008-02-21
 
 - Renamed Fey::Object to Fey::Object::Table and added Fey::Object::Schema.
