@@ -424,10 +424,11 @@ sub _make_has_one
 
         $self->add_attribute
             ( $name,
-              is      => 'ro',
+              is      => 'rw',
               isa     => $type,
               lazy    => 1,
               default => $default_sub,
+              writer  => q{_set_} . $name,
             );
     }
     else
@@ -637,10 +638,11 @@ sub _make_has_many
 
         $self->add_attribute
             ( $attr_name,
-              is      => 'ro',
+              is      => 'rw',
               isa     => $iterator_class,
               lazy    => 1,
               default => $default_sub,
+              writer  => q{_set_} . $name,
             );
 
         my $method = sub { my $iterator = $_[0]->$attr_name();
