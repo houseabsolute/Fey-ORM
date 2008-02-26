@@ -1,3 +1,12 @@
+0.04
+
+- Add a private writers for accessors created via has_one() and
+  has_many() - this still needs docs.
+
+- Make sure that the schema class's RunInTransaction() method returns
+  values of the sub it runs, respecting the caller's context.
+
+
 0.03    2008-02-24
 
 - Fix tests so that they skip without blowing up when DBD::SQLite is
