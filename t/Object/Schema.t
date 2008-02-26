@@ -15,7 +15,7 @@ Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::insert_message_data();
 Fey::ORM::Test::define_live_classes();
 
-plan tests => 12;
+plan tests => 16;
 
 
 {
@@ -119,3 +119,42 @@ plan tests => 12;
         'username of quux was not inserted via nested RunInTransaction because of rollback' );
 }
 
+{
+    my $sub = sub { return User->insert( username => 'baz2' ) };
+
+    my $user = Schema->RunInTransaction($sub);
+
+    ok( $user,
+        'RunInTransaction returns value' );
+}
+
+{
+    my $sub =
+        sub
+        {
+            Schema->RunInTransaction( sub { return User->insert( username => 'baz3' ) } );
+        };
+
+    my $user = Schema->RunInTransaction($sub);
+
+    ok( $user,
+        'nested RunInTransaction returns value' );
+}
+
+{
+    my $sub = sub { my @a = ( 1, 2, 3 ); return @a; };
+
+    my @a = Schema->RunInTransaction($sub);
+
+    is_deeply( \@a, [ 1, 2, 3 ],
+               'RunInTransaction respects calling context' );
+}
+
+{
+    my $sub = sub { Schema->RunInTransaction( sub { my @a = ( 1, 2, 3 ); return @a; } ) };
+
+    my @a = Schema->RunInTransaction($sub);
+
+    is_deeply( \@a, [ 1, 2, 3 ],
+               'nested RunInTransaction respects calling context' );
+}

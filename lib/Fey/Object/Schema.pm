@@ -54,12 +54,27 @@ sub RunInTransaction
         $in_tran = 1;
     }
 
+    my $wantarray = wantarray;
+
+    my @r;
+
     eval
     {
         $dbh->begin_work()
             unless $in_tran;
 
-        $sub->();
+        if ( $wantarray )
+        {
+            @r = $sub->();
+        }
+        elsif ( defined $wantarray )
+        {
+            $r[0] = $sub->();
+        }
+        else
+        {
+            $sub->();
+        }
 
         $dbh->commit()
             unless $in_tran;
@@ -71,6 +86,10 @@ sub RunInTransaction
             unless $in_tran;
         die $e;
     }
+
+    return unless defined $wantarray;
+
+    return $wantarray ? @r : $r[0];
 }
 
 1;
