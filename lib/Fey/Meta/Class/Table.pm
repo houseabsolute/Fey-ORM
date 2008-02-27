@@ -367,6 +367,7 @@ sub _add_transform
                  fk          => FK_TYPE( default => undef ),
                  select      => SELECT_TYPE( default => undef ),
                  bind_params => CODEREF_TYPE( default => sub {} ),
+                 handles     => { default => undef },
                };
 
     sub _add_has_one_relationship
@@ -422,14 +423,17 @@ sub _make_has_one
         my $type = 'Fey::Object::Table';
         $type = "Maybe[$type]" if $can_be_undef;
 
-        $self->add_attribute
-            ( $name,
-              is      => 'rw',
-              isa     => $type,
-              lazy    => 1,
-              default => $default_sub,
-              writer  => q{_set_} . $name,
-            );
+        my %attr_p = ( is      => 'rw',
+                       isa     => $type,
+                       lazy    => 1,
+                       default => $default_sub,
+                       writer  => q{_set_} . $name,
+                     );
+
+        $attr_p{handles} = $p{handles}
+            if $p{handles};
+
+        $self->add_attribute( $name, %attr_p );
     }
     else
     {

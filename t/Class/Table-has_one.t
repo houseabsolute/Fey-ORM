@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More tests => 23;
 
 use lib 't/lib';
 
@@ -82,6 +82,23 @@ my $Schema = schema();
         'Message does not have an attribute for user (but does have a user() method)' );
 }
 
+{
+    package Message;
+
+    use Fey::ORM::Table;
+
+    __PACKAGE__->meta()->remove_attribute('user');
+
+    has_one 'user' =>
+        ( table   => $Schema->table('User'),
+          handles => [ qw( username email ) ],
+        );
+}
+
+{
+    can_ok( 'Message', 'username' );
+    can_ok( 'Message', 'email' );
+}
 
 {
     package Message;
@@ -172,7 +189,6 @@ my $Schema = schema();
     is( $attr->type_constraint()->name(), 'Maybe[Fey::Object::Table]',
         'most_recent_child attribute type constraint is Maybe[Fey::Object::Table]' );
 }
-
 
 {
     package Message;

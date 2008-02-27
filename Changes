@@ -6,6 +6,9 @@
 - Make sure that the schema class's RunInTransaction() method returns
   values of the sub it runs, respecting the caller's context.
 
+- has_one() can now accept a "handles" parameter which works just as
+  it does for any Moose attribute.
+
 
 0.03    2008-02-24
 

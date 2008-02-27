@@ -224,7 +224,7 @@ schema.
 
 =head2 has_one($table)
 
-=head2 has_one 'name' => ( table => $table, fk => $fk, cache => $bool )
+=head2 has_one 'name' => ( table => $table, fk => $fk, cache => $bool, handles => ... )
 
 The C<has_one()> function declares a relationship between the calling
 class's table and another table. The method it creates returns an
@@ -252,7 +252,12 @@ fetched once, and is cached afterwards. This is independent of the
 object caching for a particular class. If you turn off caching, then
 the object is fetched every time the method is called.
 
-=head2 has_one 'name' => ( table => $table, select => $select, bind_params => $sub, cache => $bool )
+The C<handles> parameter works exactly like it does for any Moose
+attribute, but it only works if C<cache> is true, since otherwise the
+relationship is implemented via a simple method, not a Moose
+attribute.
+
+=head2 has_one 'name' => ( table => $table, select => $select, bind_params => $sub, cache => $bool, handles => ... )
 
 This is an alternative form of C<has_one()> that lets you declare a
 relationship to another table via an arbitrary SELECT statement.
