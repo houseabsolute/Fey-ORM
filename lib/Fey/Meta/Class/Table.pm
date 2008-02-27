@@ -368,6 +368,7 @@ sub _add_transform
                  select      => SELECT_TYPE( default => undef ),
                  bind_params => CODEREF_TYPE( default => sub {} ),
                  handles     => { default => undef },
+                 undef       => BOOLEAN_TYPE( default => undef ),
                };
 
     sub _add_has_one_relationship
@@ -412,8 +413,12 @@ sub _make_has_one
         # If given a select SQL for the has_one relationship we assume
         # it can always be undef, since we don't know the content of
         # the SQL.
-        my $can_be_undef =
-            $p{select} || grep { $_->is_nullable() } @{ $p{fk}->source_columns() };
+        my $can_be_undef = $p{undef};
+
+        unless ( defined $can_be_undef )
+        {
+            $can_be_undef = $p{select} || grep { $_->is_nullable() } @{ $p{fk}->source_columns() };
+        }
 
         # It'd be nice to set isa to the actual foreign class, but we may
         # not be able to map a table to a class yet, since that depends on

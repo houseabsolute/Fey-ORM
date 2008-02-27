@@ -6,8 +6,11 @@
 - Make sure that the schema class's RunInTransaction() method returns
   values of the sub it runs, respecting the caller's context.
 
-- has_one() can now accept a "handles" parameter which works just as
+- has_one() can now accept a "handles" parameter which work just as
   it does for any Moose attribute.
+
+- has_one() also accepts a new "undef" parameter to allow you to
+  explicitly say that the attribute can have an undef as its value.
 
 
 0.03    2008-02-24

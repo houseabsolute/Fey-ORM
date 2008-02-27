@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 24;
 
 use lib 't/lib';
 
@@ -40,6 +40,25 @@ my $Schema = schema();
         'user attribute default is a coderef' );
     is( $attr->type_constraint()->name(), 'Fey::Object::Table',
         'user attribute type constraint is Fey::Object::Table' );
+}
+
+{
+    package Message;
+
+    use Fey::ORM::Table;
+
+    __PACKAGE__->meta()->remove_attribute('user');
+
+    has_one 'user' =>
+        ( table => $Schema->table('User'),
+          undef => 1,
+        );
+}
+
+{
+    my $attr = Message->meta()->get_attribute('user');
+    is( $attr->type_constraint()->name(), 'Maybe[Fey::Object::Table]',
+        'user attribute type constraint is Maybe[Fey::Object::Table]' );
 }
 
 {
