@@ -317,7 +317,7 @@ You can also specify an C<order_by> parameter as an array
 reference. This should be an array like you would pass to C<<
 Fey::SQL::Select->order_by() >>.
 
-=head2 transform $column1, $column2 => inflate { ... } deflate { ... }
+=head2 transform $column1, $column2 => inflate { ... } => deflate { ... }
 
 The C<transform()> function declares an inflator, deflator, or both
 for the specified column. The inflator will be used to wrap the normal
@@ -355,9 +355,9 @@ You can only declare one inflator and one deflator for each column.
 You can use the same inflator and deflator for more than one column at
 once:
 
-  transform 'creation_date', 'modification_date' =>
-      inflate { ... }
-      deflate { ... };
+  transform 'creation_date', 'modification_date'
+      => inflate { ... }
+      => deflate { ... };
 
 =head2 inflate { .. }
 
