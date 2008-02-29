@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
-use Fey::Validate qw( validate TABLE_TYPE FK_TYPE BOOLEAN_TYPE );
+use Fey::Validate qw( validate validate_pos TABLE_TYPE SCHEMA_TYPE FK_TYPE BOOLEAN_TYPE );
 
 use Fey::DBIManager;
 use Moose;
@@ -25,20 +25,23 @@ class_has '_SchemaClassMap' =>
                    },
     );
 
-sub ClassForSchema
 {
-    my $class  = shift;
-    my $schema = shift;
-
-    my $map = $class->_SchemaClassMap();
-
-    for my $class_name ( keys %{ $map } )
+    my @spec = ( SCHEMA_TYPE );
+    sub ClassForSchema
     {
-        return $class_name
-            if $map->{$class_name}->name() eq $schema->name();
-    }
+        my $class    = shift;
+        my ($schema) = validate_pos( @_, @spec );
 
-    return;
+        my $map = $class->_SchemaClassMap();
+
+        for my $class_name ( keys %{ $map } )
+        {
+            return $class_name
+                if $map->{$class_name}->name() eq $schema->name();
+        }
+
+        return;
+    }
 }
 
 sub _has_schema
