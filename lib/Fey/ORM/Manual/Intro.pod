@@ -169,9 +169,9 @@ with C<transform()>:
 
   has_table( Forum::Model::Schema->Schema()->table('User') );
 
-  transform 'email' =>
-      inflate { defined $_[1] ? Email::Address->new( $_[1] ) : undef },
-      deflate { defined $_[1] && blessed $_[1] ? $_[1]->address() : $_[1] };
+  transform 'email'
+      => inflate { defined $_[1] ? Email::Address->new( $_[1] ) : undef }
+      => deflate { defined $_[1] && blessed $_[1] ? $_[1]->address() : $_[1] };
 
 The C<transform()> above inflates the email column's value to an
 C<Email::Address> object, if it defined. Similarly, the deflator takes
