@@ -1,4 +1,4 @@
-0.04
+0.04   2008-03-06
 
 - Add a private writers for accessors created via has_one() and
   has_many() - this still needs docs.
