@@ -3,6 +3,7 @@ package Fey::Object::Schema;
 use strict;
 use warnings;
 
+use Fey::Meta::Class::Table;
 use MooseX::StrictConstructor;
 
 extends 'Moose::Object';
