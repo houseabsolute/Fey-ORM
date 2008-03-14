@@ -11,13 +11,7 @@ use List::MoreUtils qw( all );
 use Scalar::Util qw( blessed );
 
 use Fey::Exceptions qw( param_error );
-use Exception::Class
-    ( 'Fey::Exception::NoSuchRow' =>
-      { description => 'No row was found for a specified key.',
-        isa         => 'Fey::Exception',
-        alias       => 'no_such_row',
-      },
-    );
+use Fey::ORM::Exceptions qw( no_such_row );
 
 use MooseX::StrictConstructor;
 
