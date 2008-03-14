@@ -105,7 +105,11 @@ sub _write_to_cache
     {
         my @names = map { $_->name() } @{ $key };
 
-        my $cache_key = join "\0", map { $_, $object->$_() } sort @names;
+        my @pieces = map { $_, $object->$_() } sort @names;
+
+        next unless all { defined } @pieces;
+
+        my $cache_key = join "\0", @pieces;
 
         $cache->{$cache_key} = $object;
     }
