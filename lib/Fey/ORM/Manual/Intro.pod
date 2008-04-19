@@ -314,7 +314,7 @@ straightforward example:
         bind_params => sub { $_[0]->message_id() },
       );
 
-With this declaration, the C<Forum::Model::Message> class now has an a
+With this declaration, the C<Forum::Model::Message> class now has a
 C<< $message->most_recent_child() >> attribute. This attribute will
 return the most recent child message of the C<$message> object, if
 there is one to return. You can enable or disable caching of this data
