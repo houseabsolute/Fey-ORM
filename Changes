@@ -6,6 +6,9 @@
 - Moved exceptions to Fey::ORM::Exceptions so you can use them in your
   classes, notably the NoSuchRow exception.
 
+- Made Fey::Object::Table and Fey::Object::Schema extend
+  MooseX::Object::StrictConstructor rather than Moose::Object.
+
 
 0.04   2008-03-06
 

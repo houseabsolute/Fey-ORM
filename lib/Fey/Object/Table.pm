@@ -15,7 +15,7 @@ use Fey::ORM::Exceptions qw( no_such_row );
 
 use MooseX::StrictConstructor;
 
-extends 'Moose::Object';
+extends 'MooseX::Object::StrictConstructor';
 
 
 sub new
