@@ -1,4 +1,4 @@
-0.05   
+0.05   2008-04-18   
 
 - Fey::Object::Table called a method on Fey::Meta::Class::Table
   without loading it, which could cause problems in some cases.
