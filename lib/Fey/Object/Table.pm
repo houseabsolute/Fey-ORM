@@ -344,16 +344,24 @@ sub _get_column_values
 
     return unless $fetched;
 
-    for my $col ( keys %col_values )
+    $self->_set_column_values_from_hashref( \%col_values );
+
+    return \%col_values;
+}
+
+sub _set_column_values_from_hashref
+{
+    my $self   = shift;
+    my $values = shift;
+
+    for my $col ( keys %{ $values } )
     {
         my $set = q{_set_} . $col;
         my $has = q{has_} . $col;
 
-        $self->$set( $col_values{$col} )
+        $self->$set( $values->{$col} )
             unless $self->$has();
     }
-
-    return \%col_values;
 }
 
 sub _dbh
