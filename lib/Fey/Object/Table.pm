@@ -185,11 +185,16 @@ sub insert_many
 
     my $wantarray = wantarray;
 
+    my @bind_attributes = $class->_bind_attributes_for( $dbh, @non_literal_row_keys );
+
     my @objects;
     for my $row (@rows)
     {
-        $sth->execute( map { $class->_deflated_value( $_, $row->{$_} ) }
-                       @non_literal_row_keys );
+        $class->_sth_execute( $sth,
+                              [ map { $class->_deflated_value( $_, $row->{$_} ) }
+                                @non_literal_row_keys ],
+                              \@bind_attributes,
+                            );
 
         next unless defined $wantarray;
 
@@ -205,6 +210,46 @@ sub insert_many
     }
 
     return $wantarray ? @objects : $objects[0];
+}
+
+sub _bind_attributes_for
+{
+    my $self = shift;
+    my $dbh  = shift;
+    my @keys = @_;
+
+    return unless $dbh->{Driver}{Name} eq 'Pg';
+
+    my @attr = map { lc $self->Table()->column($_)->type() eq 'bytea'
+                     ? { pg_type => DBD::Pg::PG_BYTEA() }
+                     : {}
+                   } @keys;
+
+    return unless grep { keys %{ $_ } } @attr;
+
+    return @attr;
+}
+
+sub _sth_execute
+{
+    my $self = shift;
+    my $sth  = shift;
+    my $vals = shift;
+    my $attr = shift;
+
+    if ( @{ $attr } )
+    {
+        for ( my $i = 0; $i < @{ $vals }; $i++ )
+        {
+            $sth->bind_param( $i + 1, $vals->[$i], $attr->[$i] );
+        }
+
+        return $sth->execute();
+    }
+    else
+    {
+        return $sth->execute( @{ $vals } );
+    }
 }
 
 sub _deflated_value
@@ -253,7 +298,7 @@ sub update
 
     $update->update($table);
 
-    $update->set( map { $table->column($_) => $self->_deflated_value( $_, $p{$_} ) } keys %p );
+    $update->set( map { $table->column($_) => $self->_deflated_value( $_, $p{$_} ) } sort keys %p );
 
     for my $col ( $table->primary_key() )
     {
@@ -264,7 +309,15 @@ sub update
 
     my $dbh = $self->_dbh($update);
 
-    $dbh->do( $update->sql($dbh), {}, $update->bind_params() );
+    my $sth = $dbh->prepare( $update->sql($dbh) );
+
+    my @attr = $self->_bind_attributes_for( $dbh,
+                                            ( sort keys %p,
+                                              map { $_->name() } $table->primary_key(),
+                                            ),
+                                          );
+
+    $self->_sth_execute( $sth, [ $update->bind_params() ], \@attr );
 
     for my $k ( sort keys %p )
     {

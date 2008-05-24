@@ -4,6 +4,11 @@
   method, _set_column_values_from_hashref, since this piece is
   something that subclasses may want to reuse.
 
+- Added a horrible hack to make Postgres BYTEA columns work. Needs
+  some serious refactoring.
+
+- Fixed to work with the most recent versions of Moose.
+
 
 0.05   2008-04-18   
 
