@@ -9,7 +9,7 @@ extends 'MooseX::StrictConstructor::Meta::Method::Constructor';
 
 # XXX - This is copied straight from Moose 0.36 because there's no
 # good way to override it (note the eval it does at the end).
-sub intialize_body {
+sub initialize_body {
     my $self = shift;
     # TODO:
     # the %options should also include a both
@@ -45,6 +45,7 @@ sub intialize_body {
         $self->_generate_slot_initializer($_)
     } 0 .. (@{$self->attributes} - 1));
 
+    $source .= ";\n" . $self->_generate_triggers();
     $source .= ";\n" . $self->_generate_BUILDALL();
 
     # XXX - override
