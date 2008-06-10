@@ -1,3 +1,8 @@
+0.07
+
+- Cached has_one and has_many attributes now have a private clearer.
+
+
 0.06   2008-05-25
 
 - Factored part of Fey::ORM::Table->_get_column_values into a separate

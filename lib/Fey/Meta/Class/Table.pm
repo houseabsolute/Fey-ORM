@@ -437,6 +437,7 @@ sub _make_has_one
                        lazy    => 1,
                        default => $default_sub,
                        writer  => q{_set_} . $name,
+                       clearer => q{_clear_} . $name,
                      );
 
         $attr_p{handles} = $p{handles}
@@ -656,6 +657,7 @@ sub _make_has_many
               lazy    => 1,
               default => $default_sub,
               writer  => q{_set_} . $name,
+              clearer => q{_clear_} . $name,
             );
 
         my $method = sub { my $iterator = $_[0]->$attr_name();

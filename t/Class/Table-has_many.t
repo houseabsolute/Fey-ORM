@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 19;
+use Test::More tests => 21;
 
 use lib 't/lib';
 
@@ -34,6 +34,7 @@ my $Schema = schema();
 
 {
     can_ok( 'User', 'messages' );
+    ok( ! User->can('_clear_messages'), 'no clearer for non-cached has_many' );
 
     ok( ! User->meta()->has_attribute('messages'),
         'without caching messages is not an attribute of the User class' );
@@ -52,6 +53,7 @@ my $Schema = schema();
 
 {
     can_ok( 'User', 'messages' );
+    can_ok( 'User', '_clear_messages' );
 
     my $attr = User->meta()->get_attribute('_messages');
     ok( $attr, 'found attribute for _messages' );

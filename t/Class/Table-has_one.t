@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 24;
+use Test::More tests => 26;
 
 use lib 't/lib';
 
@@ -74,6 +74,7 @@ my $Schema = schema();
 
 {
     can_ok( 'Message', 'my_user' );
+    can_ok( 'Message', '_clear_my_user' );
 
     my $attr = Message->meta()->get_attribute('my_user');
     ok( $attr, 'found attribute for my_user' );
@@ -96,6 +97,7 @@ my $Schema = schema();
 
 {
     can_ok( 'Message', 'user' );
+    ok( ! Message->can('_clear_user'), 'no clearer for non-cached has_one' );
 
     ok( ! Message->meta()->has_attribute('user'),
         'Message does not have an attribute for user (but does have a user() method)' );
