@@ -17,7 +17,7 @@ my $Schema = schema();
     has_schema $Schema;
 }
 
-ok( Schema->_HasSchema(), '_HasSchema() is true' );
+ok( Schema->meta()->_has_schema(), 'meta()->_has_schema() is true' );
 is( Schema->Schema()->name(), $Schema->name(),
     'Schema() returns expected schema' );
 isa_ok( Schema->DBIManager(), 'Fey::DBIManager' );

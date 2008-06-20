@@ -195,8 +195,7 @@ sub _associate_table
     param_error 'You must load your schema class before calling has_table()'
         unless $class
         && $class->can('meta')
-        && $class->can('_HasSchema')
-        && $class->_HasSchema();
+        && $class->meta()->_has_schema();
 
     param_error 'A table object passed to has_table() must have at least one key'
         unless $table->primary_key();

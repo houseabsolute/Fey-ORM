@@ -25,6 +25,30 @@ class_has '_SchemaClassMap' =>
                    },
     );
 
+has 'schema' =>
+    ( is        => 'rw',
+      isa       => 'Fey::Schema',
+      writer    => '_set_schema',
+      predicate => '_has_schema',
+    );
+
+has 'dbi_manager' =>
+    ( is        => 'rw',
+      isa       => 'Fey::DBIManager',
+      writer    => 'set_dbi_manager',
+      lazy      => 1,
+      default   => sub { Fey::DBIManager->new() },
+    );
+
+has 'sql_factory_class' =>
+    ( is        => 'rw',
+      isa       => 'ClassName',
+      writer    => 'set_sql_factory_class',
+      lazy      => 1,
+      default   => 'Fey::SQL',
+    );
+
+
 {
     my @spec = ( SCHEMA_TYPE );
     sub ClassForSchema
@@ -44,7 +68,7 @@ class_has '_SchemaClassMap' =>
     }
 }
 
-sub _has_schema
+sub _associate_schema
 {
     my $self   = shift;
     my $schema = shift;
@@ -52,53 +76,29 @@ sub _has_schema
     my $caller = $self->name();
 
     param_error 'Cannot call has_schema() more than once per class'
-        if $caller->can('_HasSchema') && $caller->_HasSchema();
+        if $self->_has_schema();
 
     param_error 'Cannot associate the same schema with multiple classes'
         if __PACKAGE__->ClassForSchema($schema);
 
     __PACKAGE__->_SetSchemaForClass( $self->name() => $schema );
 
-    $self->_make_class_attributes();
+    $self->_add_methods();
 
-    $caller->_SetSchema($schema);
+    $self->_set_schema($schema);
 }
 
-sub _make_class_attributes
+sub _add_methods
 {
     my $self = shift;
 
-    MooseX::ClassAttribute::process_class_attribute
-        ( $self->name(),
-          'Schema' =>
-          ( is        => 'rw',
-            isa       => 'Fey::Schema',
-            writer    => '_SetSchema',
-            predicate => '_HasSchema',
-          )
-        );
+    $self->add_method( Schema => sub { $_[0]->meta()->schema() } );
 
-    MooseX::ClassAttribute::process_class_attribute
-        ( $self->name(),
-          'DBIManager' =>
-          ( is        => 'rw',
-            isa       => 'Fey::DBIManager',
-            writer    => 'SetDBIManager',
-            lazy      => 1,
-            default   => sub { Fey::DBIManager->new() },
-          )
-        );
+    $self->add_method( DBIManager => sub { $_[0]->meta()->dbi_manager() } );
+    $self->add_method( SetDBIManager => sub { $_[0]->meta()->set_dbi_manager() } );
 
-    MooseX::ClassAttribute::process_class_attribute
-        ( $self->name(),
-          'SQLFactoryClass' =>
-          ( is        => 'rw',
-            isa       => 'ClassName',
-            writer    => 'SetSQLFactoryClass',
-            lazy      => 1,
-            default   => 'Fey::SQL',
-          )
-        );
+    $self->add_method( SQLFactoryClass => sub { $_[0]->meta()->sql_factory_class() } );
+    $self->add_method( SetSQLFactoryClass => sub { $_[0]->meta()->set_sql_factory_class() } );
 }
 
 no Moose;
@@ -139,6 +139,10 @@ class which "has" that schema, if any.
 
 Given a class, this method returns the C<Fey::Schema> object
 associated with that class, if any.
+
+=head2 $meta->table()
+
+Returns the C<Fey::Schema> for the metaclass's class.
 
 =head1 AUTHOR
 
