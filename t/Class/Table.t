@@ -122,8 +122,8 @@ my $Schema = schema();
          'Str | Undef',
          'type for email is Str | Undef' );
 
-    ok( User->HasInflator('email'), 'User has an inflator coderef for email' );
-    ok( User->HasDeflator('email'), 'User has a deflator coderef for email' );
+    ok( User->meta()->has_inflator('email'), 'User has an inflator coderef for email' );
+    ok( User->meta()->has_deflator('email'), 'User has a deflator coderef for email' );
 
     my $user = User->new( user_id     => 1,
                           email       => 'test@example.com',
@@ -186,8 +186,8 @@ my $Schema = schema();
 }
 
 {
-    ok( Message->HasDeflator('message'), 'Message has a deflator coderef for message' );
-    ok( Message->HasDeflator('quality'), 'Message has a deflator coderef for quality' );
+    ok( Message->meta()->has_deflator('message'), 'Message has a deflator coderef for message' );
+    ok( Message->meta()->has_deflator('quality'), 'Message has a deflator coderef for quality' );
 
     is( Message->message_id(), 'foo',
         'column attributes do not overwrite existing methods' );

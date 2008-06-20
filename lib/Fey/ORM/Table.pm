@@ -65,7 +65,7 @@ sub unimport ## no critic RequireFinalReturn
 
         my $caller = caller();
 
-        $caller->meta()->_has_table($table);
+        $caller->meta()->_associate_table($table);
     }
 }
 
@@ -206,16 +206,6 @@ class:
 =head3 CallingClass->Table()
 
 Returns the L<Fey::Table> object passed to C<has_table()>.
-
-=head3 CallingClass->HasInflator($name)
-
-Returns a boolean indicating whether or not there is an inflator
-defined for the named column.
-
-=head3 CallingClass->HasDeflator($name)
-
-Returns a boolean indicating whether or not there is an inflator
-defined for the named column.
 
 =head3 CallingClass->SchemaClass()
 

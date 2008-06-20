@@ -2,6 +2,10 @@
 
 - Cached has_one and has_many attributes now have a private clearer.
 
+- Various internals changes so that the meta classes now have more
+  attributes, rather than creating lots of class attributes in the
+  classes which use Fey::ORM::{Table,Schema}.
+
 
 0.06   2008-05-25
 

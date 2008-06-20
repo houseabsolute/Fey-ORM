@@ -258,9 +258,7 @@ sub _deflated_value
     my $name = shift;
     my $val  = @_ ? shift : $self->$name();
 
-    my $deflators = $self->_Deflators();
-
-    my $meth = $deflators->{$name};
+    my $meth = $self->meta()->deflator_for($name);
 
     return $meth ? $self->$meth($val) : $val;
 }
@@ -364,7 +362,7 @@ sub _get_column_value
 {
     my $self = shift;
 
-    my $col_values = $self->_get_column_values( $self->_SelectByPKSQL(),
+    my $col_values = $self->_get_column_values( $self->meta()->_select_by_pk_sql(),
                                                 [ $self->_pk_vals() ],
                                               );
 
@@ -460,7 +458,7 @@ sub _SelectSQLForKey
     my $class = shift;
     my $key   = shift;
 
-    my $cache = $class->_SelectSQLCache();
+    my $cache = $class->meta()->_select_sql_cache();
 
     my $select = $cache->get($key);
 
@@ -487,28 +485,13 @@ sub Count
 {
     my $class = shift;
 
-    my $select = $class->_CountSQL();
+    my $select = $class->meta()->_count_sql();
 
     my $dbh = $class->_dbh($select);
 
     my $row = $dbh->selectcol_arrayref( $select->sql($dbh) );
 
     return $row->[0];
-}
-
-sub _MakeCountSQL
-{
-    my $class = shift;
-
-    my $table = $class->Table();
-
-    my $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
-
-    $select
-        ->select( Fey::Literal::Function->new( 'COUNT', '*' ) )
-        ->from($table);
-
-    return $select;
 }
 
 no Moose;
