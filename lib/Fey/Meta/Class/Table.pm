@@ -12,6 +12,7 @@ use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE BOOLEAN_TYPE
 use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
+use Fey::Meta::Attribute::FromSelect;
 use Fey::Meta::Class::Schema;
 use List::MoreUtils qw( all );
 

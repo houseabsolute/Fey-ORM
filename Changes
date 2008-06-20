@@ -6,6 +6,9 @@
   attributes, rather than creating lots of class attributes in the
   classes which use Fey::ORM::{Table,Schema}.
 
+- Added Fey::Meta::Attribute::FromSelect. This allows you to easily
+  define an attribute's default based on a SELECT query.
+
 
 0.06   2008-05-25
 

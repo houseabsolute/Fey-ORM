@@ -13,7 +13,7 @@ you want to follow along with this introduction.
 =head1 SAMPLE SCHEMA
 
 In these examples, we will use a very simple schema for a web forum
-type of application. Here is that schema for SQLite:
+type of application. Here is that schema, targeting SQLite:
 
   CREATE TABLE User (
       user_id   integer  not null  primary key autoincrement,
@@ -46,13 +46,13 @@ using C<Fey::Loader>:
 
   my $schema = Fey::Loader->new( dbh => $dbh )->make_schema();
 
-The loader will create tables, columns, views, and foreign keys that
-match the schema found in the DBMS.
+The loader will create tables, columns, views, and foreign key objects
+that match the schema found in the DBMS.
 
-=head1 YOUR SCHEMA CLASS
+=head1 SCHEMA CLASS
 
-You need to define a schema class which contains the schema you've
-loaded.
+You need to define a schema class which is associated a C<Fey::Schema>
+object.
 
 Your schema class will also contain your C<Fey::DBIManager> object,
 which manages your database handle(s). L<Fey::ORM> is smart enough to
@@ -60,7 +60,7 @@ connect a table-based class to your schema class automatically, and
 from that find an appropriate database handle when it needs to execute
 queries.
 
-To define your schema class you'll use the C<Fey::Schema::Class>:
+To define your schema class you'll use C<Fey::Schema::Class>:
 
   package Forum::Model::Schema;
 
@@ -87,14 +87,14 @@ object along the way.
 
   __PACKAGE__->DBIManager()->add_source($source);
 
-Now you can use C<Forum::Model::Schema> in other classes to get the
-C<Fey::Table> objects from your schema.
+Now you can use C<Forum::Model::Schema> in other classes to find
+C<Fey::Table> objects for each table in your schema.
 
-=head1 YOUR TABLE CLASSES
+=head1 TABLE CLASSES
 
 With L<Fey::ORM>, each of your model classes has an associated
-C<Fey::Table> object. For example, the User table would belong to the
-C<Forum::Model::User> class.
+C<Fey::Table> object. For example, the User table would be associated
+with the C<Forum::Model::User> class.
 
   package Forum::Model::User;
 
@@ -107,7 +107,8 @@ C<Forum::Model::User> class.
 When you call C<has_table>, L<Fey::ORM> does a number of things behind
 the scenes. It defines Moose attributes for each column in the
 associated table and makes your class a subclass of
-L<Fey::Object::Table>.
+L<Fey::Object::Table>. It also adds a few convenience methods directly
+to your class.
 
 At this point, we can start using C<Forum::Model::User> for basic CRUD
 operations. For example, to retrieve an existing user, you can simply
@@ -143,9 +144,9 @@ attributes for free, one for each column in the associated table:
   print $user->username();
 
 These attributes are only loaded from the DBMS once, and then are
-cached. Calling C<< $user->update() >> will clear any attributes being
-updated so they are reloaded from the DBMS when they are next
-accessed.
+cached in the object. Calling C<< $user->update() >> will clear any
+attributes being updated so they are reloaded from the DBMS when they
+are next accessed.
 
 Of course, L<Fey::ORM> actually loads all of the columns at once,
 rather than once per column, since anytihng else would be grossly
@@ -155,7 +156,7 @@ inefficient.
 
 L<Fey::ORM> allows you to define an inflator and/or deflator for each
 column. An inflator is used to convert the value received from the
-database into some other value, usually an object. A deflator does the
+database into some other type, usually an object. A deflator does the
 opposite, turning the object into a value suitable for the DBMS when
 doing updates or inserts. The inflator and deflator are both declared
 with C<transform()>:
@@ -174,20 +175,21 @@ with C<transform()>:
       => deflate { defined $_[1] && blessed $_[1] ? $_[1]->address() : $_[1] };
 
 The C<transform()> above inflates the email column's value to an
-C<Email::Address> object, if it defined. Similarly, the deflator takes
-an C<Email::Address> object and converts it back to a string.
+C<Email::Address> object, if that value is defined. Similarly, the
+deflator takes an C<Email::Address> object and converts it back to a
+string.
 
 The inflator and deflator are both called as methods on the object or
 class, which is why they use C<$_[1]> to get at the email. The
-inflator has to handle the case the email address is undefined, since
-the column is nullable. The deflator handles the case where it is
-passed a plain scalar, which allows you to pass a plain string or
+inflator has to handle the case where the email address is undefined,
+since the column is nullable. The deflator handles the case where it
+is passed a plain scalar, which allows you to pass a plain string or
 undef to C<< $user->update() >> or C<< $user->insert() >>.
 
 =head1 HAS-A RELATIONSHIPS
 
 With L<Fey::ORM>, you can also declare has-a relationships with other
-tables as C<has_one()> or C<has_many()>:
+tables using C<has_one()> or C<has_many()>:
 
   package Forum::Model::Message;
 
@@ -198,25 +200,24 @@ tables as C<has_one()> or C<has_many()>:
   has_one( Forum::Model::Schema->Schema()->table('User') );
 
 This creates a C<< $message->user() >> attribute which returns the
-associated user object. If the source table's column is nullable, the
+associated user object. If the foreign table's column is nullable, the
 attribute may simply return false. In the case of this particular
 relationship, that should never happen, since C<Message.user_id> is
 not nullable.
 
 By default, the name of the attribute created via C<has_one()> is
-simple C<< lc $table->name() >>. Depending on your table naming
-scheme, this may or may not work. If two tables have more than one
-foreign key between them, you will also need to specify the foreign
-key to use explicitly:
+simply C<< lc $table->name() >>. Depending on your table naming
+scheme, this may or may not work. If the two tables have more than one
+foreign key between them, you must specify the foreign key explicitly:
 
   has_one 'user' =>
       ( table => Forum::Model::Schema->Schema()->table('User'),
         fk    => ...,
       );
 
-Also by default, C<has_one()> attributes cache the result of the
-lookup, so that future calls to the same attribute method return the
-object already created.
+By default, C<has_one()> attributes cache the result of the lookup, so
+that future calls to the same attribute method return the object
+already created.
 
 The C<has_many()> declaration works more or less exactly like
 C<has_one()>:
@@ -230,7 +231,7 @@ C<has_one()>:
   has_many( Forum::Model::Schema->Schema()->table('Message') );
 
 The default name is still C<< lc $table->name() >>. In the case of the
-naming scheme in this example, that doesn't really work, so we should
+naming scheme in this example, that doesn't really work, so we will
 provide an explicit name:
 
   has_many 'messages' =>
@@ -249,8 +250,8 @@ iterates over the user's messages.
 
 By default, C<has_many()> creates a I<non-caching> iterator. The
 reason for this is that it cannot know how many foreign objects could
-be created, and in the case where this is a very large number, caching
-could be very problematic. However, you can turn caching on
+be created. If a large number of objects will be created, caching
+would use a huge amount of memory. However, you can turn caching on
 explicitly:
 
   has_many 'messages' =>
@@ -303,7 +304,7 @@ straightforward example:
       $schema->SQLFactoryClass()->new_select()
              ->select( $message_table )
              ->from( $message_table )
-             ->where( $message_table->column('user_id'),
+             ->where( $message_table->column('parent_message_id'),
                       '=', Fey::Placeholder->new() )
              ->order_by( $message_table->column('message_date'), 'DESC' )
              ->limit(1);
@@ -356,6 +357,42 @@ for a group:
         bind_params => sub { $_[0]->group_id() },
       );
 
+=head1 FromSelect ATTRIBUTE METACLASS
+
+Quite often, you will want to have an attribute which reflects the
+value of a single C<SELECT> query. For example, user objects might
+have a C<< $user->message_count() >> attribute.
+
+C<Fey::ORM> provides an attribute metaclass,
+C<Fey::Meta::Attribute::FromSelect>, which manages the details of
+executing the query and sticking the value in an attribute. You just
+provide a C<Fey::SQL::Select> object and an optional subroutine
+reference for the bind parameters.
+
+  package Forum::Model::User;
+
+  my $count =
+      Fey::Literal::Function->new
+          ( 'COUNT', $message_table->column('message_id') );
+
+  #   SELECT COUNT( Message.message_id )
+  #     FROM Message
+  #    WHERE user_id = ?
+  my $select =
+      $schema->SQLFactoryClass()->new_select()
+             ->select($count)
+             ->from( $message_table )
+             ->where( $message_table->column('user_id'),
+                      '=', Fey::Placeholder->new() );
+
+  has 'message_count' =>
+      ( metaclass   => 'FromSelect',
+        is          => 'ro',
+        isa         => 'Int',
+        select      => $select,
+        bind_params => sub { $_[0]->user-id() },
+      );
+
 =head1 USING Fey
 
 One of the advantages of using L<Fey::ORM> is that you can use the
@@ -399,16 +436,17 @@ will probably provide sugar to trim it down.
 =head1 OBJECT CACHING
 
 L<Fey::ORM> provides a built-in simple in-memory object caching
-system. This system is very handy in a webapp environment where you
-may end up trying to load the same objects more than once in the same
-request.
+system. This system is very handy in a persistent environment, such as
+a webapp, where you may end up trying to load the same objects more
+than once in the same request.
 
 L<Fey::ORM>'s caching makes no attempt to expire objects, so you need
 to be careful to clear the object cache regularly to avoid stale
 data. In practice, I've found that a good way to do this is to simply
-clear the cache once per "request". In a web app environment, this is
-simple to do. If you are writing a daemon or other long-running
-application, you will need to find a similar place to clear the cache.
+clear the cache once per "request". In a web app environment, you can
+make this part of your request initialization. If you are writing a
+daemon or other long-running application, you will need to find a
+similar place to clear the cache.
 
 You can turn on caching for all of your table-based classes through
 your schema class:
@@ -422,6 +460,8 @@ through your schema class:
 
 You can also enable or disable caching on a per-class basis, as well
 as clear the cache for just one class at a time.
+
+=head2 Caching Under Catalyst
 
 If you were writing a Catalyst application and wanted to ensure that
 the cache was cleared at the beginning of each request, there are a
