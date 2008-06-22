@@ -12,6 +12,18 @@ The index for the C<Fey::ORM> manual.
 
 An introduction to using C<Fey::ORM>.
 
+=head1 RECOMMENDED READING
+
+This is a list of module POD you should read:
+
+=head2 L<Fey::ORM::Table>
+
+=head2 L<Fey::Object::Table>
+
+=head2 L<Fey::ORM::Schema>
+
+=head2 L<Fey::Object::Schema>
+
 =head1 AUTHOR
 
 Dave Rolsky, <autarch@urth.org>
