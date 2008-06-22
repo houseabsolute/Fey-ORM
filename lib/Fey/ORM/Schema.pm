@@ -100,33 +100,6 @@ This package exports the following functions:
 Given a C<Fey::Schema> object, this method associates that schema with
 the calling class.
 
-Calling this function generates several methods and attributes in the
-calling class:
-
-=head3 CallingClass->Schema()
-
-Returns the C<Fey::Schema> object associated with the class.
-
-=head3 CallingClass->DBIManager()
-
-Returns the C<Fey::Schema> object associated with the class.
-
-=head3 CallingClass->SetDBIManager($manager)
-
-Set the C<Fey::DBIManager> object associated with the class. If you
-don't set one explicitly, then the first call to C<<
-CallingClass->DBIManager() >> will simply create one by calling C<<
-Fey::DBIManager->new() >>.
-
-=head3 CallingClass->SQLFactoryClass()
-
-Returns the SQL factory class associated with the class. This defaults
-to C<Fey::SQL>.
-
-=head3 CallingClass->SetSQLFactoryClass()
-
-Set the SQL factory class associated with the class.
-
 =head1 AUTHOR
 
 Dave Rolsky, <autarch@urth.org>

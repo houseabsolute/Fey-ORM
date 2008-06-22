@@ -203,8 +203,6 @@ sub _associate_table
 
     $self->_SetTableForClass( $self->name() => $table );
 
-    $self->_add_methods();
-
     $self->_set_table($table);
 
     $self->_make_column_attributes();
@@ -234,17 +232,6 @@ sub _make_column_attributes
 
         $self->add_attribute( $name, %attr_p );
     }
-}
-
-sub _add_methods
-{
-    my $self = shift;
-
-    my $caller = $self->name();
-
-    $self->add_method( Table => sub { $_[0]->meta()->table() } );
-
-    $self->add_method( SchemaClass => sub { $_[0]->meta()->schema_class() } );
 }
 
 # XXX - can this be overridden or customized? should it account for

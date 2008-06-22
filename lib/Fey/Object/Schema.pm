@@ -93,6 +93,41 @@ sub RunInTransaction
     return $wantarray ? @r : $r[0];
 }
 
+sub Schema
+{
+    my $class = shift;
+
+    return $class->meta()->schema();
+}
+
+sub DBIManager
+{
+    my $class = shift;
+
+    return $class->meta()->dbi_manager();
+}
+
+sub SetDBIManager
+{
+    my $class = shift;
+
+    $class->meta()->set_dbi_manager(@_);
+}
+
+sub SQLFactoryClass
+{
+    my $class = shift;
+
+    return $class->meta()->sql_factory_class();
+}
+
+sub SetSQLFactoryClass
+{
+    my $class = shift;
+
+    $class->meta()->set_sql_factory_class(@_);
+}
+
 1;
 
 __END__
@@ -144,6 +179,30 @@ does prevent DBI from throwing an error.
 
 The second argument can be a C<Fey::DBIManager::Source> object. If no
 source is specified, then this method will use the default source.
+
+=head3 $class->Schema()
+
+Returns the C<Fey::Schema> object associated with the class.
+
+=head3 $class->DBIManager()
+
+Returns the C<Fey::Schema> object associated with the class.
+
+=head3 $class->SetDBIManager($manager)
+
+Set the C<Fey::DBIManager> object associated with the class. If you
+don't set one explicitly, then the first call to C<<
+$class->DBIManager() >> will simply create one by calling C<<
+Fey::DBIManager->new() >>.
+
+=head3 $class->SQLFactoryClass()
+
+Returns the SQL factory class associated with the class. This defaults
+to C<Fey::SQL>.
+
+=head3 $class->SetSQLFactoryClass()
+
+Set the SQL factory class associated with the class.
 
 =head1 AUTHOR
 

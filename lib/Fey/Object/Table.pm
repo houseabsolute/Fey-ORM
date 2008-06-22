@@ -494,6 +494,20 @@ sub Count
     return $row->[0];
 }
 
+sub Table
+{
+    my $class = shift;
+
+    return $class->meta()->table();
+}
+
+sub SchemaClass
+{
+    my $class = shift;
+
+    return $class->meta()->schema_class();
+}
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 
@@ -577,6 +591,15 @@ Returns the number of rows in the class's associated table.
 =head2 $class->ClearObjectCache()
 
 Clears the object cache for the calling class.
+
+=head3 $class->Table()
+
+Returns the L<Fey::Table> object passed to C<has_table()>.
+
+=head3 $class->SchemaClass()
+
+Returns the name of the class associated with the class's table's
+schema.
 
 =head2 $class->insert(%values)
 

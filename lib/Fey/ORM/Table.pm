@@ -200,18 +200,6 @@ These column-named attributes do not have a public setter method. If
 you want to change the value of these attributes, you need to use the
 C<update()> method.
 
-Finally, it will create a number of class methods in the calling
-class:
-
-=head3 CallingClass->Table()
-
-Returns the L<Fey::Table> object passed to C<has_table()>.
-
-=head3 CallingClass->SchemaClass()
-
-Returns the name of the class associated with the caller's table's
-schema.
-
 =head2 has_one($table)
 
 =head2 has_one 'name' => ( table => $table, fk => $fk, cache => $bool, undef => $bool, handles => ... )

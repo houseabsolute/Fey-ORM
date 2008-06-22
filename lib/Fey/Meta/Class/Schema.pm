@@ -83,22 +83,7 @@ sub _associate_schema
 
     __PACKAGE__->_SetSchemaForClass( $self->name() => $schema );
 
-    $self->_add_methods();
-
     $self->_set_schema($schema);
-}
-
-sub _add_methods
-{
-    my $self = shift;
-
-    $self->add_method( Schema => sub { $_[0]->meta()->schema() } );
-
-    $self->add_method( DBIManager => sub { $_[0]->meta()->dbi_manager() } );
-    $self->add_method( SetDBIManager => sub { $_[0]->meta()->set_dbi_manager() } );
-
-    $self->add_method( SQLFactoryClass => sub { $_[0]->meta()->sql_factory_class() } );
-    $self->add_method( SetSQLFactoryClass => sub { $_[0]->meta()->set_sql_factory_class() } );
 }
 
 no Moose;
