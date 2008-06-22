@@ -43,7 +43,7 @@ sub _make_default_from_select
         sub { my $self = shift;
 
               my $dbh =
-                  $self->SchemaClass()->DBIManager()->source_for_sql($select)->dbh();
+                  $self->_dbh($select);
 
               my @select_p =
                   ( $select->sql($dbh), {},
