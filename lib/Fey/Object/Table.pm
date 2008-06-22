@@ -587,14 +587,16 @@ The values for the columns can be plain scalars or object. Values will
 be passed through the appropriate deflators. You can also pass
 C<Fey::Literal> objects of any type.
 
-As an optimization, no objects will be created in void context.
+As an optimization, no object will be created in void context.
 
 =head2 $class->insert_many( \%values, \%values, ... )
 
 This method allows you to insert multiple rows efficiently. It expects
 an array of hash references. Each hash reference should contain the
-same set of column names as keys. The advantage of using this method
-is that under the head it uses the same C<DBI> statement handle
+same set of column names as its keys. The advantage of using this
+method is that under the hood it uses the same C<DBI> statement handle
+repeatedly. If you were to call C<< $class->insert() >> repeatedly it
+would have to recreate the same SQL and DBI statement handle
 repeatedly.
 
 In scalar context, it returns the first object created. In list
@@ -624,8 +626,9 @@ probably blow up.
 =head1 METHODS FOR SUBCLASSES
 
 Since your table-based class will be a subclass of this object, there
-are several methods you'll want to use that are not intended for use
-outside of your subclasses:
+are several methods you may want to use that are not intended for use
+outside of your subclasses. You may also want to subclass some of
+these methods in this class.
 
 =head2 $class->_dbh($sql)
 
@@ -642,6 +645,38 @@ This method returns an array of primary key values for the object's
 row. This may return an empty array if the primary key for the object
 has not yet been determined. This can happen if you try to call this
 on an object before its attributes have been fetched from the dbms.
+
+=head2 $object->_load_from_dbms($params)
+
+This method will be called as part of object construction (unless
+C<_from_query> was true).
+
+By default, this method attempts to find a row in the associated table
+by looking at each of the table's candidate keys in turn. If the
+parameters passed to the constructor include values for all parts of a
+key, it does a select to find a matching row.
+
+
+You can override this method in order to attempt to load an object
+based on some other method. For example, if your user table stores a
+username and a hashed password, you could accept an I<unhashed>
+password, and then do a lookup based on the hashed value.
+
+This method is expected to create a C<SELECT> statement and then pass
+the statement and bind parameters to C<< $object->_get_column_values()
+>>.
+
+On success, this method should simply return. If it fails, it should
+throw a C<Fey::Exception::NoSuchRow> exception. See
+L<Fey::ORM::Exceptions> for details.
+
+=head2 $object->_get_column_values( $select, $bind_params )
+
+This method takes a C<SELECT> statement and an array reference of bind
+parameters. The C<SELECT> is expected to find a single row, which
+should correspond to the current object. If it finds a row, it sets
+the corresponding attributes in the object based on the values returns
+by the C<SELECT>.
 
 =head1 AUTHOR
 
