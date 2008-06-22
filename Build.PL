@@ -10,7 +10,7 @@ my $builder =
           requires             => { 'Exception::Class'          => 0,
                                     'Exporter'                  => 0,
                                     'Fey'                       => 0.03,
-                                    'Fey::DBIManager'           => 0,
+                                    'Fey::DBIManager'           => 0.06,
                                     'List::MoreUtils'           => 0,
                                     'Moose'                     => 0.45,
                                     'MooseX::AttributeHelpers'  => 0.09,
