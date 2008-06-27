@@ -27,10 +27,10 @@ sub initialize_body {
     $source .= "\n" . 'return $class->Moose::Object::new(@_)';
     $source .= "\n" . '    if $class ne \'' . $self->associated_metaclass->name . '\';';
 
-    $source .= "\n" . 'my %params = (scalar @_ == 1) ? %{$_[0]} : @_;';
+    $source .= "\n" . 'my $params = ' . $self->_generate_BUILDARGS('$class', '@_');
 
     # XXX - override
-    $source .= "\n" . $self->_search_cache();
+    $source .= ";\n" . $self->_search_cache();
 
     # XXX - override
     $source .= "\n" . 'my $instance;';
@@ -103,7 +103,7 @@ sub _search_cache
     my $self = shift;
 
     my $source = "\n" . 'if ( $meta->_object_cache_is_enabled() ) {';
-    $source .= "\n" . '    my $instance = $meta->_search_cache(\\%params);';
+    $source .= "\n" . '    my $instance = $meta->_search_cache($params);';
     $source .= "\n" . '    return $instance if $instance;';
     $source .= "\n" . '}';
 }

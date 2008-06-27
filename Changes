@@ -1,3 +1,8 @@
+0.08   2008-06-27
+
+- Changes to the immutable bits to work with the latest Moose (0.51).
+
+
 0.07   2008-06-22
 
 - Cached has_one and has_many attributes now have a private clearer.
