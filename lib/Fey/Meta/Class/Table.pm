@@ -16,11 +16,13 @@ use Fey::Meta::Attribute::FromSelect;
 use Fey::Meta::Class::Schema;
 use List::MoreUtils qw( all );
 
-use Moose qw( extends has );
+use Moose qw( extends with has );
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
 
-extends 'MooseX::StrictConstructor::Meta::Class';
+extends 'Moose::Meta::Class';
+
+with 'MooseX::StrictConstructor::Role::Metaclass';
 
 class_has '_ClassToTableMap' =>
     ( metaclass => 'Collection::Hash',

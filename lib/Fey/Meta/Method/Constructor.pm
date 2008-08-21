@@ -5,7 +5,9 @@ use warnings;
 
 use Moose;
 
-extends 'MooseX::StrictConstructor::Meta::Method::Constructor';
+extends 'Moose::Meta::Method::Constructor';
+
+with 'MooseX::StrictConstructor::Role::Constructor';
 
 # XXX - This is copied straight from Moose 0.36 because there's no
 # good way to override it (note the eval it does at the end).

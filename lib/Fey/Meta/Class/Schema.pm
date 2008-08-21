@@ -11,7 +11,9 @@ use Moose;
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
 
-extends 'MooseX::StrictConstructor::Meta::Class';
+extends 'Moose::Meta::Class';
+
+with 'MooseX::StrictConstructor::Role::Metaclass';
 
 class_has '_SchemaClassMap' =>
     ( metaclass => 'Collection::Hash',

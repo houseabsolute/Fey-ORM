@@ -13,9 +13,11 @@ use Scalar::Util qw( blessed );
 use Fey::Exceptions qw( param_error );
 use Fey::ORM::Exceptions qw( no_such_row );
 
-use MooseX::StrictConstructor;
+use Moose;
 
-extends 'MooseX::Object::StrictConstructor';
+extends 'Moose::Object';
+
+with 'MooseX::StrictConstructor::Role::Object';
 
 
 sub new

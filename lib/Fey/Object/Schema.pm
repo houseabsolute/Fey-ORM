@@ -4,9 +4,12 @@ use strict;
 use warnings;
 
 use Fey::Meta::Class::Table;
-use MooseX::StrictConstructor;
 
-extends 'MooseX::Object::StrictConstructor';
+use Moose;
+
+extends 'Moose::Object';
+
+with 'MooseX::StrictConstructor::Role::Object';
 
 
 sub EnableObjectCaches
