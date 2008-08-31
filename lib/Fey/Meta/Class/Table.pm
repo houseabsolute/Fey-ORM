@@ -22,8 +22,6 @@ use MooseX::ClassAttribute;
 
 extends 'Moose::Meta::Class';
 
-with 'MooseX::StrictConstructor::Role::Metaclass';
-
 class_has '_ClassToTableMap' =>
     ( metaclass => 'Collection::Hash',
       is        => 'rw',
@@ -745,6 +743,7 @@ sub make_immutable
 
 
 no Moose;
+
 __PACKAGE__->meta()->make_immutable();
 
 1;

@@ -3,67 +3,36 @@ package Fey::ORM::Table;
 use strict;
 use warnings;
 
-our @EXPORT = ## no critic ProhibitAutomaticExportation
-    qw( has_table has_one has_many transform inflate deflate );
-use base 'Exporter';
-
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
 use Fey::Validate qw( validate_pos TABLE_TYPE );
 use Moose ();
+use Moose::Exporter;
 
+Moose::Exporter->setup_import_methods
+    ( with_caller => [qw( has_table has_one has_many transform )],
+      as_is       => [qw( inflate deflate )],
+      also        => 'Moose'
+    );
 
-# This re-exporting is a mess. Once MooseX::Exporter is done,
-# hopefully it can replace all of this.
-sub import
+sub init_meta
 {
-    my $caller = Moose::_get_caller();
+    shift;
+    my %p = @_;
 
-    return if $caller eq 'main';
-
-    Moose::init_meta( $caller,
-                      'Fey::Object::Table',
-                      'Fey::Meta::Class::Table',
-                    );
-
-    Moose->import( { into => $caller } );
-
-    __PACKAGE__->export_to_level( 1, @_ );
-
-    return;
-}
-
-sub unimport ## no critic RequireFinalReturn
-{
-    my $caller = caller();
-
-    no strict 'refs'; ## no critic ProhibitNoStrict
-    foreach my $name (@EXPORT)
-    {
-        if ( defined &{ $caller . '::' . $name } )
-        {
-            my $keyword = \&{ $caller . '::' . $name };
-
-            my $pkg_name =
-                eval { svref_2object($keyword)->GV()->STASH()->NAME() };
-
-            next if $@;
-            next if $pkg_name ne __PACKAGE__;
-
-            delete ${ $caller . '::' }{$name};
-        }
-    }
-
-    Moose::unimport( { into_level => 1 } );
+    return
+        Moose->init_meta( %p,
+                          base_class => 'Fey::Object::Table',
+                          metaclass  => 'Fey::Meta::Class::Table',
+                        );
 }
 
 {
     my $spec = ( TABLE_TYPE );
     sub has_table
     {
+        my $caller  = shift;
         my ($table) = validate_pos( @_, $spec );
-
-        my $caller = caller();
 
         $caller->meta()->_associate_table($table);
     }
@@ -71,13 +40,13 @@ sub unimport ## no critic RequireFinalReturn
 
 sub transform
 {
+    my $caller = shift;
+
     my @p;
 
     push @p, pop @_ while ref $_[-1];
 
     my %p = _combine_hashes(@p);
-
-    my $caller = caller();
 
     for my $name (@_)
     {
@@ -105,6 +74,8 @@ sub deflate (&)
 
     sub has_one
     {
+        my $caller = shift;
+
         my %p;
         if ( @_ == 1 )
         {
@@ -116,8 +87,6 @@ sub deflate (&)
 
             %p = ( %p, @_ );
         }
-
-        my $caller = caller();
 
         $caller->meta()->_add_has_one_relationship(%p);
     }
@@ -128,6 +97,8 @@ sub deflate (&)
 
     sub has_many
     {
+        my $caller = shift;
+
         my %p;
         if ( @_ == 1 )
         {
@@ -139,8 +110,6 @@ sub deflate (&)
 
             %p = ( %p, @_ );
         }
-
-        my $caller = caller();
 
         $caller->meta()->_add_has_many_relationship(%p);
     }

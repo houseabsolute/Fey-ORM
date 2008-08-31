@@ -6,7 +6,8 @@ use warnings;
 use Fey::Exceptions qw( param_error );
 use List::MoreUtils qw( pairwise );
 
-use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
+use Moose;
+use MooseX::SemiAffordanceAccessor;
 use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
@@ -200,6 +201,8 @@ sub DEMOLISH
 }
 
 no Moose;
+no Moose::Util::TypeConstraints;
+
 __PACKAGE__->meta()->make_immutable();
 
 1;

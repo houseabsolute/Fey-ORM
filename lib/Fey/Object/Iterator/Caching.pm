@@ -3,6 +3,7 @@ package Fey::Object::Iterator::Caching;
 use strict;
 use warnings;
 
+use Moose;
 use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 
@@ -47,8 +48,8 @@ sub reset
     $self->_reset_index();
 }
 
-
 no Moose;
+
 __PACKAGE__->meta()->make_immutable();
 
 1;

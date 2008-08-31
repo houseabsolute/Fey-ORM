@@ -19,8 +19,8 @@ my @mods = grep { ! $Exclude{$_} } Test::Pod::Coverage::all_modules();
 plan tests => scalar @mods;
 
 
-my %Trustme = ( 'Fey::ORM::Schema'               => qr/^unimport$/,
-                'Fey::ORM::Table'                => qr/^unimport$/,
+my %Trustme = ( 'Fey::ORM::Schema' => qr/^init_meta$/,
+                'Fey::ORM::Table'  => qr/^init_meta$/,
               );
 
 for my $mod (@mods)
