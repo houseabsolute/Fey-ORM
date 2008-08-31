@@ -9,7 +9,7 @@ my $builder =
           license              => 'perl',
           requires             => { 'Exception::Class'          => '0',
                                     'Exporter'                  => '0',
-                                    'Fey'                       => '0.10',
+                                    'Fey'                       => '0.12',
                                     'Fey::DBIManager'           => '0.07',
                                     'List::MoreUtils'           => '0',
                                     'Moose'                     => '0.56',
