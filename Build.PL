@@ -15,7 +15,7 @@ my $builder =
                                     'Moose'                     => '0.56',
                                     'MooseX::AttributeHelpers'  => '0.13',
                                     'MooseX::ClassAttribute'    => '0',
-                                    'MooseX::StrictConstructor' => '0.06',
+                                    'MooseX::StrictConstructor' => '0.07',
                                     'Scalar::Util'              => '0',
                                   },
           build_requires       => { 'Fey::Test'  => '0.05',

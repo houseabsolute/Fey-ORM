@@ -1,6 +1,6 @@
-0.08   2008-??
+0.08   2008-09-01
 
-- Changes to the immutable bits to work with the latest Moose (0.51).
+- Changes to work with the latest Moose and Fey.
 
 
 0.07   2008-06-22
