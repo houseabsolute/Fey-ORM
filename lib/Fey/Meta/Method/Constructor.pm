@@ -20,7 +20,9 @@ sub initialize_body {
     # of the possible use cases (even if it
     # requires some adaption on the part of
     # the author, after all, nothing is free)
-    my $source = 'sub {';
+    my $source = "use Carp qw( confess );\n";
+    $source .= "use Scalar::Util qw( blessed );\n";
+    $source .= 'sub {';
     $source .= "\n" . 'my $class = shift;';
 
     # XXX - override
