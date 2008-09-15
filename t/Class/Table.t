@@ -119,8 +119,8 @@ my $Schema = schema();
          'type for username is Str' );
 
     is ( User->meta()->get_attribute('email')->type_constraint()->name(),
-         'Str | Undef',
-         'type for email is Str | Undef' );
+         'Str|Undef',
+         'type for email is Str|Undef' );
 
     ok( User->meta()->has_inflator('email'), 'User has an inflator coderef for email' );
     ok( User->meta()->has_deflator('email'), 'User has a deflator coderef for email' );
