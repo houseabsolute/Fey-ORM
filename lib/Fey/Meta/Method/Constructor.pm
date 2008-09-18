@@ -20,9 +20,7 @@ sub initialize_body {
     # of the possible use cases (even if it
     # requires some adaption on the part of
     # the author, after all, nothing is free)
-    my $source = "use Carp qw( confess );\n";
-    $source .= "use Scalar::Util qw( blessed );\n";
-    $source .= 'sub {';
+    my $source = 'sub {';
     $source .= "\n" . 'my $class = shift;';
 
     # XXX - override
@@ -58,7 +56,7 @@ sub initialize_body {
     # XXX - override
     $source .= "\n" . 'if ( my $e = $@ ) {';
     $source .= "\n" . '    return if blessed $e && $e->isa(q{Fey::Exception::NoSuchRow});';
-    $source .= "\n" . '    die $e;';
+    $source .= "\n" . '    $meta->throw_error($e);';
     $source .= "\n" . '}';
 
     # XXX - override
@@ -97,7 +95,11 @@ sub initialize_body {
         } @type_constraints;
 
         $code = eval $source;
-        confess "Could not eval the constructor :\n\n$source\n\nbecause :\n\n$@" if $@;
+        $self->throw_error
+            ( "Could not eval the constructor :\n\n$source\n\nbecause :\n\n$@",
+              error => $@,
+              data  => $source )
+                if $@;
     }
     $self->{'body'} = $code;
 }
