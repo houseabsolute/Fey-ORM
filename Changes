@@ -1,3 +1,8 @@
+0.11
+
+- Fixes to work with Moose 0.58.
+
+
 0.10   2008-09-07
 
 - Moose 0.57 broke Fey::ORM somehow. Fixed for Moose 0.57.
