@@ -3,7 +3,10 @@ package Fey::ORM::Test::Iterator;
 use strict;
 use warnings;
 
+use Fey::SQL;
+
 use Fey::ORM::Test;
+use Test::Exception;
 use Test::More;
 
 Fey::ORM::Test::require_sqlite();
@@ -19,13 +22,18 @@ sub run_shared_tests
     Fey::ORM::Test::insert_message_data();
     Fey::ORM::Test::define_basic_classes();
 
+    my $schema = Fey::ORM::Test->schema();
     my $dbh = Fey::Test::SQLite->dbh();
 
     {
-        my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User ORDER BY user_id' );
+        my $sql = Fey::SQL->new_select
+                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                          ->from( $schema->table('User') )
+                          ->order_by( $schema->table('User')->column('user_id') );
 
         my $iterator = $class->new( classes => 'User',
-                                    handle  => $sth,
+                                    dbh     => $dbh,
+                                    select  => $sql,
                                   );
 
         is( $iterator->index(), 0,
@@ -79,10 +87,14 @@ sub run_shared_tests
     }
 
     {
-        my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User ORDER BY user_id' );
+        my $sql = Fey::SQL->new_select
+                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                          ->from( $schema->table('User') )
+                          ->order_by( $schema->table('User')->column('user_id') );
 
         my $iterator = $class->new( classes => 'User',
-                                    handle  => $sth,
+                                    dbh     => $dbh,
+                                    select  => $sql,
                                   );
 
         my @users = $iterator->all();
@@ -115,31 +127,66 @@ sub run_shared_tests
     }
 
     {
-        my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User WHERE user_id IN (?, ?) ORDER BY user_id' );
+        my $sql = Fey::SQL->new_select
+                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                          ->from( $schema->table('User') )
+                          ->where( $schema->table('User')->column('user_id'), 'IN', 1, 42 )
+                          ->order_by( $schema->table('User')->column('user_id') );
+
+        my $iterator = $class->new( classes => 'User',
+                                    dbh     => $dbh,
+                                    select  => $sql,
+                                  );
+
+        my $user = $iterator->next();
+
+        is( $user->user_id(), 1,
+            'first user_id with bind params in sql object' );
+
+        $user = $iterator->next();
+
+        is( $user->user_id(), 42,
+            'second user_id with bind params in sql object' );
+    }
+
+    {
+        my $sql = Fey::SQL->new_select
+                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                          ->from( $schema->table('User') )
+                          ->where( $schema->table('User')->column('user_id'), 'IN',
+                                   ( Fey::Placeholder->new() ) x 2 )
+                          ->order_by( $schema->table('User')->column('user_id') );
 
         my $iterator = $class->new( classes     => 'User',
-                                    handle      => $sth,
+                                    dbh         => $dbh,
+                                    select      => $sql,
                                     bind_params => [ 1, 42 ],
                                   );
 
         my $user = $iterator->next();
 
         is( $user->user_id(), 1,
-            'first user_id with bind params' );
+            'first user_id with explicit bind params' );
 
         $user = $iterator->next();
 
         is( $user->user_id(), 42,
-            'second user_id with bind params' );
+            'second user_id with explicit bind params' );
     }
 
     {
-        my $sth = $dbh->prepare( 'SELECT U.user_id, U.username, M.message_id, M.message'
-                                 . ' FROM User AS U JOIN Message AS M USING (user_id)'
-                                 . ' ORDER BY U.user_id, M.message_id' );
+        my $sql = Fey::SQL->new_select
+                          ->select( $schema->table('User')->columns( qw( user_id username ) ),
+                                    $schema->table('Message')->columns( qw( message_id message ) ),
+                                  )
+                          ->from( $schema->tables( 'User', 'Message' ) )
+                          ->order_by( $schema->table('User')->column('user_id'),
+                                      $schema->table('Message')->column('message_id'),
+                                    );
 
         my $iterator = $class->new( classes => [ 'User', 'Message' ],
-                                    handle  => $sth,
+                                    dbh     => $dbh,
+                                    select  => $sql,
                                   );
 
         my ( $user, $message ) = $iterator->next();
@@ -180,14 +227,23 @@ sub run_shared_tests
     }
 
     {
-        # Simulates what can happen with an outer join, where one or
-        # more of the tables ends up returning NULL for its pk.
-        my $sth = $dbh->prepare( 'SELECT U.user_id, U.username, NULL AS message_id'
-                                 . ' FROM User AS U'
-                                 . ' LIMIT 1' );
+        # This simulates an OUTER JOIN where Message could be NULL
+        my $sql = Fey::SQL->new_select
+                          ->select( Fey::Literal::Null->new(),
+                                    $schema->table('User')->columns( qw( user_id username ) ),
+                                  )
+                          ->from( $schema->tables( 'User' ) )
+                          ->order_by( $schema->table('User')->column('user_id') );
 
-        my $iterator = $class->new( classes => [ 'Message', 'User' ],
-                                    handle  => $sth,
+
+        my $iterator = $class->new( classes       => [ 'Message', 'User' ],
+                                    dbh           => $dbh,
+                                    select        => $sql,
+                                    attribute_map =>
+                                        { 0 => { class     => 'Message',
+                                                 attribute => 'message_id',
+                                               },
+                                        },
                                   );
 
         my ( $message, $user ) = $iterator->next();

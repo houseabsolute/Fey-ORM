@@ -652,8 +652,8 @@ sub _make_has_many_default_sub_via_sql
 
     my $target_table = $p{table};
 
-    my $select = $p{select};
-    my $bind   = $p{bind_params};
+    my $select   = $p{select};
+    my $bind_sub = $p{bind_params};
 
     my $iterator_class = $p{iterator_class};
 
@@ -664,12 +664,12 @@ sub _make_has_many_default_sub_via_sql
 
               my $dbh = $self->_dbh($select);
 
-              my $sth = $dbh->prepare( $select->sql($dbh) );
-
-              return $iterator_class->new( classes     => $class,
-                                           handle      => $sth,
-                                           bind_params => [ $self->$bind() ],
-                                         );
+              return
+                  $iterator_class->new( classes     => $class,
+                                        dbh         => $dbh,
+                                        select      => $select,
+                                        bind_params => [ $self->$bind_sub() ],
+                                      );
             };
 
 }

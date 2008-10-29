@@ -1,9 +1,11 @@
 use strict;
 use warnings;
 
+use Test::Exception;
 use Test::More;
 
 use Fey::Object::Iterator;
+use Fey::SQL;
 
 use lib 't/lib';
 
@@ -11,17 +13,38 @@ use Fey::ORM::Test::Iterator;
 use Fey::Test;
 
 
-Test::More::plan tests => 35;
-
-{
-    eval { Fey::Object::Iterator->new( classes => [] ) };
-    like( $@, qr/\QAttribute (classes) does not pass the type constraint/,
-          'cannot pass empty array for classes attribute' );
-
-    eval { Fey::Object::Iterator->new( classes => [ 'DoesNotExist' ] ) };
-    like( $@, qr/\QAttribute (classes) does not pass the type constraint/,
-          'cannot pass strings for classes attribute, must be a Fey::Object subclass' );
-}
-
+plan tests => 38;
 
 Fey::ORM::Test::Iterator::run_shared_tests('Fey::Object::Iterator');
+
+{
+    my $dbh = Fey::Test::SQLite->dbh();
+
+    my $sql = Fey::SQL->new_select();
+
+    throws_ok( sub { Fey::Object::Iterator->new( classes => [],
+                                                 dbh     => $dbh,
+                                                 select  => $sql,
+                                               ) },
+               qr/\QAttribute (classes) does not pass the type constraint/,
+               'cannot pass empty array for classes attribute' );
+
+    throws_ok( sub { Fey::Object::Iterator->new( classes => [ 'DoesNotExist' ],
+                                                 dbh     => $dbh,
+                                                 select  => $sql,
+                                               ) },
+               qr/\QAttribute (classes) does not pass the type constraint/,
+               'classes attribute must contain Fey::Object subclasses' );
+
+    throws_ok( sub { Fey::Object::Iterator->new( classes       => [ 'User' ],
+                                                 dbh           => $dbh,
+                                                 select        => $sql,
+                                                 attribute_map =>
+                                                     { 0 => { class     => 'Message',
+                                                              attribute => 'message_id',
+                                                            },
+                                                     },
+                                               ) },
+               qr/\QCannot include a class in attribute_map (Message) unless it also in classes/,
+               'cannot pass strings for classes attribute, must be a Fey::Object subclass' );
+}

@@ -11,18 +11,23 @@ use Fey::ORM::Test::Iterator;
 use Fey::Test;
 
 
-Test::More::plan tests => 43;
+plan tests => 45;
 
 
 Fey::ORM::Test::Iterator::run_shared_tests('Fey::Object::Iterator::Caching');
 
 my $dbh = Fey::Test::SQLite->dbh();
+my $schema = Fey::ORM::Test->schema();
 
 {
-    my $sth = $dbh->prepare( 'SELECT user_id, username, email FROM User ORDER BY user_id' );
+    my $sql = Fey::SQL->new_select
+                      ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                      ->from( $schema->table('User') )
+                      ->order_by( $schema->table('User')->column('user_id') );
 
     my $iterator = Fey::Object::Iterator::Caching->new( classes => 'User',
-                                                        handle  => $sth,
+                                                        dbh     => $dbh,
+                                                        select  => $sql,
                                                       );
 
     # Just empty the iterator

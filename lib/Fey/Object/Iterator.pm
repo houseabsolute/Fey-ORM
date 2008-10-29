@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
-use List::MoreUtils qw( pairwise );
+use List::MoreUtils qw( any pairwise );
 
 use Moose;
 use MooseX::SemiAffordanceAccessor;
@@ -14,10 +14,11 @@ use Moose::Util::TypeConstraints;
 
 subtype 'ArrayRefOfClasses'
     => as 'ArrayRef',
-    => where { return unless @{$_};
-               return if grep { ! $_->isa('Fey::Object::Table') } @{ $_ };
+    => where { return 0 unless @{$_};
+               return 0 if any { ! $_->isa('Fey::Object::Table') } @{ $_ };
                return 1;
-             };
+             }
+    => message { 'Must be an array reference of Fey::Object::Table subclasses' };
 
 coerce 'ArrayRefOfClasses'
     => from 'ClassName'
@@ -29,15 +30,32 @@ has classes =>
       coerce => 1,
     );
 
-has handle =>
-    ( is  => 'ro',
-      isa => 'DBI::st',
+has dbh =>
+    ( is       => 'ro',
+      isa      => 'DBI::db',
+      required => 1,
+    );
+
+has select =>
+    ( is       => 'ro',
+      isa      => 'Fey::SQL::Select',
+      required => 1,
     );
 
 has bind_params =>
     ( is      => 'ro',
       isa     => 'ArrayRef',
-      default => sub { [] },
+      lazy    => 1,
+      default => sub { [ $_[0]->select()->bind_params() ] },
+    );
+
+has _sth =>
+    ( is         => 'ro',
+      isa        => 'DBI::st',
+      lazy_build => 1,
+      predicate  => '_has_sth',
+      clearer    => '_clear_sth',
+      init_arg   => undef,
     );
 
 has index =>
@@ -51,28 +69,51 @@ has index =>
                   },
     );
 
-has _executed =>
-    ( is      => 'rw',
-      isa     => 'Bool',
-      default => 0,
-    );
-
 has _row =>
     ( is      => 'ro',
       isa     => 'HashRef',
       default => sub { return {} },
     );
 
-has _attribute_map =>
+has 'attribute_map' =>
     ( is      => 'ro',
-      isa     => 'HashRef[ArrayRef[Str]]',
-      lazy    => 1,
-      default => sub { return $_[0]->_make_attribute_map() },
+      isa     => 'HashRef[HashRef[Str]]',
+      default => sub { return {} },
+    );
+
+has _merged_attribute_map =>
+    ( is          => 'ro',
+      isa         => 'HashRef[HashRef[Str]]',
+      lazy_build => 1,
     );
 
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 
+
+sub BUILD
+{
+    my $self = shift;
+
+    $self->_validate_attribute_map();
+}
+
+sub _validate_attribute_map
+{
+    my $self = shift;
+
+    my $map = $self->attribute_map();
+
+    return unless keys %{ $map };
+
+    my %valid_classes = map { $_ => 1 } @{ $self->classes() };
+
+    for my $class ( map { $_->{class} } values %{ $map } )
+    {
+        die "Cannot include a class in attribute_map ($class) unless it also in classes"
+            unless $valid_classes{$class};
+    }
+}
 
 sub next
 {
@@ -91,18 +132,17 @@ sub _get_next_result
 {
     my $self = shift;
 
-    my $sth = $self->_executed_handle();
+    my $sth = $self->_sth();
 
-    return unless $sth->fetch();
+    my $row = $sth->fetchrow_arrayref()
+        or return;
 
-    my $map = $self->_attribute_map();
-
-    my $row = $self->_row();
+    my $map = $self->_merged_attribute_map();
 
     my @result;
     for my $class ( @{ $self->classes() } )
     {
-        my %attr = map { $_ => $row->{$_} } grep { exists $row->{$_ } } @{ $map->{$class} };
+        my %attr = map { $map->{$class}{$_} => $row->[$_] } keys %{ $map->{$class} };
         $attr{_from_query} = 1;
 
         # We eval since in an outer join the primary key may be undef
@@ -112,33 +152,48 @@ sub _get_next_result
     return \@result;
 }
 
-sub _executed_handle
+sub _build__sth
 {
     my $self = shift;
 
-    my $sth = $self->handle();
-
-    return $sth if $self->_executed();
-
     my $row = $self->_row();
+
+    my $sth = $self->dbh()->prepare( $self->select()->sql( $self->dbh() ) );
 
     $sth->execute( @{ $self->bind_params() } );
 
     $sth->bind_columns( \( @{ $row }{ @{ $sth->{NAME_lc} } } ) );
 
-    $self->_set_executed(1);
-
     return $sth;
 }
 
-sub _make_attribute_map
+sub _build__merged_attribute_map
 {
     my $self = shift;
 
-    return { map { $_ => [ map { lc } grep { ! /^_/ }
-                           $_->meta()->get_attribute_list() ] }
-             @{ $self->classes() }
-           };
+    my %map;
+
+    my $x = 0;
+
+    for my $s ( $self->select()->select_clause_elements() )
+    {
+        if ( my $attr = $self->attribute_map()->{$x} )
+        {
+            my $class = $attr->{class};
+
+            $map{$class}{$x} = $attr->{attribute};
+        }
+        elsif ( $s->can('table') )
+        {
+            my $class = Fey::Meta::Class::Table->ClassForTable( $s->table() );
+
+            $map{$class}{$x} = $s->can('alias_name') ? $s->alias_name() : $s->name();
+        }
+
+        $x++;
+    }
+
+    return \%map;
 }
 
 sub all
@@ -184,7 +239,8 @@ sub reset
 {
     my $self = shift;
 
-    $self->_set_executed(0);
+    $self->_finish_handle();
+    $self->_clear_sth();
     $self->_reset_index();
 
     return;
@@ -194,10 +250,16 @@ sub DEMOLISH
 {
     my $self = shift;
 
-    if ( my $sth = $self->handle() )
-    {
-        $sth->finish() if $sth->{Active};
-    }
+    $self->_finish_handle();
+}
+
+sub _finish_handle
+{
+    my $self = shift;
+
+    return unless $self->_has_sth();
+
+    $self->_sth()->finish() if $self->_sth()->{Active};
 }
 
 no Moose;
@@ -258,16 +320,30 @@ names. These should be classes associated with the tables from which
 data is being C<SELECT>ed. The iterator will return an object of each
 class in order when C<< $iterator->next() >> is called.
 
-=item * handle
+=item * dbh
 
-This should be a prepared, but not yet executed, C<DBI> statement
-handle. Obviously, the statement handle should be for a C<SELECT>
-statement.
+A connected DBI handle
+
+=item * select
+
+This should be a C<Fey::SQL::Select> object representing the C<SELECT>
+statement that this iterator will iterator over.
 
 =item * bind_params
 
-This should be an array reference of one or more bind params to be
-passed to C<< $sth->execute() >>.
+This should be an array reference of one or more bind params for the
+C<SELECT>.
+
+This is an optional parameter. If it not passed, then the bind
+parameters will be obtained by calling the C<bind_params()> method on
+the "select" parameter.
+
+=item * attribute_map
+
+This lets you explicitly map an element of the C<SELECT> clause to a
+specific class's attribute.
+
+See L<ATTRIBUTE MAPPING> for more details.
 
 =back
 
@@ -321,6 +397,77 @@ different objects after a reset.
 
 This method will call C<< $sth->finish() >> on its C<DBI> statment
 handle if necessary.
+
+=head1 ATTRIBUTE MAPPING
+
+This class tries to automatically map each element of the C<SELECT>
+clause to a class's attribute. You can also provide your own explicit
+mappings as needed.
+
+In the absence of an explicit mapping, it checks to see if the element
+has a C<table()> method. If it does, it calls C<<
+Fey::Meta::Class::Table->ClassForTable >> in order to get a class name
+for the table. Then it uses the value of C<name()> (for column
+objects) or C<alias_name()> (for column alias objects) as the name of
+the attribute to be passed to the class's constructor.
+
+If the class is not listed in the iterator's "classes" attribute, then
+it will simply be ignored.
+
+If the element does not have a C<table()> method or an explicit
+mapping, it is ignored.
+
+This default works for most queries, where you're just selecting some
+or all of the columns from one or more tables.
+
+In more exotic cases, you can specify an explicit mapping. The mapping
+maps a C<SELECT> clause element to a specify class's attribute. The
+map would look something like this:
+
+  Fey::Object::Iterator->new
+      ( classes       => [ 'User', 'Message' ],
+        dbh           => $dbh,
+        select        => $select,
+        attribute_map => { 1 => { class     => 'User',
+                                  attribute => 'username',
+                                },
+                           3 => { class     => 'Message',
+                                  attribute => 'size',
+                                },
+      );
+
+The keys in the mapping are positions in the list of C<SELECT> clause
+elements. The numbers start from zero (0) just like a Perl array. The
+values are themselves a hash reference specifycing a "class" and
+"attribute" of that class.
+
+This explicit mapping is useful for more "exotic" queries. For example:
+
+  SELECT   Message.user_id, COUNT(message_id) AS message_count
+    FROM   Message
+  ORDER BY message_count DESC
+  GROUP BY user_id
+     LIMIT 10
+
+This query selects to the top 10 most frequent message posters from a
+C<Message> table. Assuming our C<User> class has a C<message_count>
+attribute, we'd like to create a list of C<User> objects from this
+query.
+
+  Fey::Object::Iterator->new
+      ( classes       => [ 'User', 'Message' ],
+        dbh           => $dbh,
+        select        => $select,
+        attribute_map => { 0 => { class     => 'User',
+                                  attribute => 'user_id',
+                                },
+                           1 => { class     => 'User',
+                                  attribute => 'message_count',
+                                },
+      );
+
+Explicit mappings to classes not listed in the "classes" attribute
+cause an error at object construction time.
 
 =head1 AUTHOR
 
