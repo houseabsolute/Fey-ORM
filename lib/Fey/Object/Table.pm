@@ -185,30 +185,25 @@ sub insert_many
         }
     }
 
-    my $wantarray = wantarray;
-
     my @bind_attributes = $class->_bind_attributes_for( $dbh, @non_literal_row_keys );
+
+    my $wantarray = wantarray;
 
     my @objects;
     for my $row (@rows)
     {
-        $class->_sth_execute( $sth,
-                              [ map { $class->_deflated_value( $_, $row->{$_} ) }
-                                @non_literal_row_keys ],
-                              \@bind_attributes,
-                            );
-
-        next unless defined $wantarray;
-
-        for my $col (@auto_inc_columns)
-        {
-            $row->{$col} = $dbh->last_insert_id( undef, undef, $table_name, $col );
-        }
-
-        delete @{ $row }{ @ref_row_keys }
-            if @ref_row_keys;
-
-        push @objects, $class->new( %{ $row }, _from_query => 1 );
+        push @objects,
+            $class->_insert_one_row
+                ( $row,
+                  $dbh,
+                  $sth,
+                  \@non_literal_row_keys,
+                  \@ref_row_keys,
+                  \@bind_attributes,
+                  \@auto_inc_columns,
+                  $table_name,
+                  $wantarray,
+                );
     }
 
     return $wantarray ? @objects : $objects[0];
@@ -230,6 +225,40 @@ sub _bind_attributes_for
     return unless grep { keys %{ $_ } } @attr;
 
     return @attr;
+}
+
+sub _insert_one_row
+{
+    my $class                = shift;
+    # This is really grotesque
+    my $row                  = shift;
+    my $dbh                  = shift;
+    my $sth                  = shift;
+    my $non_literal_row_keys = shift;
+    my $ref_row_keys         = shift;
+    my $bind_attributes      = shift;
+    my $auto_inc_columns     = shift;
+    my $table_name           = shift;
+    my $wantarray            = shift;
+
+    $class->_sth_execute( $sth,
+                          [ map { $class->_deflated_value( $_, $row->{$_} ) }
+                            @{ $non_literal_row_keys } ],
+                          $bind_attributes,
+                        );
+
+    return unless defined $wantarray;
+
+    for my $col ( @{ $auto_inc_columns } )
+    {
+        $row->{$col} =
+            $dbh->last_insert_id( undef, undef, $table_name, $col );
+    }
+
+    delete @{ $row }{ @{ $ref_row_keys } }
+        if @{ $ref_row_keys };
+
+    return $class->new( %{ $row }, _from_query => 1 );
 }
 
 sub _sth_execute
