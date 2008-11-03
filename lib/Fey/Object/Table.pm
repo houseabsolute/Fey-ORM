@@ -395,7 +395,7 @@ sub _get_column_value
     my $self = shift;
 
     my $col_values = $self->_get_column_values( $self->meta()->_select_by_pk_sql(),
-                                                [ $self->_pk_vals() ],
+                                                [ $self->pk_values_list() ],
                                               );
 
     my $name = shift;
@@ -460,22 +460,31 @@ sub _dbh
     return $source->dbh();
 }
 
-sub _pk_vals
+sub pk_values_hash
 {
     my $self = shift;
 
-    my @pk;
+    my @vals = $self->pk_values_list()
+        or return;
 
-    for my $col_name ( map { $_->name() } @{ $self->Table()->primary_key() } )
-    {
-        my $pred = 'has_' . $col_name;
+    my @cols =
+        ( map { $_->name() }
+          @{ $self->Table()->primary_key() }
+        );
 
-        return unless $self->$pred();
+    return map { $_ => $self->$_() } @cols;
+}
 
-        push @pk, $self->$col_name();
-    }
+sub pk_values_list
+{
+    my $self = shift;
 
-    return @pk;
+    my @cols =
+        ( map { $_->name() }
+          @{ $self->Table()->primary_key() }
+        );
+
+    return map { $self->$_() } @cols;
 }
 
 sub _MakeSelectByPKSQL
@@ -678,6 +687,25 @@ The object is still usable after this method is called, but if you
 attempt to call any method that tries to access the DBMS it will
 probably blow up.
 
+=head2 $object->pk_values_hash()
+
+Returns a has representing the names and values for the object's
+primary key.
+
+This may return an empty hash if the primary key for the object has
+not yet been determined. This can happen if you try to call this
+method on an object before its attributes have been fetched from the
+dbms.
+
+=head2 $object->pk_values_list()
+
+Returns a list of values for the object's primary key. The values are
+returned in the same order as C<< $self->primary_key() >> returns the
+columns.
+
+This may return an empty list if the primary key for the object
+has not yet been determined.
+
 =head1 METHODS FOR SUBCLASSES
 
 Since your table-based class will be a subclass of this object, there
@@ -693,13 +721,6 @@ schema class's C<Fey::DBIManager> object and then calls C<<
 $source->dbh() >> on the source.
 
 If there is no source for the given SQL, it will die.
-
-=head2 $object->_pk_vals()
-
-This method returns an array of primary key values for the object's
-row. This may return an empty array if the primary key for the object
-has not yet been determined. This can happen if you try to call this
-on an object before its attributes have been fetched from the dbms.
 
 =head2 $object->_load_from_dbms($params)
 

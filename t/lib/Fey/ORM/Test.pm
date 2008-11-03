@@ -84,6 +84,12 @@ sub define_basic_classes
     use Fey::ORM::Table;
 
     has_table $schema->table('Message');
+
+    package UserGroup;
+
+    use Fey::ORM::Table;
+
+    has_table $schema->table('UserGroup');
 }
 EOF
 

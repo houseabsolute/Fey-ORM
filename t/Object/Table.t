@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::define_live_classes();
 
-plan tests => 67;
+plan tests => 71;
 
 
 basic_tests();
@@ -196,6 +196,28 @@ sub basic_tests
 
         is( $user->user_id(), 99,
             'new() with _from_query works when given a candidate key' );
+    }
+
+    {
+        my $user = UserGroup->new( user_id     => 99,
+                                   group_id    => 26,
+                                   _from_query => 1,
+                                 );
+
+        my %pk_hash = ( user_id => 99, group_id => 26 );
+
+        # The order of the columns returned by ->primary_key() is not
+        # predictable, but it is always the same (at least for a given
+        # perl binary).
+        my @pk_array = map { $pk_hash{ $_->name() } } @{ UserGroup->Table()->primary_key() };
+
+        is_deeply( { $user->pk_values_hash() },
+                   \%pk_hash,
+                   'pk_values_list returns expected values' );
+
+        is_deeply( [ $user->pk_values_list() ],
+                   \@pk_array,
+                   'pk_values_list returns expected values' );
     }
 }
 
