@@ -1,8 +1,31 @@
 0.12
 
+* WARNING: This release contains a few backwards
+  incompatibilities. See below for details.
+
 * Removed Fey::Object::Table->_pk_vals().
 
 - Added Fey::Object::Table->pk_values_hash() and ->pk_values_list().
+
+* The parameters for constructing a Fey::Object::Iterator object have
+  been changed quite a bit. This fixes a problem where an iterator
+  could be iterating over a set of results that contained a column
+  which matched an attribute in two different classes, but was only
+  valid for one classes.
+
+  For example, if you had a Contact.note and ContactHistory.note
+  columns and your iterator was returning objects for both tables,
+  then _one_ of the note columns would get passed to the constructor
+  for _both_ tables.
+
+  With the changes, Fey::Object::Iterator figures out which item in
+  the returned row belongs to which class positionally, so if two
+  columns have the same name, they are passed to the correct classes.
+
+  You can also provide explicit mappings from an item in the result
+  rows to a class's attribute, which is handy if you want to map the
+  results of an arbitrary query to a set of classes. See the
+  Fey::Object::Iterator docs for more details.
 
 
 0.11   2008-09-20
