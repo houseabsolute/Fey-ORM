@@ -472,7 +472,7 @@ sub pk_values_hash
           @{ $self->Table()->primary_key() }
         );
 
-    return map { $_ => $self->$_() } @cols;
+    return map { $_ => $self->_deflated_value($_) } @cols;
 }
 
 sub pk_values_list
@@ -484,7 +484,7 @@ sub pk_values_list
           @{ $self->Table()->primary_key() }
         );
 
-    return map { $self->$_() } @cols;
+    return map { $self->_deflated_value($_) } @cols;
 }
 
 sub _MakeSelectByPKSQL
@@ -689,8 +689,9 @@ probably blow up.
 
 =head2 $object->pk_values_hash()
 
-Returns a has representing the names and values for the object's
-primary key.
+Returns a hash representing the names and values for the object's
+primary key. The values are returned in their raw form, regardless of
+any transforms specific for a primary key column.
 
 This may return an empty hash if the primary key for the object has
 not yet been determined. This can happen if you try to call this
@@ -701,7 +702,8 @@ dbms.
 
 Returns a list of values for the object's primary key. The values are
 returned in the same order as C<< $self->primary_key() >> returns the
-columns.
+columns. The values are returned in their raw form, regardless of any
+transforms specific for a primary key column.
 
 This may return an empty list if the primary key for the object
 has not yet been determined.
