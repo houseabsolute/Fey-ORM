@@ -72,14 +72,15 @@ Of course, you need to create a C<Fey::Schema> object to pass to
 C<has_schema()>. You might as well create a C<Fey::DBIManager::Source>
 object along the way.
 
-  package Forum::Model::User;
+  package Forum::Model::Schema;
 
   use Fey::DBIManager;
   use Fey::DBIManager::Source;
   use Fey::Loader;
   use Fey::ORM::Schema;
 
-  my $source = Fey::DBIManager::Source->new( dsn => 'dbi:SQLite:dbname=/tmp/forum.sqlite' );
+  my $source =
+      Fey::DBIManager::Source->new( dsn => 'dbi:SQLite:dbname=/tmp/forum.sqlite' );
 
   my $schema = Fey::Loader->new( dbh => $source->dbh() )->make_schema();
 
@@ -121,9 +122,16 @@ L<Fey::Object::Table> knows that both of those columns represent
 unique keys for the associated table, and so will be able to load the
 associated user from the DBMS, if it exists.
 
-You can also modify or delete existing users:
+You can modify existing users:
 
   $user->update( username => 'bubba' );
+
+When you call C<< $user->update() >>, attributes
+which are being set to a non-literal value (such as a the value of a
+function or some other SQL expression) will be cleared so they are
+reloaded from the DBMS when they are next accessed.
+
+You can also delete them:
 
   $user->delete();
 
@@ -144,12 +152,10 @@ attributes for free, one for each column in the associated table:
   print $user->username();
 
 These attributes are only loaded from the DBMS once, and then are
-cached in the object. Calling C<< $user->update() >> will clear any
-attributes being updated so they are reloaded from the DBMS when they
-are next accessed.
+cached in the object.
 
 Of course, L<Fey::ORM> actually loads all of the columns at once,
-rather than once per column, since anytihng else would be grossly
+rather than once per column, since anything else would be grossly
 inefficient.
 
 =head1 INFLATE/DEFLATE
