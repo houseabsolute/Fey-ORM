@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::define_live_classes();
 
-plan tests => 71;
+plan tests => 73;
 
 
 basic_tests();
@@ -119,13 +119,21 @@ sub basic_tests
     }
 
     {
-        my @users = User->insert_many( { username => 'new3',
-                                         email    => 'new3@example.com',
-                                       },
+        my %h1 = ( username => 'new3',
+                   email    => 'new3@example.com',
+                 );
+
+        my @users = User->insert_many( \%h1,
                                        { username => 'new4',
                                          email    => 'new4@example.com',
                                        },
                                      );
+
+        is_deeply( \%h1,
+                   { username => 'new3',
+                     email    => 'new3@example.com',
+                   },
+                   'insert_many() does not alter its parameters' );
 
         is( @users, 2, 'two new users were inserted' );
         is_deeply( [ map { $_->username() } @users ],

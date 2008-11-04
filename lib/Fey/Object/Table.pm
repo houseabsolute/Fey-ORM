@@ -249,16 +249,17 @@ sub _insert_one_row
 
     return unless defined $wantarray;
 
+    my %auto_inc;
     for my $col ( @{ $auto_inc_columns } )
     {
-        $row->{$col} =
+        $auto_inc{$col} =
             $dbh->last_insert_id( undef, undef, $table_name, $col );
     }
 
     delete @{ $row }{ @{ $ref_row_keys } }
         if @{ $ref_row_keys };
 
-    return $class->new( %{ $row }, _from_query => 1 );
+    return $class->new( %{ $row }, %auto_inc, _from_query => 1 );
 }
 
 sub _sth_execute
