@@ -735,7 +735,6 @@ by looking at each of the table's candidate keys in turn. If the
 parameters passed to the constructor include values for all parts of a
 key, it does a select to find a matching row.
 
-
 You can override this method in order to attempt to load an object
 based on some other method. For example, if your user table stores a
 username and a hashed password, you could accept an I<unhashed>
