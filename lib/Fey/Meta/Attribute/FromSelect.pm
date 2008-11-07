@@ -50,14 +50,10 @@ sub _make_default_from_select
                     $bind_sub ? $self->$bind_sub() : ()
                   );
 
-              if ($wantarray)
-              {
-                  return $dbh->selectcol_arrayref(@select_p);
-              }
-              else
-              {
-                  return $dbh->selectrow_arrayref(@select_p)->[0];
-              }
+              my $col = $dbh->selectcol_arrayref(@select_p)
+                  or return;
+
+              return $wantarray ? $col : $col->[0];
             };
 }
 
