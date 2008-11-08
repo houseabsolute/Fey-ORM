@@ -67,7 +67,8 @@ Fey::Object::Iterator::Caching - A caching subclass of Fey::Object::Iterator
   my $iter =
       Fey::Object::Iterator::Caching->new
           ( classes     => 'MyApp::User',
-            handle      => $sth,
+            select      => $select,
+            dbh         => $dbh,
             bind_params => \@bind,
           );
 

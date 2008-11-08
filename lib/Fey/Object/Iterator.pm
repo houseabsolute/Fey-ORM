@@ -282,7 +282,8 @@ Fey::Object::Iterator - Wraps a DBI statement handle to construct objects from t
   my $iter =
       Fey::Object::Iterator->new
           ( classes     => 'MyApp::User',
-            handle      => $sth,
+            select      => $select,
+            dbh         => $dbh,
             bind_params => \@bind,
           );
 
