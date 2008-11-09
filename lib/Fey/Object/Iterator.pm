@@ -69,12 +69,6 @@ has index =>
                   },
     );
 
-has _row =>
-    ( is      => 'ro',
-      isa     => 'HashRef',
-      default => sub { return {} },
-    );
-
 has 'attribute_map' =>
     ( is      => 'ro',
       isa     => 'HashRef[HashRef[Str]]',
@@ -156,13 +150,9 @@ sub _build__sth
 {
     my $self = shift;
 
-    my $row = $self->_row();
-
     my $sth = $self->dbh()->prepare( $self->select()->sql( $self->dbh() ) );
 
     $sth->execute( @{ $self->bind_params() } );
-
-    $sth->bind_columns( \( @{ $row }{ @{ $sth->{NAME_lc} } } ) );
 
     return $sth;
 }
