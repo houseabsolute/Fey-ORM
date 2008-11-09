@@ -140,7 +140,7 @@ sub _get_next_result
         $attr{_from_query} = 1;
 
         # We eval since in an outer join the primary key may be undef
-        push @result, eval { $class->new( \%attr ) } || undef;
+        push @result, $class->new( \%attr ) || undef;
     }
 
     return \@result;
