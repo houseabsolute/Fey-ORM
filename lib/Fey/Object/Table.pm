@@ -26,12 +26,12 @@ sub new
 
     if ( $class->meta()->_object_cache_is_enabled() )
     {
-        my $object = $class->meta()->_search_cache( ref $_[0] ? $_[0] : { @_ } );
+        my $instance = $class->meta()->_search_cache( ref $_[0] ? $_[0] : { @_ } );
 
-        return $object if $object;
+        return $instance if $instance;
     }
 
-    my $object = eval { $class->SUPER::new(@_) };
+    my $instance = eval { $class->SUPER::new(@_) };
 
     if ( my $e = $@ )
     {
@@ -40,10 +40,10 @@ sub new
         die $e;
     }
 
-    $class->meta()->_write_to_cache($object)
+    $class->meta()->_write_to_cache($instance)
         if $class->meta()->_object_cache_is_enabled();
 
-    return $object;
+    return $instance;
 }
 
 sub BUILD
