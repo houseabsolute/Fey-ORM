@@ -14,6 +14,7 @@ use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
 use Fey::Meta::Attribute::FromSelect;
 use Fey::Meta::Class::Schema;
+use Fey::Meta::Method::Constructor;
 use List::MoreUtils qw( all );
 
 use Moose qw( extends with has );
@@ -728,9 +729,6 @@ sub _build__count_sql
 
     return $select;
 }
-
-
-use Fey::Meta::Method::Constructor;
 
 sub make_immutable
 {
