@@ -21,7 +21,7 @@ A "table-based" class for the User table:
   package MyApp::Model::User;
 
   use MyApp::Model::Schema;
-  use Fey::Class::Table;
+  use Fey::Object::Table;
 
   my $schema = MyApp::Model::Schema->Schema();
 
@@ -36,7 +36,7 @@ C<MyApp::Model::Schema> might look like this:
 
   package MyApp::Model::Schema;
 
-  use Fey::Class::Schema;
+  use Fey::Object::Schema;
   use Fey::DBIManager::Source;
   use Fey::Loader;
 
