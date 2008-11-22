@@ -139,7 +139,6 @@ sub _get_next_result
         my %attr = map { $map->{$class}{$_} => $row->[$_] } keys %{ $map->{$class} };
         $attr{_from_query} = 1;
 
-        # We eval since in an outer join the primary key may be undef
         push @result, $class->new( \%attr ) || undef;
     }
 
