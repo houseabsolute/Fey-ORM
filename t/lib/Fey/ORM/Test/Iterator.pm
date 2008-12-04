@@ -235,7 +235,6 @@ sub run_shared_tests
                           ->from( $schema->tables( 'User' ) )
                           ->order_by( $schema->table('User')->column('user_id') );
 
-
         my $iterator = $class->new( classes       => [ 'Message', 'User' ],
                                     dbh           => $dbh,
                                     select        => $sql,
