@@ -139,7 +139,20 @@ sub _get_next_result
         my %attr = map { $map->{$class}{$_} => $row->[$_] } keys %{ $map->{$class} };
         $attr{_from_query} = 1;
 
-        push @result, $class->new( \%attr ) || undef;
+        # FIXME - This eval is kind of a band-aid. It is possible
+        # (especially with DBD::Mock) for %attr to contain bogus data
+        # (wrong types). However, it's also possible for %attr to
+        # contain undefs for non-NULLable columns when iterator over
+        # the results of a select, especially outer joins.
+        #
+        # In the outer join case, we do want to ignore object
+        # construction errors, but otherwise we don't.
+        #
+        # Fortunately, bogus data is unlikely, unless the caller
+        # explicitly provides a bad attribute_map, or a valid
+        # attribute_map and a crazy query. It also can happen pretty
+        # easily with DBD::Mock.
+        push @result, eval { $class->new( \%attr ) } || undef;
     }
 
     return \@result;
