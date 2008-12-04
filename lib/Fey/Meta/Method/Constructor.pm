@@ -104,6 +104,10 @@ sub initialize_body {
     $self->{'body'} = $code;
 }
 
+sub _expected_constructor_class {
+    return 'Fey::Object::Table';
+}
+
 sub _search_cache
 {
     my $self = shift;
