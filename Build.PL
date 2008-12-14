@@ -26,6 +26,7 @@ my $builder =
           create_makefile_pl   => 'passthrough',
           create_readme        => 1,
           sign                 => 1,
+          add_to_cleanup       => [ 'Debian_CPANTS.txt' ],
         );
 
 $builder->create_build_script();
