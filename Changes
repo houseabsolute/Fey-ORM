@@ -1,3 +1,9 @@
+0.14
+
+- The Fey::Meta::Attribute::FromSelect class now stores the select and
+  bind_params parameters it receives, for more introspectability.
+
+
 0.13   2008-12-08
 
 - Updated to work with Moose 0.63.

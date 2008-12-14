@@ -18,11 +18,26 @@ before '_process_options' => sub
 
     $options->{default} =
         $class->_make_default_from_select
-            ( delete $options->{select},
-              delete $options->{bind_params},
+            ( $options->{select},
+              $options->{bind_params},
               $options->{isa},
             );
 };
+
+sub _new {
+    my $class = shift;
+    my $options = @_ == 1 ? $_[0] : {@_};
+
+    my $self = $class->SUPER::_new($options);
+
+    $self->{select} = $options->{select};
+    $self->{bind_params} = $options->{bind_params};
+
+    return $self;
+}
+
+sub select { $_[0]->{select} }
+sub bind_params { $_[0]->{bind_params} }
 
 sub _make_default_from_select
 {
@@ -113,6 +128,20 @@ parameter.
 Note that this metaclass overrides any value you provide for "default"
 with a subroutine that executes the query and gets the value it
 returns.
+
+=head1 METHODS
+
+This class adds a few methods to those provided by
+C<Moose::Meta::Attribute>:
+
+=head2 $attr->select()
+
+Returns the C<Fey::SQL::Select> object associated with this object.
+
+=head2 $attr->bind_params()
+
+Returns the bind_params subroutine reference associated with this
+attribute, if any.
 
 =head1 ArrayRef TYPES
 

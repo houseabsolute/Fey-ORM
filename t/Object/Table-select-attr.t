@@ -5,6 +5,7 @@ use Test::More;
 
 use lib 't/lib';
 
+use Fey::FakeDBI;
 use Fey::ORM::Test;
 use Fey::Literal::Function;
 
@@ -12,7 +13,7 @@ use Fey::Literal::Function;
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
-plan tests => 2;
+plan tests => 8;
 
 
 {
@@ -43,6 +44,7 @@ plan tests => 2;
 
         my $length =
             Fey::Literal::Function->new( 'LENGTH', $class->Table()->column('email') );
+        $length->set_alias_name('email_length');
 
         my $select = Schema->SQLFactoryClass()->new_select();
 
@@ -76,4 +78,29 @@ plan tests => 2;
         'email_length accessor gets the right value' );
     is_deeply( $user->user_ids(), [ 1, 42 ],
                'user_ids returns an arrayref with the expected values' );
+}
+
+{
+    my $attr = User->meta()->get_attribute('email_length');
+    isa_ok( $attr, 'Fey::Meta::Attribute::FromSelect',
+            'email_length meta-attr' );
+
+    is( $attr->select()->sql( 'Fey::FakeDBI' ),
+        User->_BuildEmailLengthSelect()->sql( 'Fey::FakeDBI' ),
+        'select for attr is the expected SQL' );
+
+    my $user = User->new( user_id => 42 );
+    is( $attr->bind_params()->($user), 42,
+        'bind_params subroutine reference returns user_id' );
+}
+
+{
+    my $attr = User->meta()->get_attribute('user_ids');
+    isa_ok( $attr, 'Fey::Meta::Attribute::FromSelect',
+            'user_ids meta-attr' );
+
+    is( $attr->select()->sql( 'Fey::FakeDBI' ),
+        User->_BuildUserIdsSelect()->sql( 'Fey::FakeDBI' ),
+        'select for attr is the expected SQL' );
+    ok( ! $attr->bind_params(), 'attr has no associated bind_params sub ref' );
 }
