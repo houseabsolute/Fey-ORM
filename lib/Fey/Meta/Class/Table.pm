@@ -14,6 +14,8 @@ use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
 use Fey::Meta::Attribute::FromSelect;
 use Fey::Meta::Class::Schema;
+use Fey::Meta::HasOne::ViaFK;
+use Fey::Meta::HasOne::ViaSelect;
 use Fey::Meta::Method::Constructor;
 use List::MoreUtils qw( all );
 
@@ -87,6 +89,17 @@ has 'schema_class',
       lazy    => 1,
       default => sub { Fey::Meta::Class::Schema
                            ->ClassForSchema( $_[0]->table()->schema() ) },
+    );
+
+has '_has_ones' =>
+    ( metaclass => 'Collection::Array',
+      is        => 'rw',
+      isa       => 'ArrayRef[Fey::Meta::HasOne]',
+      default   => sub { [] },
+      lazy      => 1,
+      provides  => { push     => '_add_has_one',
+                     elements => 'has_ones',
+                   },
     );
 
 has '_select_sql_cache',
@@ -337,91 +350,37 @@ sub _add_transform
     }
 }
 
-{
-    my $spec = { name        => SCALAR_TYPE( default => undef ),
-                 table       => TABLE_TYPE,
-                 cache       => BOOLEAN_TYPE( default => 1 ),
-                 fk          => FK_TYPE( default => undef ),
-                 select      => SELECT_TYPE( default => undef ),
-                 bind_params => CODEREF_TYPE( default => sub {} ),
-                 handles     => { default => undef },
-                 undef       => BOOLEAN_TYPE( default => undef ),
-               };
-
-    sub _add_has_one_relationship
-    {
-        my $self = shift;
-        my %p    = validate( @_, $spec );
-
-        param_error 'A table object passed to has_one() must have a schema'
-            unless $p{table}->has_schema();
-
-        param_error 'You must call has_table() before calling has_one().'
-            unless $self->_has_table();
-
-        $self->_make_has_one(%p);
-    }
-}
-
-sub _make_has_one
+sub _add_has_one_relationship
 {
     my $self = shift;
     my %p    = @_;
 
-    my $name = $p{name} || lc $p{table}->name();
+    param_error 'You must call has_table() before calling has_one().'
+        unless $self->_has_table();
 
-    my $default_sub;
-    if ( $p{select} )
-    {
-        $default_sub = $self->_make_has_one_default_sub_via_sql(%p);
-    }
-    else
-    {
 
-        $p{fk} ||= $self->_find_one_fk( $p{table}, 'has_one' );
+    param_error 'You cannot pass both a select and fk parameter when creating a has-one relationship'
+        if $p{select} && $p{fk};
 
-        $p{fk} = $self->_invert_fk_if_necessary( $p{fk}, $p{table} );
+    my $class =
+        $p{select} ? 'Fey::Meta::HasOne::ViaSelect' : 'Fey::Meta::HasOne::ViaFK';
 
-        $default_sub = $self->_make_has_one_default_sub_via_fk(%p);
-    }
+    $p{foreign_table} = delete $p{table};
 
-    if ( $p{cache} )
-    {
-        # If given a select SQL for the has_one relationship we assume
-        # it can always be undef, since we don't know the content of
-        # the SQL.
-        my $can_be_undef = $p{undef};
+    $p{is_cached}     = delete $p{cache}
+        if exists $p{cache};
+    $p{allows_undef}  = delete $p{undef}
+        if exists $p{undef};
 
-        unless ( defined $can_be_undef )
-        {
-            $can_be_undef = $p{select} || grep { $_->is_nullable() } @{ $p{fk}->source_columns() };
-        }
+    my $has_one =
+        $class->new
+            ( table => $self->table(),
+              %p,
+            );
 
-        # It'd be nice to set isa to the actual foreign class, but we may
-        # not be able to map a table to a class yet, since that depends on
-        # the related class being loaded. It doesn't really matter, since
-        # this accessor is read-only, so there's really no typing issue to
-        # deal with.
-        my $type = 'Fey::Object::Table';
-        $type = "Maybe[$type]" if $can_be_undef;
+    $has_one->attach_to_class($self);
 
-        my %attr_p = ( is      => 'rw',
-                       isa     => $type,
-                       lazy    => 1,
-                       default => $default_sub,
-                       writer  => q{_set_} . $name,
-                       clearer => q{_clear_} . $name,
-                     );
-
-        $attr_p{handles} = $p{handles}
-            if $p{handles};
-
-        $self->add_attribute( $name, %attr_p );
-    }
-    else
-    {
-        $self->add_method( $name => $default_sub );
-    }
+    $self->_add_has_one($has_one);
 }
 
 sub _find_one_fk
@@ -495,80 +454,6 @@ sub _invert_fk_if_necessary
     return Fey::FK->new( source_columns => $fk->target_columns(),
                          target_columns => $fk->source_columns(),
                        );
-}
-
-sub _make_has_one_default_sub_via_sql
-{
-    my $self = shift;
-    my %p    = @_;
-
-    my $target_table = $p{table};
-
-    my $select = $p{select};
-    my $bind   = $p{bind_params};
-
-    # XXX - this is really similar to
-    # Fey::Object::Table->_get_column_values() and needs some serious
-    # cleanup.
-    return
-        sub { my $self = shift;
-
-              my $dbh = $self->_dbh($select);
-
-              my $sth = $dbh->prepare( $select->sql($dbh) );
-
-              $sth->execute( $self->$bind() );
-
-              my %col_values;
-              $sth->bind_columns( \( @col_values{ @{ $sth->{NAME} } } ) );
-
-              my $fetched = $sth->fetch();
-
-              $sth->finish();
-
-              return unless $fetched;
-
-              $self->meta()->ClassForTable($target_table)->new
-                  ( %col_values, _from_query => 1 );
-            };
-}
-
-sub _make_has_one_default_sub_via_fk
-{
-    my $self = shift;
-    my %p    = @_;
-
-    my $fk = $p{fk};
-
-    my %column_map;
-    for my $pair ( @{ $fk->column_pairs() } )
-    {
-        my ( $from, $to ) = @{ $pair };
-
-        $column_map{ $from->name() } = [ $to->name(), $to->is_nullable() ];
-    }
-
-    my $target_table = $p{table};
-
-    return
-        sub { my $self = shift;
-
-              my %new_p;
-
-              for my $from ( keys %column_map )
-              {
-                  my $target_name = $column_map{$from}[0];
-
-                  $new_p{$target_name} = $self->$from();
-
-                  return unless defined $new_p{$target_name} || $column_map{$from}[1];
-              }
-
-              return
-                  $self->meta()
-                       ->ClassForTable($target_table)
-                       ->new(%new_p);
-            };
 }
 
 {

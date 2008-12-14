@@ -137,7 +137,7 @@ my $Schema = schema();
     my $table = Fey::Table->new( name => 'NewTable' );
     eval { has_one $table };
 
-    ::like( $@, qr/\QA table object passed to has_one() must have a schema/,
+    ::like( $@, qr/\QA table used for has-one or -many relationships must have a schema/,
             'table without a schema passed to has_one()' );
 }
 
