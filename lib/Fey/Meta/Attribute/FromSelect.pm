@@ -9,7 +9,7 @@ use Moose::Util::TypeConstraints;
 extends 'Moose::Meta::Attribute';
 
 
-before '_process_options' => sub
+sub _process_options
 {
     my $class   = shift;
     my $name    = shift;
@@ -23,6 +23,8 @@ before '_process_options' => sub
               $options->{bind_params},
               $options->{isa},
             );
+
+    return $class->SUPER::_process_options( $name, $options );
 };
 
 sub _new
