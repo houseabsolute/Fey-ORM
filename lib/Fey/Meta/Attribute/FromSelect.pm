@@ -8,6 +8,7 @@ use Moose::Util::TypeConstraints;
 
 extends 'Moose::Meta::Attribute';
 
+
 before '_process_options' => sub
 {
     my $class   = shift;
