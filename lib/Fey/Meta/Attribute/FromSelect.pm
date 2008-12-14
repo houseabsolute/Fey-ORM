@@ -25,7 +25,8 @@ before '_process_options' => sub
             );
 };
 
-sub _new {
+sub _new
+{
     my $class = shift;
     my $options = @_ == 1 ? $_[0] : {@_};
 
