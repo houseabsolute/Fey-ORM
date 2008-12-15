@@ -92,13 +92,16 @@ has 'schema_class',
     );
 
 has '_has_ones' =>
-    ( metaclass => 'Collection::Array',
+    ( metaclass => 'Collection::Hash',
       is        => 'rw',
-      isa       => 'ArrayRef[Fey::Meta::HasOne]',
-      default   => sub { [] },
+      isa       => 'HashRef[Fey::Meta::HasOne]',
+      default   => sub { {} },
       lazy      => 1,
-      provides  => { push     => '_add_has_one',
-                     elements => 'has_ones',
+      provides  => { set    => '_add_has_one',
+                     values => 'has_ones',
+                     get    => '_has_one',
+                     exists => '_has_has_one',
+                     delete => '_remove_has_one',
                    },
     );
 
@@ -380,7 +383,21 @@ sub _add_has_one_relationship
 
     $has_one->attach_to_class($self);
 
-    $self->_add_has_one($has_one);
+    $self->_add_has_one( $has_one->name() => $has_one );
+}
+
+sub remove_has_one
+{
+    my $self = shift;
+    my $name = shift;
+
+    return unless $self->_has_has_one($name);
+
+    my $has_one = $self->_has_one($name);
+
+    $has_one->detach_from_class();
+
+    $self->_remove_has_one( $has_one->name() );
 }
 
 sub _find_one_fk

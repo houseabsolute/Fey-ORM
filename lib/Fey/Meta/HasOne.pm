@@ -10,37 +10,6 @@ use MooseX::StrictConstructor;
 
 extends 'Fey::Meta::FK';
 
-has associated_class =>
-    ( is       => 'rw',
-      isa      => 'Fey::Meta::Class::Table',
-      writer   => '_set_associated_class',
-      weak_ref => 1,
-      init_arg => undef,
-    );
-
-has name =>
-    ( is         => 'ro',
-      isa        => 'Str',
-      lazy_build => 1,
-    );
-
-has table =>
-    ( is       => 'ro',
-      isa      => 'Fey.ORM.Type.TableWithSchema',
-      required => 1,
-    );
-
-has foreign_table =>
-    ( is       => 'ro',
-      isa      => 'Fey.ORM.Type.TableWithSchema',
-      required => 1,
-    );
-
-has is_cached =>
-    ( is      => 'ro',
-      isa     => 'Bool',
-      default => 1,
-    );
 
 has handles =>
     ( is  => 'ro',
@@ -62,26 +31,11 @@ sub _build_name
     return lc $self->foreign_table()->name();
 }
 
-sub attach_to_class
-{
-    my $self  = shift;
-    my $class = shift;
-
-    $self->_set_associated_class($class);
-
-    if ( $self->is_cached() )
-    {
-        $self->_make_attribute();
-    }
-    else
-    {
-        $self->_make_method();
-    }
-}
-
-sub _make_attribute
+sub _build_associated_attribute
 {
     my $self = shift;
+
+    return unless $self->is_cached();
 
     # It'd be nice to set isa to the actual foreign class, but we may
     # not be able to map a table to a class yet, since that depends on
@@ -104,15 +58,25 @@ sub _make_attribute
     $attr_p{handles} = $self->handles()
         if $self->handles();
 
-    $self->associated_class()->add_attribute( $self->name(), %attr_p );
+    return
+        $self->associated_class()->attribute_metaclass()
+             ->new( $self->name(),
+                    %attr_p,
+                  );
 }
 
-sub _make_method
+sub _build_associated_method
 {
     my $self = shift;
 
-    $self->associated_class()->add_method
-        ( $self->name() => $self->_make_subref() );
+    return if $self->is_cached();
+
+    return
+        $self->associated_class()->method_metaclass()
+             ->wrap( name         => $self->name(),
+                     package_name => $self->associated_class()->name(),
+                     body         => $self->_make_subref(),
+                   );
 }
 
 

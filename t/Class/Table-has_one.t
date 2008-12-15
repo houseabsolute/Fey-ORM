@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 26;
+use Test::More tests => 49;
 
 use lib 't/lib';
 
@@ -40,6 +40,33 @@ my $Schema = schema();
         'user attribute default is a coderef' );
     is( $attr->type_constraint()->name(), 'Fey::Object::Table',
         'user attribute type constraint is Fey::Object::Table' );
+
+    my @ones = Message->meta()->has_ones();
+    is( scalar @ones, 1,
+        'one has_one for Message class' );
+
+    my $ho = $ones[0];
+    isa_ok( $ho, 'Fey::Meta::HasOne::ViaFK' );
+    is( $ho->associated_class(), Message->meta(),
+        'associated_class is Message->meta()' );
+    is( $ho->name(), 'user',
+        'name is user' );
+    is( $ho->table(), $Schema->table('Message'),
+        'table is Message table object' );
+    is( $ho->foreign_table(), $Schema->table('User'),
+        'foreign_table is User table object' );
+    ok( $ho->is_cached(), 'is_cached is true' );
+    ok( ! $ho->allows_undef(), 'allows_undef is false' );
+    is( $ho->fk()->source_table() , $Schema->table('Message'),
+        'fk source table is Message' );
+    is( $ho->fk()->target_table() , $Schema->table('User'),
+        'fk target table is User' );
+    is( $ho->associated_method(), undef,
+        'associated_method is undef' );
+
+    my $assoc_attr = $ho->associated_attribute();
+    is( $assoc_attr, $attr,
+        'associated attribute is same as the one in the metaclass' );
 }
 
 {
@@ -47,7 +74,12 @@ my $Schema = schema();
 
     use Fey::ORM::Table;
 
-    __PACKAGE__->meta()->remove_attribute('user');
+    __PACKAGE__->meta()->remove_has_one('user');
+
+    ::is( scalar __PACKAGE__->meta()->has_ones(), 0,
+          'no has_ones after calling remove_has_one' );
+    ::ok( ! __PACKAGE__->meta()->has_attribute('user'),
+          'does not have a user attribute after calling remove_has_one' );
 
     has_one 'user' =>
         ( table => $Schema->table('User'),
@@ -59,12 +91,17 @@ my $Schema = schema();
     my $attr = Message->meta()->get_attribute('user');
     is( $attr->type_constraint()->name(), 'Maybe[Fey::Object::Table]',
         'user attribute type constraint is Maybe[Fey::Object::Table]' );
+
+    my @ones = Message->meta()->has_ones();
+    is( scalar @ones, 1,
+        'one has_one for Message class' );
+    ok( $ones[0]->allows_undef, 'allows_undef is true' );
 }
 
 {
     package Message;
 
-    __PACKAGE__->meta()->remove_attribute('user');
+    __PACKAGE__->meta()->remove_has_one('user');
 
     has_one 'my_user' =>
         ( table => $Schema->table('User'),
@@ -87,7 +124,7 @@ my $Schema = schema();
 {
     package Message;
 
-    __PACKAGE__->meta()->remove_attribute('user');
+    __PACKAGE__->meta()->remove_has_one('my_user');
 
     has_one 'user' =>
         ( table => $Schema->table('User'),
@@ -101,6 +138,12 @@ my $Schema = schema();
 
     ok( ! Message->meta()->has_attribute('user'),
         'Message does not have an attribute for user (but does have a user() method)' );
+
+    my @ones = Message->meta()->has_ones();
+    is( scalar @ones, 1,
+        'one has_one for Message class' );
+    is( $ones[0]->associated_method(), Message->meta()->get_method('user'),
+        'associated_method matches user method in Message class' );
 }
 
 {
@@ -108,7 +151,7 @@ my $Schema = schema();
 
     use Fey::ORM::Table;
 
-    __PACKAGE__->meta()->remove_attribute('user');
+    __PACKAGE__->meta()->remove_has_one('user');
 
     has_one 'user' =>
         ( table   => $Schema->table('User'),
@@ -161,7 +204,7 @@ my $Schema = schema();
 {
     package Message;
 
-    __PACKAGE__->meta()->remove_method('user');
+    __PACKAGE__->meta()->remove_has_one('user');
 
     eval { has_one 'editor' => ( table => $Schema->table('User') ) };
 
@@ -181,10 +224,17 @@ my $Schema = schema();
     };
 
     ::is( $@, '', 'no error when specifying passing a disambiguating fk to has_one' );
+
+    my @ones = Message->meta()->has_ones();
+    ::is( $ones[0]->fk(), $fk,
+          'fk matches the one passed to has_one' );
 }
 
 {
     package Message;
+
+    __PACKAGE__->meta()->remove_has_one( $_->name() )
+        for __PACKAGE__->meta()->has_ones();
 
     my $select =
         Fey::SQL->new_select()->select( $Schema->table('Message') )
@@ -209,12 +259,22 @@ my $Schema = schema();
         'most_recent_child attribute default is a coderef' );
     is( $attr->type_constraint()->name(), 'Maybe[Fey::Object::Table]',
         'most_recent_child attribute type constraint is Maybe[Fey::Object::Table]' );
+
+    my @ones = Message->meta()->has_ones();
+    is( scalar @ones, 1,
+        'one has_one for Message class' );
+
+    my $ho = $ones[0];
+    isa_ok( $ho, 'Fey::Meta::HasOne::ViaSelect' );
+    is( $ho->name(), 'most_recent_child',
+        'name is most_recent_child' );
+    ok( $ho->allows_undef(), 'allows_undef is true' );
 }
 
 {
     package Message;
 
-    __PACKAGE__->meta()->remove_attribute('most_recent_child');
+    __PACKAGE__->meta()->remove_has_one('most_recent_child');
 
     my $select =
         Fey::SQL->new_select()
