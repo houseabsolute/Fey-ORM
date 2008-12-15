@@ -88,7 +88,7 @@ sub deflate (&)
             %p = ( %p, @_ );
         }
 
-        $caller->meta()->_add_has_one_relationship(%p);
+        $caller->meta()->add_has_one(%p);
     }
 }
 
@@ -111,7 +111,7 @@ sub deflate (&)
             %p = ( %p, @_ );
         }
 
-        $caller->meta()->_add_has_many_relationship(%p);
+        $caller->meta()->add_has_many(%p);
     }
 }
 

@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More 'no_plan';
 
 use lib 't/lib';
 
@@ -34,16 +34,43 @@ my $Schema = schema();
 
 {
     can_ok( 'User', 'messages' );
-    ok( ! User->can('_clear_messages'), 'no clearer for non-cached has_many' );
 
-    ok( ! User->meta()->has_attribute('messages'),
-        'without caching messages is not an attribute of the User class' );
+    my @manies = User->meta()->has_manies();
+    is( @manies, 1,
+        'User has one has_many relationship' );
+
+    my $hm = $manies[0];
+    isa_ok( $hm, 'Fey::Meta::HasMany::ViaFK' );
+    is( $hm->associated_class(), User->meta(),
+        'associated_class is User->meta()' );
+    is( $hm->name(), 'messages',
+        'name is message' );
+    is( $hm->table(), $Schema->table('User'),
+        'table is User table object' );
+    is( $hm->foreign_table(), $Schema->table('Message'),
+        'foreign_table is Message table object' );
+    ok( ! $hm->is_cached(), 'is_cached is false' );
+    is( $hm->fk()->source_table() , $Schema->table('User'),
+        'fk source table is User' );
+    is( $hm->fk()->target_table() , $Schema->table('Message'),
+        'fk target table is Message' );
+    is( $hm->associated_method(), User->meta()->get_method('messages'),
+        'associated_method is same as messages meta method' );
+    is( $hm->iterator_class(), 'Fey::Object::Iterator',
+        'iterator class is Fey::Object::Iterator' );
+    is( $hm->order_by(), undef,
+        'order_by is undefined' );
 }
 
 {
     package User;
 
-    __PACKAGE__->meta()->remove_method('messages');
+    __PACKAGE__->meta()->remove_has_many('messages');
+
+    ::is( scalar User->meta()->has_manies(), 0,
+          'no has manies after calling remove_has_many' );
+    ::ok( ! User->meta()->has_method('messages'),
+          'no messages method after calling remove_has_many' );
 
     has_many 'messages' =>
         ( table => $Schema->table('Message'),
@@ -52,18 +79,38 @@ my $Schema = schema();
 }
 
 {
-    can_ok( 'User', 'messages' );
-    can_ok( 'User', '_clear_messages' );
+    my @manies = User->meta()->has_manies();
+    is( @manies, 1,
+        'User has one has_many relationship' );
 
-    my $attr = User->meta()->get_attribute('_messages');
-    ok( $attr, 'found attribute for _messages' );
-    is( ref $attr->default(), 'CODE',
-        '_messages attribute default is a coderef' );
-    is( $attr->type_constraint()->name(), 'Fey::Object::Iterator::Caching',
-        '_messages attribute type constraint is Fey::Object::Iterator::Caching' );
+    my $hm = $manies[0];
+    ok( $hm->is_cached(), 'is_cached is true' );
+    is( $hm->iterator_class(), 'Fey::Object::Iterator::Caching',
+        'iterator class is Fey::Object::Iterator::Caching' );
+}
 
+{
     ok( User->meta()->get_method('messages'),
         'found method for messages' );
+}
+
+{
+    package User;
+
+    __PACKAGE__->meta()->remove_has_many('messages');
+
+    has_many 'messages' =>
+        ( table    => $Schema->table('Message'),
+          order_by => [ $Schema->table('Message')->column('message_id') ],
+        );
+}
+
+{
+    my @manies = User->meta()->has_manies();
+
+    my @ob = map { $_->name() } @{ $manies[0]->order_by() };
+    is_deeply( \@ob, [ 'message_id' ],
+               'order_by is just message_id column' );
 }
 
 {
@@ -86,12 +133,14 @@ my $Schema = schema();
     my $table = Fey::Table->new( name => 'NewTable' );
     eval { has_many $table };
 
-    ::like( $@, qr/\QA table object passed to has_many() must have a schema/,
+    ::like( $@, qr/\QA table used for has-one or -many relationships must have a schema/,
             'table without a schema passed to has_many()' );
 }
 
 {
     package Message;
+
+    __PACKAGE__->meta()->remove_has_many('message');
 
     my $select =
         Schema->SQLFactoryClass()->new_select()
@@ -110,14 +159,31 @@ my $Schema = schema();
 {
     can_ok( 'Message', 'child_message_users' );
 
-    ok( ! Message->meta()->has_attribute('child_message_users'),
-        'without caching child_message_users is not an attribute of the Message class' );
+    my @manies = Message->meta()->has_manies();
+    is( @manies, 1,
+        'Message has one has_many relationship' );
+
+    my $hm = $manies[0];
+    isa_ok( $hm, 'Fey::Meta::HasMany::ViaSelect' );
+    is( $hm->associated_class(), Message->meta(),
+        'associated_class is Message->meta()' );
+    is( $hm->name(), 'child_message_users',
+        'name is message' );
+    is( $hm->table(), $Schema->table('Message'),
+        'table is Message table object' );
+    is( $hm->foreign_table(), $Schema->table('User'),
+        'foreign_table is User table object' );
+    ok( ! $hm->is_cached(), 'is_cached is false' );
+    is( $hm->associated_method(), Message->meta()->get_method('child_message_users'),
+        'associated_method is same as child_message_users meta method' );
+    is( $hm->iterator_class(), 'Fey::Object::Iterator',
+        'iterator class is Fey::Object::Iterator' );
 }
 
 {
     package Message;
 
-    __PACKAGE__->meta()->remove_method('child_message_users');
+    __PACKAGE__->meta()->remove_has_many('child_message_users');
 
     my $select =
         Schema->SQLFactoryClass()->new_select()
@@ -136,13 +202,6 @@ my $Schema = schema();
 
 {
     can_ok( 'Message', 'child_message_users' );
-
-    my $attr = Message->meta()->get_attribute('_child_message_users');
-    ok( $attr, 'found attribute for _child_message_users' );
-    is( ref $attr->default(), 'CODE',
-        '_child_message_users attribute default is a coderef' );
-    is( $attr->type_constraint()->name(), 'Fey::Object::Iterator::Caching',
-        '_child_message_users attribute type constraint is Fey::Object::Iterator::Caching' );
 
     ok( Message->meta()->get_method('child_message_users'),
         'found method for child_message_users' );
@@ -168,7 +227,7 @@ my $Schema = schema();
 {
     package User;
 
-    __PACKAGE__->meta()->remove_attribute('messages');
+    __PACKAGE__->meta()->remove_has_many('child_message_users');
 
     eval { has_many 'edited_messages' => ( table => $Schema->table('Message') ) };
 

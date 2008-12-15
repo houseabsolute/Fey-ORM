@@ -6,6 +6,7 @@ use warnings;
 use Fey::Exceptions qw( param_error );
 use List::MoreUtils qw( any pairwise );
 
+use Devel::GlobalDestruction;
 use Moose;
 use MooseX::SemiAffordanceAccessor;
 use MooseX::AttributeHelpers;
@@ -258,6 +259,11 @@ sub DEMOLISH
 sub _finish_handle
 {
     my $self = shift;
+
+    # We really don't care about cleanly finishing statement handles
+    # in this case, and this code just doesn't work so well in that
+    # case anyway.
+    return if in_global_destruction();
 
     return unless $self->_has_sth();
 

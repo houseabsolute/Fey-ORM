@@ -23,22 +23,6 @@ has associated_class =>
       init_arg => undef,
     );
 
-has associated_attribute =>
-    ( is         => 'rw',
-      isa        => 'Maybe[Moose::Meta::Attribute]',
-      writer     => '_set_associated_attribute',
-      init_arg   => undef,
-      lazy_build => 1,
-    );
-
-has associated_method =>
-    ( is         => 'rw',
-      isa        => 'Maybe[Moose::Meta::Method]',
-      writer     => '_set_associated_method',
-      init_arg   => undef,
-      lazy_build => 1,
-    );
-
 has name =>
     ( is         => 'ro',
       isa        => 'Str',
@@ -58,46 +42,11 @@ has foreign_table =>
     );
 
 has is_cached =>
-    ( is      => 'ro',
-      isa     => 'Bool',
-      default => 1,
+    ( is         => 'ro',
+      isa        => 'Bool',
+      lazy_build => 1,
     );
 
-
-sub attach_to_class
-{
-    my $self  = shift;
-    my $class = shift;
-
-    $self->_set_associated_class($class);
-
-    if ( $self->is_cached() )
-    {
-        $class->add_attribute( $self->associated_attribute() );
-    }
-    else
-    {
-        $class->add_method( $self->name() => $self->associated_method() );
-    }
-}
-
-sub detach_from_class
-{
-    my $self  = shift;
-
-    return unless $self->associated_class();
-
-    if ( $self->is_cached() )
-    {
-        $self->associated_class->remove_attribute( $self->name() );
-    }
-    else
-    {
-        $self->associated_class->remove_method( $self->name() );
-    }
-
-    $self->_clear_associated_class();
-}
 
 sub _find_one_fk_between_tables
 {

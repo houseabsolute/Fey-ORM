@@ -11,6 +11,22 @@ use MooseX::StrictConstructor;
 extends 'Fey::Meta::FK';
 
 
+has associated_attribute =>
+    ( is         => 'rw',
+      isa        => 'Maybe[Moose::Meta::Attribute]',
+      writer     => '_set_associated_attribute',
+      init_arg   => undef,
+      lazy_build => 1,
+    );
+
+has associated_method =>
+    ( is         => 'rw',
+      isa        => 'Maybe[Moose::Meta::Method]',
+      writer     => '_set_associated_method',
+      init_arg   => undef,
+      lazy_build => 1,
+    );
+
 has handles =>
     ( is  => 'ro',
       # just gets passed on for attribute creation
@@ -65,6 +81,8 @@ sub _build_associated_attribute
                   );
 }
 
+sub _build_is_cached { 1 }
+
 sub _build_associated_method
 {
     my $self = shift;
@@ -77,6 +95,41 @@ sub _build_associated_method
                      package_name => $self->associated_class()->name(),
                      body         => $self->_make_subref(),
                    );
+}
+
+sub attach_to_class
+{
+    my $self  = shift;
+    my $class = shift;
+
+    $self->_set_associated_class($class);
+
+    if ( $self->is_cached() )
+    {
+        $class->add_attribute( $self->associated_attribute() );
+    }
+    else
+    {
+        $class->add_method( $self->name() => $self->associated_method() );
+    }
+}
+
+sub detach_from_class
+{
+    my $self  = shift;
+
+    return unless $self->associated_class();
+
+    if ( $self->is_cached() )
+    {
+        $self->associated_class->remove_attribute( $self->name() );
+    }
+    else
+    {
+        $self->associated_class->remove_method( $self->name() );
+    }
+
+    $self->_clear_associated_class();
 }
 
 
