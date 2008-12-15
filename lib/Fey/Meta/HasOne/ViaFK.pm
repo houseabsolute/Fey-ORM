@@ -3,7 +3,6 @@ package Fey::Meta::HasOne::ViaFK;
 use strict;
 use warnings;
 
-use Fey::Meta::Util qw( find_fk_between_tables );
 use List::MoreUtils qw( any );
 
 use Moose;
@@ -23,7 +22,7 @@ sub _build_fk
 {
     my $self = shift;
 
-    find_fk_between_tables( $self->table(), $self->foreign_table(), 0 );
+    $self->_find_one_fk_between_tables( $self->table(), $self->foreign_table(), 0 );
 }
 
 sub _build_allows_undef

@@ -15,34 +15,36 @@ subtype 'Fey.ORM.Type.TableWithSchema'
     => message { 'A table used for has-one or -many relationships must have a schema' };
 
 
-sub _find_one_fk
+sub _find_one_fk_between_tables
 {
-    my $class = shift;
-    my $from  = shift;
-    my $to    = shift;
-    my $func  = shift;
+    my $self         = shift;
+    my $source_table = shift;
+    my $target_table = shift;
+    my $is_has_many  = shift;
 
-    my @fk = $from->schema()->foreign_keys_between_tables( $from, $to );
+    my @fk = $source_table->schema()->foreign_keys_between_tables( $source_table, $target_table );
 
-    return $fk[0] if @fk == 1;
+    my $desc = $is_has_many ? 'has_many' : 'has_one';
 
     if ( @fk == 0 )
     {
         param_error
             'There are no foreign keys between the table for this class, '
-            . $from->name()
-            . " and the table you passed to $func(), "
-            . $to->name() . '.';
+            . $source_table->name()
+            . " and the table you passed to $desc(), "
+            . $target_table->name() . '.';
     }
     elsif ( @fk > 1 )
     {
         param_error
             'There is more than one foreign key between the table for this class, '
-            . $from->name()
-            . " and the table you passed to $func(), "
-            . $to->name()
+            . $source_table->name()
+            . " and the table you passed to $desc(), "
+            . $target_table->name()
             . '. You must specify one explicitly.';
     }
+
+    return $self->_invert_fk_if_necessary( $fk[0], $target_table, $is_has_many );
 }
 
 # We may need to invert the meaning of source & target since source &
@@ -53,13 +55,13 @@ sub _invert_fk_if_necessary
     my $self         = shift;
     my $fk           = shift;
     my $target_table = shift;
-    my $is_has_many  = shift;
+    my $has_many     = shift;
 
     # Self-referential keys are a special case, and that case differs
     # for has_one vs has_many.
     if ( $fk->is_self_referential() )
     {
-        if ($is_has_many)
+        if ($has_many)
         {
             return $fk
                 unless $fk->target_table()->has_candidate_key( @{ $fk->target_columns() } );
