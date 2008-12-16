@@ -18,6 +18,8 @@ has _cached_results =>
       provides  => { push => '_cache_result',
                      get  => '_get_cached_result',
                    },
+      # for testability
+      clearer   => '_clear_cached_results',
     );
 
 
