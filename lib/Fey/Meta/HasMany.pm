@@ -32,13 +32,6 @@ has 'iterator_class' =>
     );
 
 
-sub _build_name
-{
-    my $self = shift;
-
-    return lc $self->foreign_table()->name();
-}
-
 sub _build_iterator_class
 {
     my $self = shift;
@@ -125,3 +118,98 @@ no Moose::Util::TypeConstraints;
 __PACKAGE__->meta()->make_immutable();
 
 1;
+
+__END__
+
+=head1 NAME
+
+Fey::Meta::HasMany - A parent for has-many metaclasses
+
+=head1 DESCRIPTION
+
+This class exists to provide a common parent for the two has-many
+metaclasses, L<Fey::Meta::HasMany::ViaFK> and
+L<Fey::Meta::HasMany::ViaSelect>.
+
+=head1 CONSTRUCTOR OPTIONS
+
+This class accepts the following constructor options:
+
+=over 4
+
+=item * is_cached
+
+Defaults to false for this class.
+
+=item * iterator_class
+
+This is the class used for iterators over the objects in this
+relationship. By default, if this relationship is cached, it uses
+L<Fey::Object::Iterator::Caching>, otherwise it uses
+L<Fey::Object::Iterator>
+
+=back
+
+=head1 METHODS
+
+This provides the following methods:
+
+=head2 $hm->name()
+
+Corresponds to the value passed to the constructor.
+
+=head2 $hm->table()
+
+Corresponds to the value passed to the constructor.
+
+=head2 $hm->foreign_table()
+
+Corresponds to the value passed to the constructor.
+
+=head2 $ho->is_cached()
+
+Corresponds to the value passed to the constructor, or the calculated
+default.
+
+=head2 $hm->iterator_class()
+
+Corresponds to the value passed to the constructor, or the calculated
+default.
+
+=head2 $hm->attach_to_class($class)
+
+This method takes a F<Fey::Meta::Class::Table> object and attaches the
+relationship to the associated class. Doing so will create a new
+method in the associated class.
+
+=head2 $hm->associated_class()
+
+The class associated with this object. This is undefined until C<<
+$hm->attach_to_class() >> is called.
+
+=head2 $hm->associated_method()
+
+Returns the method associated with this object, if any.
+
+=head2 $hm->detach_from_class()
+
+If this object was attached to a class, it removes the method it made,
+and unsets the C<associated_class>.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+See L<Fey::ORM> for details.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut

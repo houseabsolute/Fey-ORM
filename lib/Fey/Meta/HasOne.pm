@@ -27,25 +27,18 @@ has associated_method =>
       lazy_build => 1,
     );
 
-has handles =>
-    ( is  => 'ro',
-      # just gets passed on for attribute creation
-      isa => 'Any',
-    );
-
 has allows_undef =>
     ( is         => 'ro',
       isa        => 'Bool',
       lazy_build => 1,
     );
 
+has handles =>
+    ( is  => 'ro',
+      # just gets passed on for attribute creation
+      isa => 'Any',
+    );
 
-sub _build_name
-{
-    my $self = shift;
-
-    return lc $self->foreign_table()->name();
-}
 
 sub _build_associated_attribute
 {
@@ -138,3 +131,113 @@ no Moose;
 __PACKAGE__->meta()->make_immutable();
 
 1;
+
+__END__
+
+=head1 NAME
+
+Fey::Meta::HasOne - A parent for has-one metaclasses
+
+=head1 DESCRIPTION
+
+This class exists to provide a common parent for the two has-one
+metaclasses, L<Fey::Meta::HasOne::ViaFK> and
+L<Fey::Meta::HasOne::ViaSelect>.
+
+=head1 CONSTRUCTOR OPTIONS
+
+This class accepts the following constructor options:
+
+=over 4
+
+=item * handles
+
+This will simply be passed on when an attribute for this has-one
+relationship is created. Note that this is ignore if C<is_cached> is
+false.
+
+=item * allows_undef
+
+A boolean indicating whether or not the relationship's value can be
+C<undef>.
+
+=item * is_cached
+
+Defaults to true for this class.
+
+=back
+
+=head1 METHODS
+
+This provides the following methods:
+
+=head2 $ho->name()
+
+Corresponds to the value passed to the constructor.
+
+=head2 $ho->table()
+
+Corresponds to the value passed to the constructor.
+
+=head2 $ho->foreign_table()
+
+Corresponds to the value passed to the constructor.
+
+=head2 $ho->is_cached()
+
+Corresponds to the value passed to the constructor, or the calculated
+default.
+
+=head2 $ho->allows_undef()
+
+Corresponds to the value passed to the constructor.
+
+=head2 $ho->handles()
+
+Corresponds to the value passed to the constructor.
+
+=head2 $ho->attach_to_class($class)
+
+This method takes a F<Fey::Meta::Class::Table> object and attaches the
+relationship to the associated class. If this relationship is cached,
+it creates a new attribute, otherwise it creates a new method.
+
+The method/attribute returns an object belonging to the class
+associated with the foreign table. It can return C<undef> if
+C<allows_undef> is true.
+
+=head2 $ho->associated_class()
+
+The class associated with this object. This is undefined until C<<
+$ho->attach_to_class() >> is called.
+
+=head2 $ho->associated_attribute()
+
+Returns the attribute associated with this object, if any.
+
+=head2 $ho->associated_method()
+
+Returns the method associated with this object, if any.
+
+=head2 $ho->detach_from_class()
+
+If this object was attached to a class, it removes any attribute or
+method it made, and unsets the C<associated_class>.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+See L<Fey::ORM> for details.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut

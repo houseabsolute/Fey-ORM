@@ -528,6 +528,40 @@ with that class, if any.
 
 Returns the C<Fey::Table> for the metaclass's class.
 
+=head2 $meta->add_has_one(%options)
+
+Creates a new L<Fey::Meta::HasOne::ViaFK> or
+L<Fey::Meta::HasOne::ViaSelect> object and adds it to the
+metaclass. Internally, this will call C<attach_to_class()> on the
+C<HasOne> meta-object.
+
+=head2 $meta->has_ones()
+
+Returns a list of the C<Fey::Meta::HasOne> objects added to this
+metaclass.
+
+=head2 $meta->remove_has_one($name)
+
+Removes the named C<HasOne> meta-object. Internally, this will call
+C<detach_from_class()> on the C<HasOne> meta-object.
+
+=head2 $meta->add_has_many(%options)
+
+Creates a new L<Fey::Meta::HasMany::ViaFK> or
+L<Fey::Meta::HasMany::ViaSelect> object and adds it to the
+metaclass. Internally, this will call C<attach_to_class()> on the
+C<HasMany> meta-object.
+
+=head2 $meta->has_manies()
+
+Returns a list of the C<Fey::Meta::HasMany> objects added to this
+metaclass.
+
+=head2 $meta->remove_has_many($name)
+
+Removes the named C<HasMany> meta-object. Internally, this will call
+C<detach_from_class()> on the C<HasMany> meta-object.
+
 =head2 $meta->has_inflator($name)
 
 Returns a boolean indicating whether or not there is an inflator

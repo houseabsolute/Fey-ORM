@@ -48,6 +48,13 @@ has is_cached =>
     );
 
 
+sub _build_name
+{
+    my $self = shift;
+
+    return lc $self->foreign_table()->name();
+}
+
 sub _find_one_fk_between_tables
 {
     my $self         = shift;
@@ -128,3 +135,60 @@ no Moose;
 __PACKAGE__->meta()->make_immutable();
 
 1;
+
+__END__
+
+=head1 NAME
+
+Fey::Meta::FK - A parent for foreign key-based metaclasses
+
+=head1 DESCRIPTION
+
+This class exists to provide a common parent for has-one and has-many
+metaclasses. See the relevant classes for documentation.
+
+=head1 CONSTRUCTOR OPTIONS
+
+This class accepts the following constructor options:
+
+=over 4
+
+=item * name
+
+The name of the relationship. This will be used as the name for any
+attribute or method created by this metaclass.
+
+This defaults to C<< lc $self->foreign_table()->name() >>.
+
+=item * table
+
+The (source) table of the foreign key.
+
+=item * foreign_table
+
+The foreign table for the foreign key
+
+=item * is_cached
+
+Determines whether the relationship's value is cached. This is
+implemented in different ways for has-one vs has-many relationships.
+
+=back
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+See L<Fey::ORM> for details.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut

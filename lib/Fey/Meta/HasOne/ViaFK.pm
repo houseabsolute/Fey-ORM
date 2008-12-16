@@ -73,3 +73,61 @@ no Moose;
 __PACKAGE__->meta()->make_immutable();
 
 1;
+
+__END__
+
+=head1 NAME
+
+Fey::Meta::HasOne::ViaFK - A parent for has-one metaclasses based on a C<Fey::FK> object
+
+=head1 DESCRIPTION
+
+This class implements a has-one relationship for a class, based on a
+provided (or deduced) C<Fey::FK> object.
+
+=head1 CONSTRUCTOR OPTIONS
+
+This class accepts the following constructor options:
+
+=over 4
+
+=item * fk
+
+If you don't provide this, the class looks for foreign keys between
+C<< $self->table() >> and and C<< $self->foreign_table() >>. If it
+finds exactly one, it uses that one.
+
+=item * allows_undef
+
+This defaults to true if any of the columns in the local table are
+NULLable, otherwise it defaults to false.
+
+=back
+
+=head1 METHODS
+
+Besides the methods inherited from L<Fey::Meta::HasOne>, it also
+provides the following methods:
+
+=head2 $ho->fk()
+
+Corresponds to the value passed to the constructor, or the calculated
+default.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+See L<Fey::ORM> for details.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut
