@@ -3,6 +3,10 @@
 - The Fey::Meta::Attribute::FromSelect class now stores the select and
   bind_params parameters it receives, for more introspectability.
 
+- There are new metaclasses for introspection of has-one and has-many
+  relationships. See Fey::Meta::HasOne and Fey::Meta::HasMany for
+  details, as well as Fey::Meta::Class::Table.
+
 
 0.13   2008-12-08
 
