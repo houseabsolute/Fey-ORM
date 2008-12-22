@@ -1,3 +1,9 @@
+0.15   2008-12-22
+
+- There was a serious bug in 0.14 where all objects of a class shared
+  the same iterator object for a given has_many relationship.
+
+
 0.14   2008-12-15
 
 - The Fey::Meta::Attribute::FromSelect class now stores the select and

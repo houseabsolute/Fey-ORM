@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
-
+use Sub::Name qw(subname);
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::StrictConstructor;
@@ -48,10 +48,18 @@ sub _build_associated_method
 {
     my $self = shift;
 
-    my $iterator_maker = $self->_make_iterator_maker();
+    my $iter_attr_name = q{___} . $self->name() . q{_iterator};
 
-    my $iterator;
-    my $method = sub { $iterator ||= $_[0]->$iterator_maker();
+    $self->associated_class()->add_attribute
+        ( $iter_attr_name,
+          is       => 'ro',
+          isa      => $self->iterator_class(),
+          lazy     => 1,
+          default  => $self->_make_iterator_maker(),
+          init_arg => undef,
+        );
+
+    my $method = sub { my $iterator = $_[0]->$iter_attr_name();
                        $iterator->reset();
                        return $iterator; };
 

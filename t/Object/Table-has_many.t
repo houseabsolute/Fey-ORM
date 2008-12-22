@@ -14,7 +14,7 @@ use Fey::Test;
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
-plan tests => 9;
+plan tests => 10;
 
 
 {
@@ -206,4 +206,9 @@ plan tests => 9;
     is_deeply( [ map { $_->user_id() } @users ],
                [ 1, 42, 1 ],
                'users are returned in expected order' );
+
+    my $message2 = Message->new( message_id => 1 );
+    isnt( $message->child_message_users(),
+          $message2->child_message_users(),
+          'two objects do not share a single iterator' );
 }
