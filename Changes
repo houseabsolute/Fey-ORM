@@ -1,4 +1,4 @@
-0.14
+0.14   2008-12-15
 
 - The Fey::Meta::Attribute::FromSelect class now stores the select and
   bind_params parameters it receives, for more introspectability.
