@@ -1,7 +1,16 @@
+0.16   2008-12-23
+
+- A caching object iterator could cause an exception if you tried to
+  call ->next() or ->all() on it after exhausting the underlying
+  statement handle. This only happens with some drivers (DBD::Pg is
+  one, DBD::SQLite is not). Reported by Edward Long.
+
+
 0.15   2008-12-22
 
 - There was a serious bug in 0.14 where all objects of a class shared
-  the same iterator object for a given has_many relationship.
+  the same iterator object for a given has_many relationship. Reported
+  by Edward Long.
 
 
 0.14   2008-12-15
