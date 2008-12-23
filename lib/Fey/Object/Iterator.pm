@@ -77,9 +77,10 @@ has 'attribute_map' =>
     );
 
 has _merged_attribute_map =>
-    ( is          => 'ro',
-      isa         => 'HashRef[HashRef[Str]]',
+    ( is         => 'ro',
+      isa        => 'HashRef[HashRef[Str]]',
       lazy_build => 1,
+      init_arg   => undef,
     );
 
 no Moose;

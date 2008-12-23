@@ -15,6 +15,7 @@ has _cached_results =>
       isa       => 'ArrayRef[ArrayRef]',
       lazy      => 1,
       default   => sub { [] },
+      init_arg  => undef,
       provides  => { push => '_cache_result',
                      get  => '_get_cached_result',
                    },
