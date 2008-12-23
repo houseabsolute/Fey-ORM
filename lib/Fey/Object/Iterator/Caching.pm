@@ -22,10 +22,21 @@ has _cached_results =>
       clearer   => '_clear_cached_results',
     );
 
+has '_sth_is_exhausted' =>
+    ( is       => 'rw',
+      isa      => 'Bool',
+      writer   => '_set_sth_is_exhausted',
+      init_arg => undef,
+    );
 
 sub next
 {
     my $self = shift;
+
+    # Some drivers (DBD::Pg, at least) will blow up if we try to call
+    # a ->fetch type method on an exhausted statement
+    # handle. DBD::SQLite can handle this, so it is not tested.
+    return if $self->_sth_is_exhausted();
 
     my $result = $self->_get_cached_result( $self->index() );
 
@@ -33,7 +44,11 @@ sub next
     {
         $result = $self->_get_next_result();
 
-        return unless $result;
+        unless ($result)
+        {
+            $self->_set_sth_is_exhausted(1);
+            return;
+        }
 
         $self->_cache_result($result);
     }
