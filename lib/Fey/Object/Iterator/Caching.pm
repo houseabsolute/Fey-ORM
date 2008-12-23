@@ -34,15 +34,15 @@ sub next
 {
     my $self = shift;
 
-    # Some drivers (DBD::Pg, at least) will blow up if we try to call
-    # a ->fetch type method on an exhausted statement
-    # handle. DBD::SQLite can handle this, so it is not tested.
-    return if $self->_sth_is_exhausted();
-
     my $result = $self->_get_cached_result( $self->index() );
 
     unless ($result)
     {
+        # Some drivers (DBD::Pg, at least) will blow up if we try to
+        # call a ->fetch type method on an exhausted statement
+        # handle. DBD::SQLite can handle this, so it is not tested.
+        return if $self->_sth_is_exhausted();
+
         $result = $self->_get_next_result();
 
         unless ($result)
