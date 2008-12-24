@@ -14,7 +14,7 @@ use Fey::Test;
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
-plan tests => 13;
+plan tests => 17;
 
 
 {
@@ -110,6 +110,31 @@ plan tests => 13;
         'first iterator ->next returns first message' );
     is( $m2->next()->message_id(), 1,
         'second iterator ->next returns first message (they do not share state)' );
+    is( $m1->next()->message_id(), 3,
+        'first iterator ->next returns second message' );
+    is( $m1->next()->message_id(), 9,
+        'first iterator ->next returns third message' );
+    is( $m2->next()->message_id(), 3,
+        'second iterator ->next returns second message (they do not share state)' );
+
+    my $m3 = $user->messages();
+
+    my @nested;
+    while ( my $message = $m3->next() )
+    {
+        my $m4 = $user->messages();
+
+        push @nested, [ $message->message_id(),
+                        map { $_->message_id() } $m4->all() ];
+    }
+
+    is_deeply( \@nested,
+               [ [ 1, 1, 3, 9 ],
+                 [ 3, 1, 3, 9 ],
+                 [ 9, 1, 3, 9 ],
+               ],
+               'Can access a cloned iterator while looping over the original'
+             );
 }
 
 {

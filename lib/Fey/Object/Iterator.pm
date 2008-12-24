@@ -54,6 +54,7 @@ has _sth =>
     ( is         => 'ro',
       isa        => 'DBI::st',
       lazy_build => 1,
+      writer     => '_set_sth',
       predicate  => '_has_sth',
       clearer    => '_clear_sth',
       init_arg   => undef,

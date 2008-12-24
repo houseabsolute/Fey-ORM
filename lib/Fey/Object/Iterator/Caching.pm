@@ -74,10 +74,18 @@ sub clone
 
     my $clone = $self->meta()->clone_object($self);
 
-    # This actually ends up sharing the array reference between
-    # multiple objects, which is fine, since as long as the index is
-    # not shared, they will look entirely independent.
-    $clone->_set_cached_results( $self->_cached_results() );
+    # It'd be nice to actually share the array reference between
+    # multiple objects, but that causes problems because the sth may
+    # not be shared (if it has not yet been created). That means that
+    # the two sth's pull the same data twice and stuff it into the
+    # same array reference, so the data ends up in there twice.
+    $clone->_set_cached_results( [ @{ $self->_cached_results() } ] );
+
+    $clone->_set_sth( $self->sth() )
+        if $self->_has_sth();
+
+    $clone->_set_sth_is_exhausted(1)
+        if $self->_sth_is_exhausted();
 
     $clone->reset();
 

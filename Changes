@@ -1,3 +1,11 @@
+0.18   2008-12-24
+
+- The handling of caching iterators in 0.17 was still broken. It
+  attempted to share the cached results between multiple objects as an
+  optimization, but that ended up causing some very weird bugs. For
+  now, we have a less efficient but correct version.
+
+
 0.17   2008-12-24
 
 - In previous release, a has_many method returned the same iterator
