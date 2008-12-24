@@ -1,3 +1,12 @@
+0.17   2008-12-24
+
+- In previous release, a has_many method returned the same iterator
+  each time it was called, which could cause confusing bugs. Now each
+  call returns a new iterator. However, if the has_many relationship
+  is cached, the new iterator will share a cache with any previously
+  made iterator, preventing unnecessary trips to the DBMS.
+
+
 0.16   2008-12-23
 
 - A caching object iterator could cause an exception if you tried to

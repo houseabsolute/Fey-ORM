@@ -48,20 +48,26 @@ sub _build_associated_method
 {
     my $self = shift;
 
-    my $iter_attr_name = q{___} . $self->name() . q{_iterator};
+    my $method;
+    if ( $self->is_cached() )
+    {
+        my $iter_attr_name = q{___} . $self->name() . q{_iterator};
 
-    $self->associated_class()->add_attribute
-        ( $iter_attr_name,
-          is       => 'ro',
-          isa      => $self->iterator_class(),
-          lazy     => 1,
-          default  => $self->_make_iterator_maker(),
-          init_arg => undef,
-        );
+        $self->associated_class()->add_attribute
+            ( $iter_attr_name,
+              is       => 'ro',
+              isa      => $self->iterator_class(),
+              lazy     => 1,
+              default  => $self->_make_iterator_maker(),
+              init_arg => undef,
+            );
 
-    my $method = sub { my $iterator = $_[0]->$iter_attr_name();
-                       $iterator->reset();
-                       return $iterator; };
+        $method = sub { return $_[0]->$iter_attr_name()->clone() };
+    }
+    else
+    {
+        $method = $self->_make_iterator_maker();
+    }
 
     return
         $self->associated_class()->method_metaclass()

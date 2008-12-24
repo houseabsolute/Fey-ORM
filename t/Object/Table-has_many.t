@@ -14,7 +14,7 @@ use Fey::Test;
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
-plan tests => 10;
+plan tests => 13;
 
 
 {
@@ -92,6 +92,7 @@ plan tests => 10;
     has_many messages =>
         ( table => Schema->Schema()->table('Message'),
           cache => 1,
+          order_by => [ Schema->Schema()->table('Message')->column('message_id'), 'ASC' ],
         );
 }
 
@@ -99,6 +100,16 @@ plan tests => 10;
     my $user = User->new( user_id => 1 );
 
     isa_ok( $user->messages(), 'Fey::Object::Iterator::Caching' );
+
+    my $m1 = $user->messages();
+    my $m2 = $user->messages();
+
+    isnt( $m1, $m2,
+          'cached has_many methods return a new iterator on each call' );
+    is( $m1->next()->message_id(), 1,
+        'first iterator ->next returns first message' );
+    is( $m2->next()->message_id(), 1,
+        'second iterator ->next returns first message (they do not share state)' );
 }
 
 {
