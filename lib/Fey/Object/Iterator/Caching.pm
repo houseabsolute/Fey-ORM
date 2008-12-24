@@ -19,6 +19,8 @@ has _cached_results =>
       provides  => { push => '_cache_result',
                      get  => '_get_cached_result',
                    },
+      # for cloning
+      writer    => '_set_cached_results',
       # for testability
       clearer   => '_clear_cached_results',
     );
@@ -64,6 +66,22 @@ sub reset
     my $self = shift;
 
     $self->_reset_index();
+}
+
+sub clone
+{
+    my $self = shift;
+
+    my $clone = $self->meta()->clone_object($self);
+
+    # This actually ends up sharing the array reference between
+    # multiple objects, which is fine, since as long as the index is
+    # not shared, they will look entirely independent.
+    $clone->_set_cached_results( $self->_cached_results() );
+
+    $clone->reset();
+
+    return $clone;
 }
 
 no Moose;
@@ -112,7 +130,6 @@ those objects before fetching more data from the DBMS.
 
 This class provides the following methods:
 
-
 =head2 $iterator->next()
 
 This returns the next set of objects. If it has a cached set of
@@ -126,6 +143,12 @@ Resets the iterator so that the next call to C<< $iterator->next() >>
 returns the first objects. Internally, this I<does not> reset the
 C<DBI> statement handle, it simply makes the iterator use cached
 objects.
+
+=head2 $iterator->clone()
+
+Clones the iterator while sharing its cached data with the original
+object. This is really intended for internal use, so I<use at your own
+risk>.
 
 =head1 AUTHOR
 
