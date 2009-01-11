@@ -1,4 +1,4 @@
-package Fey::Meta::Attribute::Inflated;
+package Fey::Meta::Attribute::WithInflator;
 
 use strict;
 use warnings;
@@ -37,7 +37,7 @@ __END__
 
 =head1 NAME
 
-Fey::Meta::Attribute::Inflated - an attribute metaclass for inflated attributes
+Fey::Meta::Attribute::WithInflator - an attribute metaclass for attributes with an inflator
 
 =head1 SYNOPSIS
 

@@ -14,7 +14,7 @@ use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
 use Fey::Meta::Attribute::FromColumn;
 use Fey::Meta::Attribute::FromSelect;
-use Fey::Meta::Attribute::Inflated;
+use Fey::Meta::Attribute::WithInflator;
 use Fey::Meta::Class::Schema;
 use Fey::Meta::HasOne::ViaFK;
 use Fey::Meta::HasOne::ViaSelect;
@@ -309,53 +309,8 @@ sub _add_transform
     param_error "The column $name does not exist as an attribute"
         unless $attr;
 
-    if ( my $inflate_sub = $p{inflate} )
-    {
-        param_error "Cannot provide more than one inflator for a column ($name)"
-            if $attr->isa('Fey::Meta::Attribute::Inflated');
-
-        $self->remove_attribute($name);
-
-        my $raw_name = $name . q{_raw};
-
-        # XXX - should the private writer invoke the deflator?
-        my $raw_attr = $attr->clone( name    => $raw_name,
-                                     reader  => $raw_name,
-                                   );
-
-        $self->add_attribute($raw_attr);
-
-        my $inflated_predicate = q{_has_inflated_} . $name;
-        my $inflated_clear     = q{_clear_inflated_} . $name;
-
-        my $default = sub { my $self = shift;
-
-                            return $self->$inflate_sub( $self->$raw_name() );
-                          };
-
-        $self->add_attribute( $name,
-                              metaclass     => 'Fey::Meta::Attribute::Inflated',
-                              is            => 'ro',
-                              lazy          => 1,
-                              default       => $default,
-                              predicate     => $inflated_predicate,
-                              clearer       => $inflated_clear,
-                              init_arg      => undef,
-                              raw_attribute => $raw_attr,
-                              inflator      => $inflate_sub,
-                            );
-
-        my $clear_inflated =
-            sub { my $self = shift;
-
-                  $self->$inflated_clear();
-                };
-
-        $self->add_after_method_modifier( $raw_attr->clearer(), $clear_inflated );
-        $self->add_after_method_modifier( $raw_attr->writer(), $clear_inflated );
-
-        $self->_add_inflator( $name => $inflate_sub );
-    }
+    $self->_add_inflator_to_attribute( $name, $attr, $p{inflate} )
+        if $p{inflate};
 
     if ( $p{deflate} )
     {
@@ -364,6 +319,60 @@ sub _add_transform
 
         $self->_add_deflator( $name => $p{deflate} );
     }
+}
+
+sub _add_inflator_to_attribute
+{
+    my $self     = shift;
+    my $name     = shift;
+    my $attr     = shift;
+    my $inflator = shift;
+
+    param_error "Cannot provide more than one inflator for a column ($name)"
+        if $attr->isa('Fey::Meta::Attribute::WithInflator');
+
+    $self->remove_attribute($name);
+
+    my $raw_name = $name . q{_raw};
+
+    # XXX - should the private writer invoke the deflator?
+    my $raw_attr = $attr->clone( name    => $raw_name,
+                                 reader  => $raw_name,
+                               );
+
+    $self->add_attribute($raw_attr);
+
+    my $inflated_predicate = q{_has_inflated_} . $name;
+    my $inflated_clear     = q{_clear_inflated_} . $name;
+
+    my $default = sub { my $self = shift;
+
+                        return $self->$inflator( $self->$raw_name() );
+                      };
+
+    $self->add_attribute
+        ( $name,
+          metaclass     => 'Fey::Meta::Attribute::WithInflator',
+          is            => 'ro',
+          lazy          => 1,
+          default       => $default,
+          predicate     => $inflated_predicate,
+          clearer       => $inflated_clear,
+          init_arg      => undef,
+          raw_attribute => $raw_attr,
+          inflator      => $inflator,
+        );
+
+    my $clear_inflated =
+        sub { my $self = shift;
+
+              $self->$inflated_clear();
+            };
+
+    $self->add_after_method_modifier( $raw_attr->clearer(), $clear_inflated );
+    $self->add_after_method_modifier( $raw_attr->writer(), $clear_inflated );
+
+    $self->_add_inflator( $name => $inflator );
 }
 
 sub add_has_one
