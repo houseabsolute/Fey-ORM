@@ -254,7 +254,7 @@ sub _make_column_attributes
 
         next if $self->has_method($name);
 
-        my %attr_p = ( metaclass => 'FromColumn',
+        my %attr_p = ( metaclass => 'Fey::Meta::Attribute::FromColumn',
                        is        => 'rw',
                        writer    => q{_set_} . $name,
                        lazy      => 1,
