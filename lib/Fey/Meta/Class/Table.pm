@@ -14,6 +14,7 @@ use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
 use Fey::Meta::Attribute::FromColumn;
 use Fey::Meta::Attribute::FromSelect;
+use Fey::Meta::Attribute::Inflated;
 use Fey::Meta::Class::Schema;
 use Fey::Meta::HasOne::ViaFK;
 use Fey::Meta::HasOne::ViaSelect;
@@ -256,15 +257,14 @@ sub _make_column_attributes
 
         my %attr_p = ( metaclass => 'Fey::Meta::Attribute::FromColumn',
                        is        => 'rw',
-                       writer    => q{_set_} . $name,
+                       isa       => $self->_type_for_column($column),
                        lazy      => 1,
                        default   => sub { $_[0]->_get_column_value($name) },
                        column    => $column,
+                       writer    => q{_set_} . $name,
+                       clearer   => q{_clear_} . $name,
+                       predicate => q{has_} . $name,
                      );
-
-        $attr_p{isa}       = $self->_type_for_column($column);
-        $attr_p{clearer}   = q{_clear_} . $name;
-        $attr_p{predicate} = q{has_} . $name;
 
         $self->add_attribute( $name, %attr_p );
     }
@@ -311,51 +311,49 @@ sub _add_transform
 
     if ( my $inflate_sub = $p{inflate} )
     {
-        my $raw_reader = $name . q{_raw};
-
         param_error "Cannot provide more than one inflator for a column ($name)"
-            if $self->has_method($raw_reader);
+            if $attr->isa('Fey::Meta::Attribute::Inflated');
+        local $::D=1;
 
-        $self->add_method( $raw_reader => $attr->get_read_method_ref() );
+        $self->remove_attribute($name);
 
-        my $cache_name      = q{_inflated_} . $name;
-        my $cache_set       = q{_set_inflated_} . $name;
-        my $cache_predicate = q{_has} . $cache_name;
-        my $cache_clear     = q{_clear_} . $cache_name;
+        my $raw_name = $name . q{_raw};
 
-        $self->add_attribute( $cache_name,
-                              is        => 'rw',
-                              writer    => $cache_set,
-                              predicate => $cache_predicate,
-                              clearer   => $cache_clear,
-                              init_arg  => undef,
+        # XXX - should the private writer invoke the deflator?
+        my $raw_attr =
+            $self->add_attribute
+                ( $attr->clone( name    => $raw_name,
+                                reader  => $raw_name,
+                              ) );
+
+        my $inflated_predicate = q{_has_inflated_} . $name;
+        my $inflated_clear     = q{_clear_inflated_} . $name;
+
+        my $default = sub { my $self = shift;
+
+                            return $self->$inflate_sub( $self->$raw_name() );
+                          };
+
+        $self->add_attribute( $name,
+                              metaclass     => 'Fey::Meta::Attribute::Inflated',
+                              is            => 'ro',
+                              lazy          => 1,
+                              default       => $default,
+                              predicate     => $inflated_predicate,
+                              clearer       => $inflated_clear,
+                              init_arg      => undef,
+                              raw_attribute => $raw_attr,
+                              inflator      => $inflate_sub,
                             );
 
-        my $inflator =
-            sub { my $orig = shift;
-                  my $self = shift;
-
-                  return $self->$cache_name()
-                      if $self->$cache_predicate();
-
-                  my $val = $self->$orig();
-
-                  my $inflated = $self->$inflate_sub($val);
-
-                  $self->$cache_set($inflated);
-
-                  return $inflated;
-                };
-
-        $self->add_around_method_modifier( $name => $inflator );
-
-        my $clear_inflator =
+        my $clear_inflated =
             sub { my $self = shift;
 
-                  $self->$cache_clear();
+                  $self->$inflated_clear();
                 };
 
-        $self->add_after_method_modifier( $attr->clearer(), $clear_inflator );
+        $self->add_after_method_modifier( $raw_attr->clearer(), $clear_inflated );
+        $self->add_after_method_modifier( $raw_attr->writer(), $clear_inflated );
 
         $self->_add_inflator( $name => $inflate_sub );
     }

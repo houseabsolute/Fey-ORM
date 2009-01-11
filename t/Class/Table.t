@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 35;
+use Test::More tests => 39;
 
 use lib 't/lib';
 
@@ -51,7 +51,6 @@ my $Schema = schema();
     transform 'email'
         => inflate { return Email->new( $_[1] ) }
         => deflate { return $_[1]->as_string() };
-
 
     eval { has_table $Schema->table('User') };
     ::like( $@, qr/more than once per class/,
@@ -113,6 +112,10 @@ my $Schema = schema();
             "column for $name meta-attribute matches column from table" );
     }
 
+    is( ref User->meta()->get_attribute('email')->inflator(),
+        'CODE',
+        'inflator for email attribute is a code ref' );
+
     can_ok( 'User', 'email_raw' );
 
     is ( User->meta()->get_attribute('user_id')->type_constraint()->name(),
@@ -123,7 +126,7 @@ my $Schema = schema();
          'Str',
          'type for username is Str' );
 
-    is ( User->meta()->get_attribute('email')->type_constraint()->name(),
+    is ( User->meta()->get_attribute('email_raw')->type_constraint()->name(),
          'Str|Undef',
          'type for email is Str|Undef' );
 
@@ -143,6 +146,26 @@ my $Schema = schema();
     my $email = $user->email();
     isa_ok( $email, 'Email' );
     is( $email, $user->email(), 'inflated values are cached' );
+
+    $user->_clear_email();
+    ok( ! $user->has_email(),
+        'predicate for email is false after is cleared' );
+    ok( ! $user->_has_inflated_email(),
+        'clearer also clears inflated value' );
+}
+
+{
+    my $user = User->new( user_id     => 2,
+                          email       => 'test@example.com',
+                          _from_query => 1,
+                        );
+
+    # makes sure that the default gets built
+    $user->email();
+
+    $user->_set_email('test2@example.com');
+    is( $user->email()->as_string(), 'test2@example.com',
+        'setting an inflated attribute clears the inflated value so it gets rebuilt' );
 }
 
 {
