@@ -12,8 +12,8 @@ use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE BOOLEAN_TYPE
 use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
+use Fey::Meta::Attribute::FromColumn;
 use Fey::Meta::Attribute::FromSelect;
-use Fey::Meta::Attribute::WithColumn;
 use Fey::Meta::Class::Schema;
 use Fey::Meta::HasOne::ViaFK;
 use Fey::Meta::HasOne::ViaSelect;
@@ -254,7 +254,7 @@ sub _make_column_attributes
 
         next if $self->has_method($name);
 
-        my %attr_p = ( metaclass => 'WithColumn',
+        my %attr_p = ( metaclass => 'FromColumn',
                        is        => 'rw',
                        writer    => q{_set_} . $name,
                        lazy      => 1,

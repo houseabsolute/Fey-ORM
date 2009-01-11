@@ -1,4 +1,4 @@
-package Fey::Meta::Attribute::WithColumn;
+package Fey::Meta::Attribute::FromColumn;
 
 use strict;
 use warnings;
@@ -17,8 +17,8 @@ has 'column' =>
 
 
 package # hide from PAUSE
-    Moose::Meta::Attribute::Custom::WithColumn;
-sub register_implementation { 'Fey::Meta::Attribute::WithColumn' }
+    Moose::Meta::Attribute::Custom::FromColumn;
+sub register_implementation { 'Fey::Meta::Attribute::FromColumn' }
 
 
 1;
