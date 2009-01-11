@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 32;
+use Test::More tests => 35;
 
 use lib 't/lib';
 
@@ -105,7 +105,12 @@ my $Schema = schema();
 
     for my $column ( $Schema->table('User')->columns() )
     {
-        can_ok( 'User', $column->name() );
+        my $name = $column->name();
+
+        can_ok( 'User', $name );
+        is( User->meta()->get_attribute($name)->column(),
+            $column,
+            "column for $name meta-attribute matches column from table" );
     }
 
     can_ok( 'User', 'email_raw' );

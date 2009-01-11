@@ -13,6 +13,7 @@ use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
 use Fey::Meta::Attribute::FromSelect;
+use Fey::Meta::Attribute::WithColumn;
 use Fey::Meta::Class::Schema;
 use Fey::Meta::HasOne::ViaFK;
 use Fey::Meta::HasOne::ViaSelect;
@@ -253,10 +254,12 @@ sub _make_column_attributes
 
         next if $self->has_method($name);
 
-        my %attr_p = ( is        => 'rw',
+        my %attr_p = ( metaclass => 'WithColumn',
+                       is        => 'rw',
                        writer    => q{_set_} . $name,
                        lazy      => 1,
-                       default => sub { $_[0]->_get_column_value($name) },
+                       default   => sub { $_[0]->_get_column_value($name) },
+                       column    => $column,
                      );
 
         $attr_p{isa}       = $self->_type_for_column($column);
@@ -347,15 +350,12 @@ sub _add_transform
         $self->add_around_method_modifier( $name => $inflator );
 
         my $clear_inflator =
-            sub { my $orig = shift;
-                  my $self = shift;
+            sub { my $self = shift;
 
                   $self->$cache_clear();
-
-                  $self->$orig();
                 };
 
-        $self->add_around_method_modifier( $attr->clearer(), $clear_inflator );
+        $self->add_after_method_modifier( $attr->clearer(), $clear_inflator );
 
         $self->_add_inflator( $name => $inflate_sub );
     }
