@@ -144,7 +144,7 @@ C<Moose::Meta::Attribute>:
 
 =head2 $attr->select()
 
-Returns the C<Fey::SQL::Select> object associated with this object.
+Returns the C<Fey::SQL::Select> object associated with this attribute.
 
 =head2 $attr->bind_params()
 
