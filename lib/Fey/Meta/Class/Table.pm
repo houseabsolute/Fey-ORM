@@ -319,11 +319,11 @@ sub _add_transform
         my $raw_name = $name . q{_raw};
 
         # XXX - should the private writer invoke the deflator?
-        my $raw_attr =
-            $self->add_attribute
-                ( $attr->clone( name    => $raw_name,
-                                reader  => $raw_name,
-                              ) );
+        my $raw_attr = $attr->clone( name    => $raw_name,
+                                     reader  => $raw_name,
+                                   );
+
+        $self->add_attribute($raw_attr);
 
         my $inflated_predicate = q{_has_inflated_} . $name;
         my $inflated_clear     = q{_clear_inflated_} . $name;
@@ -584,7 +584,7 @@ See L<Fey::ORM> for details.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. The full text of the license
