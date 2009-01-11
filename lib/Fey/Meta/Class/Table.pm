@@ -313,7 +313,6 @@ sub _add_transform
     {
         param_error "Cannot provide more than one inflator for a column ($name)"
             if $attr->isa('Fey::Meta::Attribute::Inflated');
-        local $::D=1;
 
         $self->remove_attribute($name);
 
