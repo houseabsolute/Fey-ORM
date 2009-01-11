@@ -79,6 +79,8 @@ sub _make_default_from_select
 no Moose;
 no Moose::Util::TypeConstraints;
 
+__PACKAGE__->meta()->make_immutable();
+
 package # hide from PAUSE
     Moose::Meta::Attribute::Custom::FromSelect;
 sub register_implementation { 'Fey::Meta::Attribute::FromSelect' }
