@@ -79,7 +79,9 @@ sub _make_default_from_select
 no Moose;
 no Moose::Util::TypeConstraints;
 
-__PACKAGE__->meta()->make_immutable();
+# The parent class's constructor is not a Moose::Object-based
+# constructor, so we don't want to inline one that is.
+__PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
 
 package # hide from PAUSE
     Moose::Meta::Attribute::Custom::FromSelect;
