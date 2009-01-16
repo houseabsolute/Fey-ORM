@@ -21,9 +21,8 @@ use Exception::Class (%E);
 
 Fey::Exception->Trace(1);
 
-use base 'Exporter';
-
-our @EXPORT_OK = map { $_->{alias} || () } values %E;
+use Sub::Exporter -setup =>
+    { exports => [ map { $_->{alias} || () } values %E ] };
 
 
 1;
