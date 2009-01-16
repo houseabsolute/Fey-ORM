@@ -12,9 +12,9 @@ use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE BOOLEAN_TYPE
 use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
+use Fey::Meta::Attribute::FromInflator;
 use Fey::Meta::Attribute::FromColumn;
 use Fey::Meta::Attribute::FromSelect;
-use Fey::Meta::Attribute::WithInflator;
 use Fey::Meta::Class::Schema;
 use Fey::Meta::HasOne::ViaFK;
 use Fey::Meta::HasOne::ViaSelect;
@@ -329,7 +329,7 @@ sub _add_inflator_to_attribute
     my $inflator = shift;
 
     param_error "Cannot provide more than one inflator for a column ($name)"
-        if $attr->isa('Fey::Meta::Attribute::WithInflator');
+        if $attr->isa('Fey::Meta::Attribute::FromInflator');
 
     $self->remove_attribute($name);
 
@@ -352,7 +352,7 @@ sub _add_inflator_to_attribute
 
     $self->add_attribute
         ( $name,
-          metaclass     => 'Fey::Meta::Attribute::WithInflator',
+          metaclass     => 'Fey::Meta::Attribute::FromInflator',
           is            => 'ro',
           lazy          => 1,
           default       => $default,
