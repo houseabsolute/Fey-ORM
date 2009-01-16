@@ -1,4 +1,4 @@
-package Fey::Meta::Attribute::WithInflator;
+package Fey::Meta::Attribute::FromInflator;
 
 use strict;
 use warnings;
