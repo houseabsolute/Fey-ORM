@@ -29,6 +29,12 @@ has name =>
       lazy_build => 1,
     );
 
+has namer =>
+    ( is       => 'ro',
+      isa      => 'CodeRef',
+      required => 1,
+    );
+
 has table =>
     ( is       => 'ro',
       isa      => 'Fey.ORM.Type.TableWithSchema',
@@ -52,7 +58,7 @@ sub _build_name
 {
     my $self = shift;
 
-    return lc $self->foreign_table()->name();
+    return $self->namer()->( $self->foreign_table() );
 }
 
 sub _find_one_fk_between_tables

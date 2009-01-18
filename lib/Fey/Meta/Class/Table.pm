@@ -12,6 +12,7 @@ use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE BOOLEAN_TYPE
 use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
+use Fey::Object::Policy;
 use Fey::Meta::Attribute::FromInflator;
 use Fey::Meta::Attribute::FromColumn;
 use Fey::Meta::Attribute::FromSelect;
@@ -93,6 +94,12 @@ has 'schema_class' =>
       lazy    => 1,
       default => sub { Fey::Meta::Class::Schema
                            ->ClassForSchema( $_[0]->table()->schema() ) },
+    );
+
+has 'policy' =>
+    ( is         => 'rw',
+      isa        => 'Fey::Object::Policy',
+      lazy_build => 1,
     );
 
 has '_has_ones' =>
@@ -399,6 +406,7 @@ sub add_has_one
     my $has_one =
         $class->new
             ( table => $self->table(),
+              namer => $self->policy()->has_one_namer(),
               %p,
             );
 
@@ -443,6 +451,7 @@ sub add_has_many
     my $has_many =
         $class->new
             ( table => $self->table(),
+              namer => $self->policy()->has_many_namer(),
               %p,
             );
 
@@ -463,6 +472,19 @@ sub remove_has_many
     $has_many->detach_from_class();
 
     $self->_remove_has_many( $has_many->name() );
+}
+
+sub _build_policy
+{
+    my $self = shift;
+
+    my $namer = sub { lc $_[0]->name() };
+
+    return
+        Fey::Object::Policy->new
+            ( has_one_namer  => $namer,
+              has_many_namer => $namer,
+            );
 }
 
 sub _build__count_sql
