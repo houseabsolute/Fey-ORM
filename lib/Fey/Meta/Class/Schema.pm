@@ -10,12 +10,13 @@ use Fey::DBIManager;
 use Moose;
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
+use MooseX::SemiAffordanceAccessor;
 
 extends 'Moose::Meta::Class';
 
 class_has '_SchemaClassMap' =>
     ( metaclass => 'Collection::Hash',
-      is        => 'rw',
+      is        => 'ro',
       isa       => 'HashRef[Fey::Schema]',
       default   => sub { {} },
       lazy      => 1,
@@ -35,7 +36,6 @@ has 'schema' =>
 has 'dbi_manager' =>
     ( is        => 'rw',
       isa       => 'Fey::DBIManager',
-      writer    => 'set_dbi_manager',
       lazy      => 1,
       default   => sub { Fey::DBIManager->new() },
     );
@@ -43,7 +43,6 @@ has 'dbi_manager' =>
 has 'sql_factory_class' =>
     ( is        => 'rw',
       isa       => 'ClassName',
-      writer    => 'set_sql_factory_class',
       lazy      => 1,
       default   => 'Fey::SQL',
     );

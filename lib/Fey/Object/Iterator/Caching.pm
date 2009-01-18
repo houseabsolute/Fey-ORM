@@ -5,6 +5,7 @@ use warnings;
 
 use Moose;
 use MooseX::AttributeHelpers;
+use MooseX::SemiAffordanceAccessor;
 use MooseX::StrictConstructor;
 
 extends 'Fey::Object::Iterator';
@@ -28,7 +29,6 @@ has _cached_results =>
 has '_sth_is_exhausted' =>
     ( is       => 'rw',
       isa      => 'Bool',
-      writer   => '_set_sth_is_exhausted',
       init_arg => undef,
     );
 

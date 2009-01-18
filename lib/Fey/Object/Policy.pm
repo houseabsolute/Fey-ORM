@@ -9,7 +9,6 @@ use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 use MooseX::SemiAffordanceAccessor;
 
-
 has '_transforms' =>
     ( metaclass => 'Collection::Array',
       is        => 'ro',

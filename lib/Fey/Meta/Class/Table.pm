@@ -27,6 +27,7 @@ use List::MoreUtils qw( all );
 use Moose qw( extends with has );
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
+use MooseX::SemiAffordanceAccessor;
 
 extends 'Moose::Meta::Class';
 
@@ -47,7 +48,6 @@ has '_object_cache_is_enabled' =>
       isa     => 'Bool',
       lazy    => 1,
       default => 0,
-      writer  => '_set_object_cache_is_enabled',
     );
 
 has '_object_cache' =>
