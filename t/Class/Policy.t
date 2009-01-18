@@ -1,7 +1,11 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+use Test::More tests => 12;
+
+use lib 't/lib';
+
+use Fey::ORM::Test qw( schema );
 
 
 {
@@ -77,4 +81,44 @@ use Test::More 'no_plan';
         'found a transform for date column' );
     ok( ! $policy->transform_for_column($col2),
         'did not find a transform for int column' );
+}
+
+my $Schema = schema();
+
+{
+    package Schema;
+
+    use Fey::ORM::Schema;
+
+    has_schema $Schema;
+}
+
+{
+    package User;
+
+    use Fey::ORM::Table;
+
+    has_table $Schema->table('User');
+
+    has_policy 'MyApp::Policy';
+}
+
+{
+    is( User->meta()->policy(), MyApp::Policy->Policy(),
+        'policy object was set from policy-defining class' );
+}
+
+{
+    package Group;
+
+    use Fey::ORM::Table;
+
+    has_table $Schema->table('Group');
+
+    has_policy( MyApp::Policy->Policy() );
+}
+
+{
+    is( Group->meta()->policy(), MyApp::Policy->Policy(),
+        'policy object was set from an object' );
 }

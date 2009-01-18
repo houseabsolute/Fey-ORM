@@ -3,6 +3,7 @@ package Fey::ORM::Table;
 use strict;
 use warnings;
 
+use Class::MOP;
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
 use Fey::Validate qw( validate_pos TABLE_TYPE );
@@ -10,7 +11,7 @@ use Moose ();
 use Moose::Exporter;
 
 Moose::Exporter->setup_import_methods
-    ( with_caller => [qw( has_table has_one has_many transform )],
+    ( with_caller => [qw( has_table has_policy has_one has_many transform )],
       as_is       => [qw( inflate deflate )],
       also        => 'Moose'
     );
@@ -36,6 +37,21 @@ sub init_meta
 
         $caller->meta()->_associate_table($table);
     }
+}
+
+sub has_policy
+{
+    my $caller = shift;
+    my $policy = shift;
+
+    unless ( ref $policy )
+    {
+        Class::MOP::load_class($policy);
+
+        $policy = $policy->Policy();
+    }
+
+    $caller->meta()->set_policy($policy);
 }
 
 sub transform
