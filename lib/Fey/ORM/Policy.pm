@@ -76,6 +76,10 @@ sub has_many_namer (&)
 
 __END__
 
+=head1 NAME
+
+Fey::ORM::Policy - Declarative policies for Fey::ORM using classes
+
 =head1 SYNOPSIS
 
   package MyApp::Policy;
@@ -96,9 +100,113 @@ __END__
                       ? DateTime::Format::Pg->format_date( $_[1] )
                       : $_[1] };
 
+  transform_all
+         matching { $_[0]->name() eq 'email_address' }
+
+      => inflate  { return unless defined $_[1];
+                    return Email::Address->parse( $_[1] ) }
+
+      => deflate  { defined $_[1] && ref $_[1]
+                      ? Email::Address->as_string
+                      : $_[1] };
+
+  has_one_namer  { my $name = $_[0]->name();
+                   my @parts = map { lc } ( $name =~ /([A-Z][a-z]+)/g );
+
+                   return join q{_}, @parts; };
+
   has_many_namer { my $name = $_[0]->name();
-                   my @parts = map { lc } /([A-Z][a-z]+)+/;
+                   my @parts = map { lc } ( $name =~ /([A-Z][a-z]+)/g );
 
                    $parts[-1] = PL_N( $parts[-1] );
 
                    return join q{_}, @parts; };
+
+  package User;
+
+  use Fey::ORM::Table;
+
+  has_table ...;
+
+  has_policy 'MyApp::Policy';
+
+=head1 DESCRIPTION
+
+This module allows you to declare a policy for your
+C<Fey::ORM::Table>-using classes.
+
+A policy can define transform rules which can be applied to matching
+columns, as well as a naming scheme for has_one and has_many
+methods. This allows you to spare yourself some drudgery, and allows
+you to consolidate decisions (like "all date type columns return a
+C<DateTime> object") in a single place.
+
+=head1 FUNCTIONS
+
+This module exports a bunch of sugar functions into your namespace so
+you can define your policy in a declarative manner:
+
+=head2 transform_all
+
+This should be followed by a C<matching> sub reference, and one of an
+C<inflate> or C<deflate> sub.
+
+=head2 matching { ... }
+
+This function takes a subroutine reference that will be called and
+passed a C<Fey::Column> object as its argument. This sub should look
+at the column and return true if the associated inflate/deflate should
+be applied to the column.
+
+Note that the matching subs are checked in the order they are defined
+by C<transform_all()>, and the first one wins.
+
+=head2 inflate { ... }
+
+An inflator sub for the associated transform. See L<Fey::ORM::Table>
+for more details on transforms.
+
+=head2 deflate { ... }
+
+A deflator sub for the associated transform. See L<Fey::ORM::Table>
+for more details on transforms.
+
+=head2 has_one_namer { ... }
+
+A subroutine reference which will be used to generate a name for
+C<has_one()> methods when a name is not explicitly provided.
+
+This sub will receive the foreign table as its first argument, and the
+associate L<Fey::Meta::FK> object as the second argument. In most
+cases, the foreign table will probably be sufficient to generate a
+name.
+
+=head2 has_many_namer { ... }
+
+Just like the C<has_one_namer()>, but is called for naming
+C<has_many()> methods.
+
+=head2 Policy
+
+This methods returns the L<Fey::Object::Policy> object for your policy
+class. This method allows C<Fey::ORM::Table> to go get a policy object
+from a policy class name.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+See L<Fey::ORM> for details.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. The full text of the license
+can be found in the LICENSE file included with this module.
+
+=cut
+

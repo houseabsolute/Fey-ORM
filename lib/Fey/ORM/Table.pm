@@ -185,6 +185,13 @@ These column-named attributes do not have a public setter method. If
 you want to change the value of these attributes, you need to use the
 C<update()> method.
 
+=head2 has_policy($policy_class)
+
+=head2 has_policy($policy_object)
+
+This allows you to associate a policy with your class. See
+L<Fey::ORM::Policy> for details on how policies work.
+
 =head2 has_one($table)
 
 =head2 has_one 'name' => ( table => $table, fk => $fk, cache => $bool, undef => $bool, handles => ... )

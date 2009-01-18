@@ -58,7 +58,7 @@ sub _build_name
 {
     my $self = shift;
 
-    return $self->namer()->( $self->foreign_table() );
+    return $self->namer()->( $self->foreign_table(), $self );
 }
 
 sub _find_one_fk_between_tables

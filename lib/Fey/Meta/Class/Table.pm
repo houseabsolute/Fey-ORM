@@ -97,9 +97,9 @@ has 'schema_class' =>
     );
 
 has 'policy' =>
-    ( is         => 'rw',
-      isa        => 'Fey::Object::Policy',
-      lazy_build => 1,
+    ( is      => 'rw',
+      isa     => 'Fey::Object::Policy',
+      default => sub { Fey::Object::Policy->new() },
     );
 
 has '_has_ones' =>
@@ -477,19 +477,6 @@ sub remove_has_many
     $has_many->detach_from_class();
 
     $self->_remove_has_many( $has_many->name() );
-}
-
-sub _build_policy
-{
-    my $self = shift;
-
-    my $namer = sub { lc $_[0]->name() };
-
-    return
-        Fey::Object::Policy->new
-            ( has_one_namer  => $namer,
-              has_many_namer => $namer,
-            );
 }
 
 sub _build__count_sql
