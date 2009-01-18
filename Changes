@@ -1,4 +1,4 @@
-0.19
+0.19   2009-01-18
 
 - Added attribute metaclasses for attributes created based on columns
   (Fey::Meta::Attribute::FromColumn), and attributes based on an
