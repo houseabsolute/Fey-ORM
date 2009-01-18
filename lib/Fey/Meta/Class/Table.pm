@@ -87,7 +87,7 @@ has 'deflators' =>
                    },
     );
 
-has 'schema_class',
+has 'schema_class' =>
     ( is      => 'ro',
       isa     => 'ClassName',
       lazy    => 1,
@@ -123,21 +123,21 @@ has '_has_manies' =>
                    },
     );
 
-has '_select_sql_cache',
+has '_select_sql_cache' =>
     ( is      => 'ro',
       isa     => 'Fey::Hash::ColumnsKey',
       lazy    => 1,
       default => sub { Fey::Hash::ColumnsKey->new() },
     );
 
-has '_select_by_pk_sql',
+has '_select_by_pk_sql' =>
     ( is        => 'ro',
       isa       => 'Fey::SQL::Select',
       lazy      => 1,
       default   => sub { return $_[0]->name()->_MakeSelectByPKSQL() },
     );
 
-has '_count_sql',
+has '_count_sql' =>
     ( is         => 'ro',
       isa        => 'Fey::SQL::Select',
       lazy_build => 1,
