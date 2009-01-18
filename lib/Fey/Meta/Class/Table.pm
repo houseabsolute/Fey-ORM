@@ -32,7 +32,7 @@ extends 'Moose::Meta::Class';
 
 class_has '_ClassToTableMap' =>
     ( metaclass => 'Collection::Hash',
-      is        => 'rw',
+      is        => 'ro',
       isa       => 'HashRef[Fey::Table]',
       default   => sub { {} },
       lazy      => 1,
@@ -67,7 +67,7 @@ has 'table' =>
 
 has 'inflators' =>
     ( metaclass => 'Collection::Hash',
-      is        => 'rw',
+      is        => 'ro',
       isa       => 'HashRef[CodeRef]',
       default   => sub { {} },
       lazy      => 1,
@@ -78,7 +78,7 @@ has 'inflators' =>
 
 has 'deflators' =>
     ( metaclass => 'Collection::Hash',
-      is        => 'rw',
+      is        => 'ro',
       isa       => 'HashRef[CodeRef]',
       default   => sub { {} },
       lazy      => 1,
@@ -104,7 +104,7 @@ has 'policy' =>
 
 has '_has_ones' =>
     ( metaclass => 'Collection::Hash',
-      is        => 'rw',
+      is        => 'ro',
       isa       => 'HashRef[Fey::Meta::HasOne]',
       default   => sub { {} },
       lazy      => 1,
@@ -118,7 +118,7 @@ has '_has_ones' =>
 
 has '_has_manies' =>
     ( metaclass => 'Collection::Hash',
-      is        => 'rw',
+      is        => 'ro',
       isa       => 'HashRef[Fey::Meta::HasMany]',
       default   => sub { {} },
       lazy      => 1,
