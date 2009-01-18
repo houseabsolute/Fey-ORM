@@ -274,6 +274,11 @@ sub _make_column_attributes
                      );
 
         $self->add_attribute( $name, %attr_p );
+
+        if ( my $transform = $self->policy()->transform_for_column($column) )
+        {
+            $self->_add_transform( $name, %{ $transform } );
+        }
     }
 }
 
