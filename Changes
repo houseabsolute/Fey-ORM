@@ -7,6 +7,9 @@
 - When a column attribute with an inflator was written, the inflated
   value would stay the same, rather than reflecting the new raw value.
 
+- Added Fey::ORM::Policy, which lets you set policies for column
+  transforms and foreign key method naming.
+
 
 0.18   2008-12-24
 
