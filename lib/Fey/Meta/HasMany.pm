@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
-use Sub::Name qw(subname);
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::StrictConstructor;
