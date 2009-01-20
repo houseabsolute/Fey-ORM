@@ -1,3 +1,9 @@
+0.20
+
+- Removed use of Sub::Name in Fey::Meta::HasMany. It wasn't actually
+  being used, and wasn't in the prereq list.
+
+
 0.19   2009-01-18
 
 - Added attribute metaclasses for attributes created based on columns
