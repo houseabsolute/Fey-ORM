@@ -31,10 +31,12 @@ my $builder =
           create_readme        => 1,
           sign                 => 1,
           add_to_cleanup       => [ 'Debian_CPANTS.txt' ],
-          resources =>
-              { homepage   => 'http://www.fey-project.org/',
-                bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Fey-ORM',
-                repository => 'http://hg.urth.org/hg/Fey-ORM',
+          meta_merge =>
+              { resources =>
+                    { homepage   => 'http://www.fey-project.org/',
+                      bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Fey-ORM',
+                      repository => 'http://hg.urth.org/hg/Fey-ORM',
+                    },
               },
         );
 
