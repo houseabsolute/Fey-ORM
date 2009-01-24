@@ -27,10 +27,15 @@ my $builder =
                 'Test::More'      => '0',
               },
           recursive_test_files => 1,
-          create_makefile_pl   => 'passthrough',
+          create_makefile_pl   => 'traditional',
           create_readme        => 1,
           sign                 => 1,
           add_to_cleanup       => [ 'Debian_CPANTS.txt' ],
+          resources =>
+              { homepage   => 'http://www.fey-project.org/',
+                bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Fey-ORM',
+                repository => 'http://hg.urth.org/hg/Fey-ORM',
+              },
         );
 
 $builder->create_build_script();
