@@ -206,10 +206,10 @@ tables using C<has_one()> or C<has_many()>:
   has_one( Forum::Model::Schema->Schema()->table('User') );
 
 This creates a C<< $message->user() >> attribute which returns the
-associated user object. If the foreign table's column is nullable, the
-attribute may simply return false. In the case of this particular
-relationship, that should never happen, since C<Message.user_id> is
-not nullable.
+associated user object. If the column (or columns) which "connects" to
+the foreign table is nullable, the attribute may simply return
+false. In the case of this particular relationship, that should never
+happen, since C<Message.user_id> is not nullable.
 
 By default, the name of the attribute created via C<has_one()> is
 simply C<< lc $table->name() >>. Depending on your table naming
