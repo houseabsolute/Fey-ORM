@@ -5,9 +5,10 @@ use warnings;
 
 use Fey::Meta::Class::Schema;
 use Fey::Object::Schema;
-use Fey::Validate qw( validate_pos SCHEMA_TYPE );
+
 use Moose ();
 use Moose::Exporter;
+use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods
     ( with_caller => [qw( has_schema )],
@@ -27,16 +28,13 @@ sub init_meta
                         );
 }
 
+sub has_schema
 {
-    my $spec = ( SCHEMA_TYPE );
-    sub has_schema
-    {
-        my $caller = shift;
+    my $caller = shift;
 
-        my ($schema) = validate_pos( @_, $spec );
+    my ($schema) = pos_validated_list( \@_, { isa => 'Fey::Schema' } );
 
-        $caller->meta()->_associate_schema($schema);
-    }
+    $caller->meta()->_associate_schema($schema);
 }
 
 1;

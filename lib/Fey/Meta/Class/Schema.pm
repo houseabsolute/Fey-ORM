@@ -3,13 +3,13 @@ package Fey::Meta::Class::Schema;
 use strict;
 use warnings;
 
-use Fey::Exceptions qw( param_error );
-use Fey::Validate qw( validate validate_pos TABLE_TYPE SCHEMA_TYPE FK_TYPE BOOLEAN_TYPE );
-
 use Fey::DBIManager;
+use Fey::Exceptions qw( param_error );
+
 use Moose;
 use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
+use MooseX::Params::Validate qw( pos_validated_list );
 use MooseX::SemiAffordanceAccessor;
 
 extends 'Moose::Meta::Class';
@@ -48,23 +48,20 @@ has 'sql_factory_class' =>
     );
 
 
+sub ClassForSchema
 {
-    my @spec = ( SCHEMA_TYPE );
-    sub ClassForSchema
+    my $class    = shift;
+    my ($schema) = pos_validated_list( \@_, { isa => 'Fey::Schema' } );
+
+    my $map = $class->_SchemaClassMap();
+
+    for my $class_name ( keys %{ $map } )
     {
-        my $class    = shift;
-        my ($schema) = validate_pos( @_, @spec );
-
-        my $map = $class->_SchemaClassMap();
-
-        for my $class_name ( keys %{ $map } )
-        {
-            return $class_name
-                if $map->{$class_name}->name() eq $schema->name();
-        }
-
-        return;
+        return $class_name
+            if $map->{$class_name}->name() eq $schema->name();
     }
+
+    return;
 }
 
 sub _associate_schema

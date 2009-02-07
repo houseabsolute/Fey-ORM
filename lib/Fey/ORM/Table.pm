@@ -6,9 +6,10 @@ use warnings;
 use Class::MOP;
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
-use Fey::Validate qw( validate_pos TABLE_TYPE );
+
 use Moose ();
 use Moose::Exporter;
+use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods
     ( with_caller => [qw( has_table has_policy has_one has_many transform )],
@@ -28,15 +29,13 @@ sub init_meta
                         );
 }
 
+sub has_table
 {
-    my $spec = ( TABLE_TYPE );
-    sub has_table
-    {
-        my $caller  = shift;
-        my ($table) = validate_pos( @_, $spec );
+    my $caller  = shift;
 
-        $caller->meta()->_associate_table($table);
-    }
+    my ($table) = pos_validated_list( \@_, { isa => 'Fey::Table' } );
+
+    $caller->meta()->_associate_table($table);
 }
 
 sub has_policy
@@ -85,50 +84,43 @@ sub deflate (&)
     return { deflate => $_[0] };
 }
 
+sub has_one
 {
-    my $simple_spec = ( TABLE_TYPE );
+    my $caller = shift;
 
-    sub has_one
+    my %p;
+    if ( @_ == 1 )
     {
-        my $caller = shift;
-
-        my %p;
-        if ( @_ == 1 )
-        {
-            ( $p{table} ) = validate_pos( @_, $simple_spec );
-        }
-        else
-        {
-            $p{name} = shift;
-
-            %p = ( %p, @_ );
-        }
-
-        $caller->meta()->add_has_one(%p);
+        ( $p{table} ) = shift;
     }
+    else
+    {
+        $p{name} = shift;
+
+        %p = ( %p, @_ );
+    }
+
+    $caller->meta()->add_has_one(%p);
 }
 
+sub has_many
 {
-    my $simple_spec = ( TABLE_TYPE );
+    my $caller = shift;
 
-    sub has_many
+    my %p;
+    if ( @_ == 1 )
     {
-        my $caller = shift;
-
-        my %p;
-        if ( @_ == 1 )
-        {
-            ( $p{table} ) = validate_pos( @_, $simple_spec );
-        }
-        else
-        {
-            $p{name} = shift;
-
-            %p = ( %p, @_ );
-        }
-
-        $caller->meta()->add_has_many(%p);
+        ( $p{table} ) = shift;
     }
+    else
+    {
+        $p{name} = shift;
+
+        %p = ( %p, @_ );
+
+    }
+
+    $caller->meta()->add_has_many(%p);
 }
 
 1;

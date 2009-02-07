@@ -4,11 +4,6 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
-use Fey::Validate qw( validate SCALAR_TYPE ARRAYREF_TYPE BOOLEAN_TYPE
-                      TABLE_TYPE FK_TYPE SELECT_TYPE
-                      CODEREF_TYPE
-                    );
-
 use Fey::Hash::ColumnsKey;
 use Fey::Object::Iterator;
 use Fey::Object::Iterator::Caching;
