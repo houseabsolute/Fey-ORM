@@ -1,7 +1,7 @@
-0.20
+0.20   2009-02-06
 
-- Removed use of Sub::Name in Fey::Meta::HasMany. It wasn't actually
-  being used, and wasn't in the prereq list.
+- Use MooseX::Params::Validate instead of the no-longer-in-Fey
+  Fey::Validate.
 
 
 0.19   2009-01-18
