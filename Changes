@@ -1,3 +1,20 @@
+0.21
+
+* This release contains several backwards incompatible changes.
+
+* Fey::Object::Iterator has been renamed to
+  Fey::Object::Iterator::FromSelect. Fey::Object::Iterator::Caching is
+  now has Fey::Object::Iterator::FromSelect::Caching. This was done to
+  allow for a new class, Fey::Object::Iterator::FromArray. There is
+  now a Fey::ORM::Role::Iterator role which all of these classes do.
+
+* The iterator methods all and all_as_hashes now really return _all_
+  of the data, which means they will reset the iterator if needed.
+
+- Added remaining and remaining_as_hashes methods to iterators. These
+  do what all and all_as_hashes did previously. Thanks 
+
+
 0.20   2009-02-06
 
 - Use MooseX::Params::Validate instead of the no-longer-in-Fey

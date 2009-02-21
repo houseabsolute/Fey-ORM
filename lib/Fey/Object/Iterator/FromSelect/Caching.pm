@@ -32,7 +32,7 @@ has '_sth_is_exhausted' =>
       init_arg => undef,
     );
 
-sub next
+sub _get_next_result
 {
     my $self = shift;
 
@@ -45,7 +45,7 @@ sub next
         # handle. DBD::SQLite can handle this, so it is not tested.
         return if $self->_sth_is_exhausted();
 
-        $result = $self->_get_next_result();
+        $result = $self->SUPER::_get_next_result();
 
         unless ($result)
         {
@@ -56,9 +56,7 @@ sub next
         $self->_cache_result($result);
     }
 
-    $self->_inc_index();
-
-    return wantarray ? @{ $result } : $result->[0];
+    return $result;
 }
 
 sub reset
@@ -139,13 +137,6 @@ DBMS.
 
 This class provides the following methods:
 
-=head2 $iterator->next()
-
-This returns the next set of objects. If it has a cached set of
-objects for the appropriate index, it returns them instead of fetching
-more data from the DBMS. Otherwise it is identical to calling
-C<next()> on a L<Fey::Object::Iterator::FromSelect> object.
-
 =head2 $iterator->reset()
 
 Resets the iterator so that the next call to C<< $iterator->next() >>
@@ -158,6 +149,10 @@ objects.
 Clones the iterator while sharing its cached data with the original
 object. This is really intended for internal use, so I<use at your own
 risk>.
+
+=head1 ROLES
+
+This class does the L<Fey::ORM::Role::Iterator> role.
 
 =head1 AUTHOR
 
