@@ -14,7 +14,6 @@ extends 'Fey::Meta::FK';
 has associated_method =>
     ( is         => 'rw',
       isa        => 'Moose::Meta::Method',
-      writer     => '_set_associated_method',
       init_arg   => undef,
       lazy_build => 1,
     );

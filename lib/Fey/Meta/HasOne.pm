@@ -14,7 +14,6 @@ extends 'Fey::Meta::FK';
 has associated_attribute =>
     ( is         => 'rw',
       isa        => 'Maybe[Moose::Meta::Attribute]',
-      writer     => '_set_associated_attribute',
       init_arg   => undef,
       lazy_build => 1,
     );
@@ -22,7 +21,6 @@ has associated_attribute =>
 has associated_method =>
     ( is         => 'rw',
       isa        => 'Maybe[Moose::Meta::Method]',
-      writer     => '_set_associated_method',
       init_arg   => undef,
       lazy_build => 1,
     );
