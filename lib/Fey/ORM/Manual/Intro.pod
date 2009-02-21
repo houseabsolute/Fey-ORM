@@ -7,7 +7,7 @@ Fey::ORM::Manual::Intro - Introduction to Fey::ORM
 This documentation will walk you through the steps needed to start
 using L<Fey::ORM>.
 
-You should go ahead and make sure you have C<Fey::Loader> installed if
+You should go ahead and make sure you have L<Fey::Loader> installed if
 you want to follow along with this introduction.
 
 =head1 SAMPLE SCHEMA
@@ -40,9 +40,9 @@ type of application. Here is that schema, targeting SQLite:
 =head1 LOADING A SCHEMA
 
 To do anything with L<Fey::ORM>, you need to define a schema using
-C<Fey::Schema> and C<Fey::Table>. While you can do this by using the
-C<Fey> API directly, it's much easier to load a schema from a DBMS
-using C<Fey::Loader>:
+L<Fey::Schema> and L<Fey::Table>. While you can do this by using the
+L<Fey> API directly, it's much easier to load a schema from a DBMS
+using L<Fey::Loader>:
 
   my $schema = Fey::Loader->new( dbh => $dbh )->make_schema();
 
@@ -51,16 +51,16 @@ that match the schema found in the DBMS.
 
 =head1 SCHEMA CLASS
 
-You need to define a schema class which is associated a C<Fey::Schema>
+You need to define a schema class which is associated a L<Fey::Schema>
 object.
 
-Your schema class will also contain your C<Fey::DBIManager> object,
+Your schema class will also contain your L<Fey::DBIManager> object,
 which manages your database handle(s). L<Fey::ORM> is smart enough to
 connect a table-based class to your schema class automatically, and
 from that find an appropriate database handle when it needs to execute
 queries.
 
-To define your schema class you'll use C<Fey::Schema::Class>:
+To define your schema class you'll use L<Fey::Schema::Class>:
 
   package Forum::Model::Schema;
 
@@ -68,8 +68,8 @@ To define your schema class you'll use C<Fey::Schema::Class>:
 
   has_schema $schema;
 
-Of course, you need to create a C<Fey::Schema> object to pass to
-C<has_schema()>. You might as well create a C<Fey::DBIManager::Source>
+Of course, you need to create a L<Fey::Schema> object to pass to
+C<has_schema()>. You might as well create a L<Fey::DBIManager::Source>
 object along the way.
 
   package Forum::Model::Schema;
@@ -89,12 +89,12 @@ object along the way.
   __PACKAGE__->DBIManager()->add_source($source);
 
 Now you can use C<Forum::Model::Schema> in other classes to find
-C<Fey::Table> objects for each table in your schema.
+L<Fey::Table> objects for each table in your schema.
 
 =head1 TABLE CLASSES
 
 With L<Fey::ORM>, each of your model classes has an associated
-C<Fey::Table> object. For example, the User table would be associated
+L<Fey::Table> object. For example, the User table would be associated
 with the C<Forum::Model::User> class.
 
   package Forum::Model::User;
@@ -244,7 +244,7 @@ provide an explicit name:
       ( table => Forum::Model::Schema->Schema()->table('Message') );
 
 Now we have a C<< $user->messages() >> method (not an
-attribute!). This method returns a C<Fey::Object::Iterator> which
+attribute!). This method returns a L<Fey::Object::Iterator> which
 iterates over the user's messages.
 
   my $messages = $user->messages();
@@ -266,7 +266,7 @@ explicitly:
       );
 
 In this case, a C<< $user->messages() >> I<attribute> is created which
-returns a C<Fey::Object::Iterator::Caching> object. Subsequent calls
+returns a L<Fey::Object::Iterator::Caching> object. Subsequent calls
 to this attribute will return the same iterator, and that iterator in
 turn caches any objects it has already created.
 
@@ -288,7 +288,7 @@ L<Fey::ORM> can also handle self-referential relationships:
 
 L<Fey::ORM>, also allows you to declare arbitrary relationships
 between any two tables by providing a SELECT statement to C<has_one()>
-or C<has_many()>, rather than a C<Fey::FK> object. Here is a
+or C<has_many()>, rather than a L<Fey::FK> object. Here is a
 straightforward example:
 
   package Forum::Model::Message;
@@ -369,10 +369,10 @@ Quite often, you will want to have an attribute which reflects the
 value of a single C<SELECT> query. For example, user objects might
 have a C<< $user->message_count() >> attribute.
 
-C<Fey::ORM> provides an attribute metaclass,
-C<Fey::Meta::Attribute::FromSelect>, which manages the details of
+L<Fey::ORM> provides an attribute metaclass,
+L<Fey::Meta::Attribute::FromSelect>, which manages the details of
 executing the query and sticking the value in an attribute. You just
-provide a C<Fey::SQL::Select> object and an optional subroutine
+provide a L<Fey::SQL::Select> object and an optional subroutine
 reference for the bind parameters.
 
   package Forum::Model::User;

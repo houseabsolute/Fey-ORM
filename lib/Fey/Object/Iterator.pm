@@ -337,7 +337,7 @@ A connected DBI handle
 
 =item * select
 
-This should be a C<Fey::SQL::Select> object representing the C<SELECT>
+This should be a L<Fey::SQL::Select> object representing the C<SELECT>
 statement that this iterator will iterator over.
 
 =item * bind_params

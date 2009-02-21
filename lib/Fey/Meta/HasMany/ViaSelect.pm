@@ -41,12 +41,12 @@ __END__
 
 =head1 NAME
 
-Fey::Meta::HasMany::ViaSelect - A parent for has-one metaclasses based on a C<Fey::SQL::Select> object
+Fey::Meta::HasMany::ViaSelect - A parent for has-one metaclasses based on a L<Fey::SQL::Select> object
 
 =head1 DESCRIPTION
 
 This class implements a has-one relationship for a class, based on a
-provided (or deduced) C<Fey::SQL::Select> object.
+provided (or deduced) L<Fey::SQL::Select> object.
 
 =head1 CONSTRUCTOR OPTIONS
 
@@ -56,7 +56,7 @@ This class accepts the following constructor options:
 
 =item * select
 
-The C<Fey::SQL::Select> object which defines the relationship between
+The L<Fey::SQL::Select> object which defines the relationship between
 the tables.
 
 =item * bind_params

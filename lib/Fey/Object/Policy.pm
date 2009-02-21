@@ -65,7 +65,7 @@ Fey::Object::Policy - An object representing a specific policy
 
 This class provides the non-sugar half of L<Fey::ORM::Policy>. It's
 probably not interesting unless you're interested in the guts of how
-C<Fey::ORM> works.
+L<Fey::ORM> works.
 
 =head1 METHODS
 
@@ -77,7 +77,7 @@ Stores a transform as declared in L<Fey::ORM::Policy>
 
 =head2 $policy->transform_for_column($column)
 
-Given a C<Fey::Column>, returns the first transform (as a hash
+Given a L<Fey::Column>, returns the first transform (as a hash
 reference) for which the C<matching> sub returns true.
 
 =head2 $policy->transforms()

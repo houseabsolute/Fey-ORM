@@ -650,7 +650,7 @@ for the class's table, and returns a new object for that row.
 
 The values for the columns can be plain scalars or object. Values will
 be passed through the appropriate deflators. You can also pass
-C<Fey::Literal> objects of any type.
+L<Fey::Literal> objects of any type.
 
 As an optimization, no object will be created in void context.
 
@@ -677,7 +677,7 @@ existing object's row. It will also make sure that the object's
 attributes are updated properly. In some cases, it will just clear the
 attribute, forcing it to be reloaded the next time it is
 accessed. This is necesasry when the update value was a
-C<Fey::Literal>, since that could be a function that gets interpreted
+L<Fey::Literal>, since that could be a function that gets interpreted
 by the DBMS, such as C<NOW()>.
 
 =head2 $object->delete()
@@ -718,9 +718,9 @@ these methods in this class.
 
 =head2 $class->_dbh($sql)
 
-Given a C<Fey::SQL> object, this method returns an appropriate C<DBI>
+Given a L<Fey::SQL> object, this method returns an appropriate C<DBI>
 object for that SQL. Internally, it calls C<source_for_sql()> on the
-schema class's C<Fey::DBIManager> object and then calls C<<
+schema class's L<Fey::DBIManager> object and then calls C<<
 $source->dbh() >> on the source.
 
 If there is no source for the given SQL, it will die.
@@ -745,7 +745,7 @@ the statement and bind parameters to C<< $object->_get_column_values()
 >>.
 
 On success, this method should simply return. If it fails, it should
-throw a C<Fey::Exception::NoSuchRow> exception. See
+throw a L<Fey::Exception::NoSuchRow> exception. See
 L<Fey::ORM::Exceptions> for details.
 
 =head2 $object->_get_column_values( $select, $bind_params )

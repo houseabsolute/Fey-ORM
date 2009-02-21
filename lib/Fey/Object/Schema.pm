@@ -180,20 +180,20 @@ This method will handle nested transactions gracefully if your
 DBMS does not. It doesn't emulate actual partial commits, but it
 does prevent DBI from throwing an error.
 
-The second argument can be a C<Fey::DBIManager::Source> object. If no
+The second argument can be a L<Fey::DBIManager::Source> object. If no
 source is specified, then this method will use the default source.
 
 =head3 $class->Schema()
 
-Returns the C<Fey::Schema> object associated with the class.
+Returns the L<Fey::Schema> object associated with the class.
 
 =head3 $class->DBIManager()
 
-Returns the C<Fey::Schema> object associated with the class.
+Returns the L<Fey::Schema> object associated with the class.
 
 =head3 $class->SetDBIManager($manager)
 
-Set the C<Fey::DBIManager> object associated with the class. If you
+Set the L<Fey::DBIManager> object associated with the class. If you
 don't set one explicitly, then the first call to C<<
 $class->DBIManager() >> will simply create one by calling C<<
 Fey::DBIManager->new() >>.
@@ -201,7 +201,7 @@ Fey::DBIManager->new() >>.
 =head3 $class->SQLFactoryClass()
 
 Returns the SQL factory class associated with the class. This defaults
-to C<Fey::SQL>.
+to L<Fey::SQL>.
 
 =head3 $class->SetSQLFactoryClass()
 

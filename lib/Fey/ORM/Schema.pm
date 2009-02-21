@@ -67,7 +67,7 @@ This package exports the following functions:
 
 =head2 has_schema($schema)
 
-Given a C<Fey::Schema> object, this method associates that schema with
+Given a L<Fey::Schema> object, this method associates that schema with
 the calling class.
 
 =head1 AUTHOR

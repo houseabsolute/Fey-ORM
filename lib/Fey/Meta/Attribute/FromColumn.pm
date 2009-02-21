@@ -51,7 +51,7 @@ C<Moose::Meta::Attribute>:
 
 =head2 $attr->column()
 
-Returns the C<Fey::Column> object associated with this attribute.
+Returns the L<Fey::Column> object associated with this attribute.
 
 =head1 AUTHOR
 

@@ -122,7 +122,7 @@ normal Moose attribute options.
 
 =item * select
 
-This must be a C<Fey::SQL::Select> object (or subclass). It is required.
+This must be a L<Fey::SQL::Select> object (or subclass). It is required.
 
 =item * bind_params
 
@@ -144,7 +144,7 @@ C<Moose::Meta::Attribute>:
 
 =head2 $attr->select()
 
-Returns the C<Fey::SQL::Select> object associated with this attribute.
+Returns the L<Fey::SQL::Select> object associated with this attribute.
 
 =head2 $attr->bind_params()
 

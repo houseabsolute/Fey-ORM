@@ -4,13 +4,13 @@ Fey::ORM::Manual - Fey::ORM Manual Index
 
 =head1 DESCRIPTION
 
-The index for the C<Fey::ORM> manual.
+The index for the L<Fey::ORM> manual.
 
 =head1 INDEX
 
 =head2 L<Fey::ORM::Manual::Intro>
 
-An introduction to using C<Fey::ORM>.
+An introduction to using L<Fey::ORM>.
 
 =head1 RECOMMENDED READING
 

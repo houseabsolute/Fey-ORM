@@ -130,7 +130,7 @@ Fey::Object::Iterator::Caching - A caching subclass of Fey::Object::Iterator
 =head1 DESCRIPTION
 
 This class implements a caching subclass of
-C<Fey::Object::Iterator>. This means that it caches objects it creates
+L<Fey::Object::Iterator>. This means that it caches objects it creates
 internally. When C<< $iterator->reset() >> is called it will re-use
 those objects before fetching more data from the DBMS.
 
@@ -143,7 +143,7 @@ This class provides the following methods:
 This returns the next set of objects. If it has a cached set of
 objects for the appropriate index, it returns them instead of fetching
 more data from the DBMS. Otherwise it is identical to calling
-C<next()> on a C<Fey::Object::Iterator> object.
+C<next()> on a L<Fey::Object::Iterator> object.
 
 =head2 $iterator->reset()
 

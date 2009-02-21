@@ -68,7 +68,7 @@ inflator was declared.
 
 =head2 $attr->column()
 
-Returns the C<Fey::Column> object associated with the raw attribute.
+Returns the L<Fey::Column> object associated with the raw attribute.
 
 =head1 AUTHOR
 

@@ -531,17 +531,17 @@ This class provides the following methods:
 
 =head2 Fey::Meta::Class::Table->ClassForTable( $table1, $table2 )
 
-Given one or more C<Fey::Table> objects, this method returns the name
+Given one or more L<Fey::Table> objects, this method returns the name
 of the class which "has" that table, if any.
 
 =head2 Fey::Meta::Class::Table->TableForClass($class)
 
-Given a class, this method returns the C<Fey::Table> object associated
+Given a class, this method returns the L<Fey::Table> object associated
 with that class, if any.
 
 =head2 $meta->table()
 
-Returns the C<Fey::Table> for the metaclass's class.
+Returns the L<Fey::Table> for the metaclass's class.
 
 =head2 $meta->add_has_one(%options)
 
@@ -552,7 +552,7 @@ C<HasOne> meta-object.
 
 =head2 $meta->has_ones()
 
-Returns a list of the C<Fey::Meta::HasOne> objects added to this
+Returns a list of the L<Fey::Meta::HasOne> objects added to this
 metaclass.
 
 =head2 $meta->remove_has_one($name)
@@ -569,7 +569,7 @@ C<HasMany> meta-object.
 
 =head2 $meta->has_manies()
 
-Returns a list of the C<Fey::Meta::HasMany> objects added to this
+Returns a list of the L<Fey::Meta::HasMany> objects added to this
 metaclass.
 
 =head2 $meta->remove_has_many($name)

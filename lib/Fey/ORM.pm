@@ -65,12 +65,12 @@ Then in your application:
 
 =head1 DESCRIPTION
 
-C<Fey::ORM> builds on top of other Fey project libraries to create an
+L<Fey::ORM> builds on top of other Fey project libraries to create an
 ORM focused on easy SQL generation. This is an ORM for people who are
 comfortable with SQL and want to be able to use it with their objects,
 rather than people who like OO and don't want to think about the DBMS.
 
-C<Fey::ORM> also draws inspiration from C<Moose> and tries to provide
+L<Fey::ORM> also draws inspiration from C<Moose> and tries to provide
 as much functionality as it can via a simple declarative interface. Of
 course, it uses C<Moose> under the hood for its implementation.
 

@@ -48,7 +48,7 @@ Fey::Hash::ColumnsKey - A hash where the keys are sets of Fey::Column objects
 
 =head1 DESCRIPTION
 
-This class is a helper for C<Fey::Meta::Class::Table>. It is used to
+This class is a helper for L<Fey::Meta::Class::Table>. It is used to
 cache SQL statements with a set of columns as the key. You should
 never need to use it directly.
 

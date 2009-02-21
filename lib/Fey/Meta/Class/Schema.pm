@@ -114,17 +114,17 @@ This class provides the following methods:
 
 =head2 Fey::Meta::Class::Schema->ClassForSchema($schema)
 
-Given a C<Fey::Schema> object, this method returns the name of the
+Given a L<Fey::Schema> object, this method returns the name of the
 class which "has" that schema, if any.
 
 =head2 Fey::Meta::Class::Schema->SchemaForClass($class)
 
-Given a class, this method returns the C<Fey::Schema> object
+Given a class, this method returns the L<Fey::Schema> object
 associated with that class, if any.
 
 =head2 $meta->table()
 
-Returns the C<Fey::Schema> for the metaclass's class.
+Returns the L<Fey::Schema> for the metaclass's class.
 
 =head1 AUTHOR
 

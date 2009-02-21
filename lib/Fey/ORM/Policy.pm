@@ -133,7 +133,7 @@ Fey::ORM::Policy - Declarative policies for Fey::ORM using classes
 =head1 DESCRIPTION
 
 This module allows you to declare a policy for your
-C<Fey::ORM::Table>-using classes.
+L<Fey::ORM::Table>-using classes.
 
 A policy can define transform rules which can be applied to matching
 columns, as well as a naming scheme for has_one and has_many
@@ -154,7 +154,7 @@ C<inflate> or C<deflate> sub.
 =head2 matching { ... }
 
 This function takes a subroutine reference that will be called and
-passed a C<Fey::Column> object as its argument. This sub should look
+passed a L<Fey::Column> object as its argument. This sub should look
 at the column and return true if the associated inflate/deflate should
 be applied to the column.
 
@@ -189,7 +189,7 @@ C<has_many()> methods.
 =head2 Policy
 
 This methods returns the L<Fey::Object::Policy> object for your policy
-class. This method allows C<Fey::ORM::Table> to go get a policy object
+class. This method allows L<Fey::ORM::Table> to go get a policy object
 from a policy class name.
 
 =head1 AUTHOR

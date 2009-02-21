@@ -78,12 +78,12 @@ __END__
 
 =head1 NAME
 
-Fey::Meta::HasOne::ViaFK - A parent for has-one metaclasses based on a C<Fey::FK> object
+Fey::Meta::HasOne::ViaFK - A parent for has-one metaclasses based on a L<Fey::FK> object
 
 =head1 DESCRIPTION
 
 This class implements a has-one relationship for a class, based on a
-provided (or deduced) C<Fey::FK> object.
+provided (or deduced) L<Fey::FK> object.
 
 =head1 CONSTRUCTOR OPTIONS
 
