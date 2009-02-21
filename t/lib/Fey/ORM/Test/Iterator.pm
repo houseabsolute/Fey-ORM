@@ -97,6 +97,9 @@ sub run_shared_tests
                                     select  => $sql,
                                   );
 
+        # Makes sure that ->all resets first
+        $iterator->next();
+
         my @users = $iterator->all();
 
         is_deeply( [ sort map { $_->user_id() } @users ],
@@ -112,7 +115,8 @@ sub run_shared_tests
         is( $user{User}->user_id(), 1,
             'found expected user via next_as_hash()' );
 
-        $iterator->reset();
+        # Makes sure that ->all resets first
+        $iterator->next();
 
         my @results = $iterator->all_as_hashes();
 
@@ -124,6 +128,24 @@ sub run_shared_tests
             'found expected first user in result' );
         is( $results[1]{User}->user_id(), 42,
             'found expected second user in result' );
+
+        $iterator->reset();
+        $iterator->next();
+
+        @users = $iterator->remaining();
+
+        is_deeply( [ sort map { $_->user_id() } @users ],
+                   [ 42 ],
+                   'remaining() returns expected result' );
+
+        $iterator->reset();
+        $iterator->next();
+
+        @results = $iterator->remaining_as_hashes();
+
+        is_deeply( [ map { [ keys %{ $_ } ] } @results ],
+                   [ [ 'User' ] ],
+                   'remaining_as_hashes returns arrayref of hashes with expected keys' );
     }
 
     {
