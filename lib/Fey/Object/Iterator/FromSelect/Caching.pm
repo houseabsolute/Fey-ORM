@@ -1,4 +1,4 @@
-package Fey::Object::Iterator::Caching;
+package Fey::Object::Iterator::FromSelect::Caching;
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use MooseX::AttributeHelpers;
 use MooseX::SemiAffordanceAccessor;
 use MooseX::StrictConstructor;
 
-extends 'Fey::Object::Iterator';
+extends 'Fey::Object::Iterator::FromSelect';
 
 has _cached_results =>
     ( metaclass => 'Collection::Array',
@@ -130,9 +130,10 @@ Fey::Object::Iterator::Caching - A caching subclass of Fey::Object::Iterator
 =head1 DESCRIPTION
 
 This class implements a caching subclass of
-L<Fey::Object::Iterator>. This means that it caches objects it creates
-internally. When C<< $iterator->reset() >> is called it will re-use
-those objects before fetching more data from the DBMS.
+L<Fey::Object::Iterator::FromSelect>. This means that it caches
+objects it creates internally. When C<< $iterator->reset() >> is
+called it will re-use those objects before fetching more data from the
+DBMS.
 
 =head1 METHODS
 
@@ -143,13 +144,13 @@ This class provides the following methods:
 This returns the next set of objects. If it has a cached set of
 objects for the appropriate index, it returns them instead of fetching
 more data from the DBMS. Otherwise it is identical to calling
-C<next()> on a L<Fey::Object::Iterator> object.
+C<next()> on a L<Fey::Object::Iterator::FromSelect> object.
 
 =head2 $iterator->reset()
 
 Resets the iterator so that the next call to C<< $iterator->next() >>
 returns the first objects. Internally, this I<does not> reset the
-C<DBI> statement handle, it simply makes the iterator use cached
+L<DBI> statement handle, it simply makes the iterator use cached
 objects.
 
 =head2 $iterator->clone()

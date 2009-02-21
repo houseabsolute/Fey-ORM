@@ -250,8 +250,8 @@ you need to make sure it has placeholders.
 
 The C<has_many()> function declares a relationship between the calling
 class's table and another table, just like C<has_one()>. The method it
-creates returns a L<Fey::Object::Iterator> of the foreign table's
-objects.
+creates returns a L<Fey::Object::Iterator::FromSelect> of the foreign
+table's objects.
 
 With the single-argument form, you can simply pass a single
 L<Fey::Table> object. This works when there is a single foreign key
@@ -272,7 +272,7 @@ key between the two tables. Finally, you can turn on caching by
 setting C<cache> to a true value.
 
 When caching is enabled, the iterator returned is of the
-L<Fey::Object::Iterator::Caching> class.
+L<Fey::Object::Iterator::FromSelect::Caching> class.
 
 Also, a private clearer method is created when caching is enabled, of
 the form C<< $object->_clear_$name() >>.

@@ -5,8 +5,6 @@ use warnings;
 
 use Fey::Exceptions qw( param_error );
 use Fey::Hash::ColumnsKey;
-use Fey::Object::Iterator;
-use Fey::Object::Iterator::Caching;
 use Fey::Object::Policy;
 use Fey::Meta::Attribute::FromInflator;
 use Fey::Meta::Attribute::FromColumn;

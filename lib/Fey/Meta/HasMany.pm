@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use Fey::Exceptions qw( param_error );
+use Fey::Object::Iterator::FromSelect;
+use Fey::Object::Iterator::FromSelect::Caching;
 use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::StrictConstructor;
@@ -18,14 +20,14 @@ has associated_method =>
       lazy_build => 1,
     );
 
-subtype 'Fey.ORM.Type.IteratorClass'
+subtype 'Fey.ORM.Type.ClassDoesIterator'
     => as 'ClassName'
-    => where { $_[0]->isa('Fey::Object::Iterator') }
-    => message { "$_[0] is a not a subclass of Fey::Object::Iterator" };
+    => where { $_[0]->meta()->does_role('Fey::ORM::Role::Iterator') }
+    => message { "$_[0] does not do the Fey::ORM::Role::Iterator role" };
 
 has 'iterator_class' =>
     ( is         => 'ro',
-      isa        => 'Fey.ORM.Type.IteratorClass',
+      isa        => 'Fey.ORM.Type.ClassDoesIterator',
       lazy_build => 1,
     );
 
@@ -36,8 +38,8 @@ sub _build_iterator_class
 
     return
         $self->is_cached()
-        ? 'Fey::Object::Iterator::Caching'
-        : 'Fey::Object::Iterator';
+        ? 'Fey::Object::Iterator::FromSelect::Caching'
+        : 'Fey::Object::Iterator::FromSelect';
 }
 
 sub _build_is_cached { 0 }

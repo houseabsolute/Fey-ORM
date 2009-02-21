@@ -99,7 +99,7 @@ plan tests => 17;
 {
     my $user = User->new( user_id => 1 );
 
-    isa_ok( $user->messages(), 'Fey::Object::Iterator::Caching' );
+    isa_ok( $user->messages(), 'Fey::Object::Iterator::FromSelect::Caching' );
 
     my $m1 = $user->messages();
     my $m2 = $user->messages();

@@ -244,8 +244,9 @@ provide an explicit name:
       ( table => Forum::Model::Schema->Schema()->table('Message') );
 
 Now we have a C<< $user->messages() >> method (not an
-attribute!). This method returns a L<Fey::Object::Iterator> which
-iterates over the user's messages.
+attribute!). This method returns a
+L<Fey::Object::Iterator::FromSelect> which iterates over the user's
+messages.
 
   my $messages = $user->messages();
 
@@ -266,9 +267,10 @@ explicitly:
       );
 
 In this case, a C<< $user->messages() >> I<attribute> is created which
-returns a L<Fey::Object::Iterator::Caching> object. Subsequent calls
-to this attribute will return the same iterator, and that iterator in
-turn caches any objects it has already created.
+returns a L<Fey::Object::Iterator::FromSelect::Caching>
+object. Subsequent calls to this attribute will return the same
+iterator, and that iterator in turn caches any objects it has already
+created.
 
 L<Fey::ORM> can also handle self-referential relationships:
 

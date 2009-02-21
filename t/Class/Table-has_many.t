@@ -56,8 +56,8 @@ my $Schema = schema();
         'fk target table is Message' );
     is( $hm->associated_method(), User->meta()->get_method('messages'),
         'associated_method is same as messages meta method' );
-    is( $hm->iterator_class(), 'Fey::Object::Iterator',
-        'iterator class is Fey::Object::Iterator' );
+    is( $hm->iterator_class(), 'Fey::Object::Iterator::FromSelect',
+        'iterator class is Fey::Object::Iterator::FromSelect' );
     is( $hm->order_by(), undef,
         'order_by is undefined' );
 }
@@ -85,8 +85,8 @@ my $Schema = schema();
 
     my $hm = $manies[0];
     ok( $hm->is_cached(), 'is_cached is true' );
-    is( $hm->iterator_class(), 'Fey::Object::Iterator::Caching',
-        'iterator class is Fey::Object::Iterator::Caching' );
+    is( $hm->iterator_class(), 'Fey::Object::Iterator::FromSelect::Caching',
+        'iterator class is Fey::Object::Iterator::FromSelect::Caching' );
 }
 
 {
@@ -176,8 +176,8 @@ my $Schema = schema();
     ok( ! $hm->is_cached(), 'is_cached is false' );
     is( $hm->associated_method(), Message->meta()->get_method('child_message_users'),
         'associated_method is same as child_message_users meta method' );
-    is( $hm->iterator_class(), 'Fey::Object::Iterator',
-        'iterator class is Fey::Object::Iterator' );
+    is( $hm->iterator_class(), 'Fey::Object::Iterator::FromSelect',
+        'iterator class is Fey::Object::Iterator::FromSelect' );
 }
 
 {

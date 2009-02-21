@@ -1,4 +1,4 @@
-package Fey::Object::Iterator;
+package Fey::Object::Iterator::FromSelect;
 
 use strict;
 use warnings;
@@ -12,6 +12,8 @@ use MooseX::SemiAffordanceAccessor;
 use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
+
+with 'Fey::ORM::Role::Iterator';
 
 subtype 'ArrayRefOfClasses'
     => as 'ArrayRef',
@@ -58,17 +60,6 @@ has _sth =>
       predicate  => '_has_sth',
       clearer    => '_clear_sth',
       init_arg   => undef,
-    );
-
-has index =>
-    ( metaclass => 'Counter',
-      is       => 'ro',
-      isa      => 'Int',
-      default  => 0,
-      init_arg => undef,
-      provides => { 'inc'   => '_inc_index',
-                    'reset' => '_reset_index',
-                  },
     );
 
 has 'attribute_map' =>
@@ -205,6 +196,15 @@ sub all
 {
     my $self = shift;
 
+    $self->reset() if $self->index();
+
+    return $self->remaining();
+}
+
+sub remaining
+{
+    my $self = shift;
+
     my @result;
     while ( my @r = $self->next() )
     {
@@ -228,6 +228,15 @@ sub next_as_hash
 }
 
 sub all_as_hashes
+{
+    my $self = shift;
+
+    $self->reset() if $self->index();
+
+    return $self->remaining_as_hashes();
+}
+
+sub remaining_as_hashes
 {
     my $self = shift;
 
