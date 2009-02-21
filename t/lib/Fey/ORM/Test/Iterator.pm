@@ -27,9 +27,9 @@ sub run_shared_tests
 
     {
         my $sql = Fey::SQL->new_select
-                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
-                          ->from( $schema->table('User') )
-                          ->order_by( $schema->table('User')->column('user_id') );
+                      ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                      ->from( $schema->table('User') )
+                      ->order_by( $schema->table('User')->column('user_id') );
 
         my $iterator = $class->new( classes => 'User',
                                     dbh     => $dbh,
@@ -88,9 +88,9 @@ sub run_shared_tests
 
     {
         my $sql = Fey::SQL->new_select
-                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
-                          ->from( $schema->table('User') )
-                          ->order_by( $schema->table('User')->column('user_id') );
+                      ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                      ->from( $schema->table('User') )
+                      ->order_by( $schema->table('User')->column('user_id') );
 
         my $iterator = $class->new( classes => 'User',
                                     dbh     => $dbh,
@@ -150,10 +150,10 @@ sub run_shared_tests
 
     {
         my $sql = Fey::SQL->new_select
-                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
-                          ->from( $schema->table('User') )
-                          ->where( $schema->table('User')->column('user_id'), 'IN', 1, 42 )
-                          ->order_by( $schema->table('User')->column('user_id') );
+                      ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                      ->from( $schema->table('User') )
+                      ->where( $schema->table('User')->column('user_id'), 'IN', 1, 42 )
+                      ->order_by( $schema->table('User')->column('user_id') );
 
         my $iterator = $class->new( classes => 'User',
                                     dbh     => $dbh,
@@ -173,11 +173,11 @@ sub run_shared_tests
 
     {
         my $sql = Fey::SQL->new_select
-                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
-                          ->from( $schema->table('User') )
-                          ->where( $schema->table('User')->column('user_id'), 'IN',
+                      ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                      ->from( $schema->table('User') )
+                      ->where( $schema->table('User')->column('user_id'), 'IN',
                                    ( Fey::Placeholder->new() ) x 2 )
-                          ->order_by( $schema->table('User')->column('user_id') );
+                      ->order_by( $schema->table('User')->column('user_id') );
 
         my $iterator = $class->new( classes     => 'User',
                                     dbh         => $dbh,
@@ -198,13 +198,13 @@ sub run_shared_tests
 
     {
         my $sql = Fey::SQL->new_select
-                          ->select( $schema->table('User')->columns( qw( user_id username ) ),
-                                    $schema->table('Message')->columns( qw( message_id message ) ),
-                                  )
-                          ->from( $schema->tables( 'User', 'Message' ) )
-                          ->order_by( $schema->table('User')->column('user_id'),
-                                      $schema->table('Message')->column('message_id'),
-                                    );
+                      ->select( $schema->table('User')->columns( qw( user_id username ) ),
+                                $schema->table('Message')->columns( qw( message_id message ) ),
+                              )
+                      ->from( $schema->tables( 'User', 'Message' ) )
+                      ->order_by( $schema->table('User')->column('user_id'),
+                                  $schema->table('Message')->column('message_id'),
+                                );
 
         my $iterator = $class->new( classes => [ 'User', 'Message' ],
                                     dbh     => $dbh,
@@ -251,11 +251,11 @@ sub run_shared_tests
     {
         # This simulates an OUTER JOIN where Message could be NULL
         my $sql = Fey::SQL->new_select
-                          ->select( Fey::Literal::Null->new(),
-                                    $schema->table('User')->columns( qw( user_id username ) ),
-                                  )
-                          ->from( $schema->tables( 'User' ) )
-                          ->order_by( $schema->table('User')->column('user_id') );
+                      ->select( Fey::Literal::Null->new(),
+                                $schema->table('User')->columns( qw( user_id username ) ),
+                              )
+                      ->from( $schema->tables( 'User' ) )
+                      ->order_by( $schema->table('User')->column('user_id') );
 
         my $iterator = $class->new( classes       => [ 'Message', 'User' ],
                                     dbh           => $dbh,
