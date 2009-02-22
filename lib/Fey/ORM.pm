@@ -3,9 +3,9 @@ package Fey::ORM;
 use strict;
 use warnings;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
-use Moose 0.72 ();
+use Moose 0.71_01 ();
 
 
 1;
