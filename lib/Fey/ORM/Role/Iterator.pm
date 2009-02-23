@@ -25,9 +25,10 @@ coerce $arrayref_of_classes
     => via { return [ $_ ] };
 
 has classes =>
-    ( is     => 'ro',
-      isa    => $arrayref_of_classes,
-      coerce => 1,
+    ( is       => 'ro',
+      isa      => $arrayref_of_classes,
+      coerce   => 1,
+      required => 1,
     );
 
 has index =>
