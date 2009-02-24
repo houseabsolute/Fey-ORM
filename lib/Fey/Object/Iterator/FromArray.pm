@@ -26,9 +26,9 @@ has '_objects' =>
     ( is       => 'ro',
       isa      => $iterable_arrayref,
       coerce   => 1,
+      required => 1,
       init_arg => 'objects',
     );
-
 
 sub _get_next_result
 {
@@ -94,6 +94,19 @@ L<Fey::ORM>-created iterators, or existing data sets.
 =head1 METHODS
 
 This class provides the following methods:
+
+=head2 $iterator->new()
+
+The constructor requires two parameters, C<classes> and
+C<objects>. The C<classes> parameter can be a single class name, or an
+array reference of names.
+
+The C<objects> parameter should be an array reference. That reference
+can contain a list of objects, or an a list of array references, each
+of which contains objects.
+
+In either case, the objects must be subclasses of
+L<Fey::Object::Table>.
 
 =head2 $iterator->reset()
 
