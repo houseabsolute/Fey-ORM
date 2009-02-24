@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 39;
+use Test::More tests => 41;
 
 use lib 't/lib';
 
@@ -234,6 +234,12 @@ $Schema2->set_name('Schema2');
     package User2;
 
     has_table $Schema2->table('User');
+
+    transform 'email'
+        => inflate { return Email->new( $_[1] ) }
+        => handles { address => 'as_string' }
+        => deflate { return $_[1]->as_string() };
+
 }
 
 {
@@ -241,4 +247,12 @@ $Schema2->set_name('Schema2');
         'table for User2 class is User' );
     is( User2->Table()->schema()->name(), 'Schema2',
         'schema for User2 class table is Schema2' );
+    ok( User2->can('address'), 'delegation for address was created' );
+
+    my $user = User2->new( user_id     => 2,
+                           email       => 'test@example.com',
+                           _from_query => 1,
+                         );
+    is( $user->address(), 'test@example.com',
+        'address method return stringified email address' );
 }

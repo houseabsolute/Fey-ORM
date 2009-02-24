@@ -15,6 +15,9 @@
 - Added remaining and remaining_as_hashes methods to iterators. These
   do what all and all_as_hashes did previously. Thanks 
 
+- The transform feature now supports passing delegation for the
+  inflated object. See Fey::ORM::Table for details.
+
 
 0.20   2009-02-06
 

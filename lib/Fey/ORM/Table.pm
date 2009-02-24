@@ -13,7 +13,7 @@ use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods
     ( with_caller => [qw( has_table has_policy has_one has_many transform )],
-      as_is       => [qw( inflate deflate )],
+      as_is       => [qw( inflate deflate handles )],
       also        => 'Moose'
     );
 
@@ -82,6 +82,11 @@ sub inflate (&)
 sub deflate (&)
 {
     return { deflate => $_[0] };
+}
+
+sub handles ($)
+{
+    return { handles => $_[0] };
 }
 
 sub has_one
@@ -334,10 +339,24 @@ once:
 These are sugar functions that accept a single coderef. They mostly
 exist to prevent you from having to write this:
 
+  # this is not valid code!
   transform 'creation_date' =>
       ( inflator => sub { ... },
         deflator => sub { ... },
       );
+
+=head2 handles ...
+
+This sugar function lets you add delegation to an inflated
+attribute. It accepts anything that Moose accepts for an attribute's
+C<handles> parameter.
+
+  transform 'creation_date'
+      => inflate { ... }
+      => handles { creation_ymd     => 'ymd',
+                   creation_iso8601 => 'iso8601',
+                 }
+      => deflate { ... };
 
 =head1 AUTHOR
 

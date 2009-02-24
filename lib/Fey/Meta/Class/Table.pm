@@ -314,7 +314,7 @@ sub _add_transform
     param_error "The column $name does not exist as an attribute"
         unless $attr;
 
-    $self->_add_inflator_to_attribute( $name, $attr, $p{inflate} )
+    $self->_add_inflator_to_attribute( $name, $attr, $p{inflate}, $p{handles} )
         if $p{inflate};
 
     if ( $p{deflate} )
@@ -332,6 +332,7 @@ sub _add_inflator_to_attribute
     my $name     = shift;
     my $attr     = shift;
     my $inflator = shift;
+    my $handles  = shift;
 
     param_error "Cannot provide more than one inflator for a column ($name)"
         if $attr->isa('Fey::Meta::Attribute::FromInflator');
@@ -355,6 +356,8 @@ sub _add_inflator_to_attribute
                         return $self->$inflator( $self->$raw_name() );
                       };
 
+    my %handles = $handles ? ( handles => $handles ) : ();
+
     $self->add_attribute
         ( $name,
           metaclass     => 'Fey::Meta::Attribute::FromInflator',
@@ -366,6 +369,7 @@ sub _add_inflator_to_attribute
           init_arg      => undef,
           raw_attribute => $raw_attr,
           inflator      => $inflator,
+          %handles,
         );
 
     my $clear_inflated =
