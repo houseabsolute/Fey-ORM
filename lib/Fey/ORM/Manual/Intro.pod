@@ -74,7 +74,6 @@ object along the way.
 
   package Forum::Model::Schema;
 
-  use Fey::DBIManager;
   use Fey::DBIManager::Source;
   use Fey::Loader;
   use Fey::ORM::Schema;
