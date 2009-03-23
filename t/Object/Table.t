@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::define_live_classes();
 
-plan tests => 73;
+plan tests => 77;
 
 
 basic_tests();
@@ -29,7 +29,6 @@ tests_with_transform();
 
 sub basic_tests
 {
-
     {
         is( User->Count(), 2, 'Count() finds two rows' );
     }
@@ -226,6 +225,22 @@ sub basic_tests
         is_deeply( [ $user->pk_values_list() ],
                    \@pk_array,
                    'pk_values_list returns expected values' );
+    }
+
+    {
+        UserGroup->insert( user_id  => 1,
+                           group_id => 3,
+                         );
+
+        # This addresses a bug where a "key-only" table blew up trying
+        # to select a row.
+        my $ug = UserGroup->new( user_id  => 1,
+                                 group_id => 3,
+                               );
+        is( $ug->user_id(), 1, 'UserGroup row user_id == 1' );
+        is( $ug->group_id(), 3, 'UserGroup row group_id == 3' );
+
+        $ug->delete();
     }
 }
 

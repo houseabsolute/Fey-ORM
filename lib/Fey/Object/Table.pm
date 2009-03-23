@@ -513,8 +513,13 @@ sub _SelectSQLForKey
     my @non_key =
         grep { ! $key{ $_->name() } } $table->columns();
 
+    # This is a bit of a hack for tables that consist just of a key
+    # (like a UserGroup table with a user_id and group_id). We need to
+    # select _something_ or else shit blows up.
+    my @select = @non_key ? @non_key : @{ $key };
+
     $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
-    $select->select( sort { $a->name() cmp $b->name() } @non_key );
+    $select->select( sort { $a->name() cmp $b->name() } @select );
     $select->from($table);
     $select->where( $_, '=', Fey::Placeholder->new() ) for @{ $key };
 
