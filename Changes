@@ -1,4 +1,4 @@
-0.22
+0.22   2009-03-23
 
 - If a table consisted of _just_ its key, then trying to call new()
   for the associated class blew up, but they could be created via an
