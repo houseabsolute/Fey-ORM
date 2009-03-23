@@ -1,3 +1,10 @@
+0.22
+
+- If a table consisted of _just_ its key, then trying to call new()
+  for the associated class blew up, but they could be created via an
+  iterator. Test case provided by Andrew Baumhauer.
+
+
 0.21   2009-02-25
 
 * This release contains several backwards incompatible changes.
