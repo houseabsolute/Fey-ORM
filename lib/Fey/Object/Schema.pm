@@ -183,27 +183,27 @@ does prevent DBI from throwing an error.
 The second argument can be a L<Fey::DBIManager::Source> object. If no
 source is specified, then this method will use the default source.
 
-=head3 $class->Schema()
+=head2 $class->Schema()
 
 Returns the L<Fey::Schema> object associated with the class.
 
-=head3 $class->DBIManager()
+=head2 $class->DBIManager()
 
 Returns the L<Fey::Schema> object associated with the class.
 
-=head3 $class->SetDBIManager($manager)
+=head2 $class->SetDBIManager($manager)
 
 Set the L<Fey::DBIManager> object associated with the class. If you
 don't set one explicitly, then the first call to C<<
 $class->DBIManager() >> will simply create one by calling C<<
 Fey::DBIManager->new() >>.
 
-=head3 $class->SQLFactoryClass()
+=head2 $class->SQLFactoryClass()
 
 Returns the SQL factory class associated with the class. This defaults
 to L<Fey::SQL>.
 
-=head3 $class->SetSQLFactoryClass()
+=head2 $class->SetSQLFactoryClass()
 
 Set the SQL factory class associated with the class.
 
