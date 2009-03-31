@@ -23,16 +23,13 @@ sub initialize_body {
     my $source = 'sub {';
     $source .= "\n" . 'my $class = shift;';
 
-    # XXX - override
-    $source .= "\n" . 'my $meta = $class->meta();';
-
     $source .= "\n" . 'return $class->Moose::Object::new(@_)';
     $source .= "\n" . '    if $class ne \'' . $self->associated_metaclass->name . '\';';
 
     $source .= "\n" . 'my $params = ' . $self->_generate_BUILDARGS('$class', '@_');
 
     # XXX - override
-    $source .= ";\n" . $self->_search_cache();
+    $source .= ";\n" . $self->_inline_search_cache();
 
     # XXX - override
     $source .= "\n" . 'my $instance;';
@@ -42,12 +39,11 @@ sub initialize_body {
 
     # XXX - override
     $source .= "\n" . '$instance = ' . $self->meta_instance->inline_create_instance('$class');
+    $source .= ";\n";
 
-    $source .= ";\n" . (join ";\n" => map {
-        $self->_generate_slot_initializer($_)
-    } 0 .. (@{$self->attributes} - 1));
-
-    $source .= ";\n" . $self->_generate_triggers();
+    $source .= $self->_generate_params( '$params', '$class' );
+    $source .= $self->_generate_slot_initializers();
+    $source .= $self->_generate_triggers();
     $source .= ";\n" . $self->_generate_BUILDALL();
 
     # XXX - override
@@ -55,12 +51,12 @@ sub initialize_body {
 
     # XXX - override
     $source .= "\n" . 'if ( my $e = $@ ) {';
-    $source .= "\n" . '    return if blessed $e && $e->isa(q{Fey::Exception::NoSuchRow});';
-    $source .= "\n" . '    $meta->throw_error($e);';
+    $source .= "\n" . '    return if Scalar::Util::blessed($e) && $e->isa(q{Fey::Exception::NoSuchRow});';
+    $source .= "\n" . '    ' . $self->_inline_throw_error('$e') . q{;};
     $source .= "\n" . '}';
 
     # XXX - override
-    $source .= "\n" . $self->_write_to_cache();
+    $source .= "\n" . $self->_inline_write_to_cache();
 
     $source .= "\n" . 'return $instance;';
     $source .= "\n" . '}';
@@ -70,37 +66,27 @@ sub initialize_body {
 
     warn $source if $self->options->{debug};
 
-    my $code;
-    {
-        # NOTE:
-        # create the nessecary lexicals
-        # to be picked up in the eval
-        my $attrs = $self->attributes;
+    my $attrs = $self->attributes;
 
-        # We need to check if the attribute ->can('type_constraint')
-        # since we may be trying to immutabilize a Moose meta class,
-        # which in turn has attributes which are Class::MOP::Attribute
-        # objects, rather than Moose::Meta::Attribute. And 
-        # Class::MOP::Attribute attributes have no type constraints.
-        # However we need to make sure we leave an undef value there
-        # because the inlined code is using the index of the attributes
-        # to determine where to find the type constraint
+    my @type_constraints = map {
+        $_->can('type_constraint') ? $_->type_constraint : undef
+    } @$attrs;
 
-        my @type_constraints = map {
-            $_->can('type_constraint') ? $_->type_constraint : undef
-        } @$attrs;
+    my @type_constraint_bodies = map {
+        defined $_ ? $_->_compiled_type_constraint : undef;
+    } @type_constraints;
 
-        my @type_constraint_bodies = map {
-            defined $_ ? $_->_compiled_type_constraint : undef;
-        } @type_constraints;
+    my $code = $self->_compile_code(
+        code => $source,
+        environment => {
+            '$meta'      => \$self,
+            '$metaclass' => \( $self->associated_metaclass ),
+            '$attrs'     => \$attrs,
+            '@type_constraints' => \@type_constraints,
+            '@type_constraint_bodies' => \@type_constraint_bodies,
+        },
+    ) or $self->throw_error("Could not eval the constructor :\n\n$source\n\nbecause :\n\n$@", error => $@, data => $source );
 
-        $code = eval $source;
-        $self->throw_error
-            ( "Could not eval the constructor :\n\n$source\n\nbecause :\n\n$@",
-              error => $@,
-              data  => $source )
-                if $@;
-    }
     $self->{'body'} = $code;
 }
 
@@ -108,21 +94,21 @@ sub _expected_constructor_class {
     return 'Fey::Object::Table';
 }
 
-sub _search_cache
+sub _inline_search_cache
 {
     my $self = shift;
 
-    my $source = "\n" . 'if ( $meta->_object_cache_is_enabled() ) {';
-    $source .= "\n" . '    my $instance = $meta->_search_cache($params);';
-    $source .= "\n" . '    return $instance if $instance;';
+    my $source = "\n" . 'if ( $metaclass->_object_cache_is_enabled() ) {';
+    $source .= "\n" . '    my $cached = $metaclass->_search_cache($params);';
+    $source .= "\n" . '    return $cached if $cached;';
     $source .= "\n" . '}';
 }
 
-sub _write_to_cache
+sub _inline_write_to_cache
 {
     my $self = shift;
 
-    return "\n" . '$meta->_write_to_cache($instance) if $meta->_object_cache_is_enabled();';
+    return "\n" . '$metaclass->_write_to_cache($instance) if $metaclass->_object_cache_is_enabled();';
 }
 
 no Moose;
