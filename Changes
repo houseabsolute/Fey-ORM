@@ -1,3 +1,8 @@
+0.23
+
+- Changes to work with the latest Moose (0.73_01+).
+
+
 0.22   2009-03-23
 
 - If a table consisted of _just_ its key, then trying to call new()

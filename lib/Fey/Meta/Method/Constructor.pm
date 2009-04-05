@@ -11,7 +11,7 @@ with 'MooseX::StrictConstructor::Role::Meta::Method::Constructor';
 
 # XXX - This is copied straight from Moose 0.36 because there's no
 # good way to override it (note the eval it does at the end).
-sub initialize_body {
+sub _initialize_body {
     my $self = shift;
     # TODO:
     # the %options should also include a both
@@ -38,7 +38,7 @@ sub initialize_body {
     $source .= "\n" . 'eval {';
 
     # XXX - override
-    $source .= "\n" . '$instance = ' . $self->meta_instance->inline_create_instance('$class');
+    $source .= "\n" . '$instance = ' . $self->_meta_instance->inline_create_instance('$class');
     $source .= ";\n";
 
     $source .= $self->_generate_params( '$params', '$class' );
@@ -66,7 +66,7 @@ sub initialize_body {
 
     warn $source if $self->options->{debug};
 
-    my $attrs = $self->attributes;
+    my $attrs = $self->_attributes;
 
     my @type_constraints = map {
         $_->can('type_constraint') ? $_->type_constraint : undef

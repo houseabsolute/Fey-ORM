@@ -5,7 +5,7 @@ use warnings;
 
 our $VERSION = '0.22';
 
-use Moose 0.73 ();
+use Moose 0.73_01 ();
 
 
 1;
