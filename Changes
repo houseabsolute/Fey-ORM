@@ -1,3 +1,9 @@
+0.24   2009-04-20
+
+- Shut up a warning from the latest Moose that it will not inline a
+  constructor for Fey::Object::Table.
+
+
 0.23   2009-04-07
 
 - Changes to work with the latest Moose (0.73_01+).
