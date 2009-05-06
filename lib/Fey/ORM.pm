@@ -51,7 +51,7 @@ C<MyApp::Model::Schema> might look like this:
 
   my $schema = Fey::Loader->new( dbh => $source->dbh() )->make_schema();
 
-  has_schema $Schema;
+  has_schema $schema;
 
   __PACKAGE__->DBIManager()->add_source($source);
 
