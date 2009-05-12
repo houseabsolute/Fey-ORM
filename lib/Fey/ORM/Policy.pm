@@ -126,9 +126,9 @@ Fey::ORM::Policy - Declarative policies for Fey::ORM using classes
 
   use Fey::ORM::Table;
 
-  has_table ...;
-
   has_policy 'MyApp::Policy';
+
+  has_table ...;
 
 =head1 DESCRIPTION
 
