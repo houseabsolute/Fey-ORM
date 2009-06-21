@@ -1,3 +1,8 @@
+0.25   2009-06-21
+
+- Changes to work with the latest Moose (0.82).
+
+
 0.24   2009-04-20
 
 - Shut up a warning from the latest Moose that it will not inline a
