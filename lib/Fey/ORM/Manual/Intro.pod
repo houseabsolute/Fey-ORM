@@ -451,9 +451,12 @@ L<Fey::ORM>'s caching makes no attempt to expire objects, so you need
 to be careful to clear the object cache regularly to avoid stale
 data. In practice, I've found that a good way to do this is to simply
 clear the cache once per "request". In a web app environment, you can
-make this part of your request initialization. If you are writing a
-daemon or other long-running application, you will need to find a
-similar place to clear the cache.
+make this part of your request initialization.
+
+If you are writing a daemon or other long-running application, you
+will need to find a similar place to clear the cache. One good option
+could be to clear the cache on every commit. If your application does
+a lot more reading than writing, this policy should still be a win.
 
 You can turn on caching for all of your table-based classes through
 your schema class:
