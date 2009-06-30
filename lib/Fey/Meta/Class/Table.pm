@@ -496,8 +496,8 @@ sub make_immutable
     my $self = shift;
 
     $self->SUPER::make_immutable
-      ( constructor_class => 'Fey::Meta::Method::Constructor',
-      );
+        ( constructor_class => 'Fey::Meta::Method::Constructor',
+        );
 }
 
 
