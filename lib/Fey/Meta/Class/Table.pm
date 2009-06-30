@@ -170,6 +170,17 @@ sub _ClassForTable
     return;
 }
 
+sub _new {
+    my $class = shift;
+
+    my $self = $class->SUPER::_new(@_);
+
+    $self->{constructor_class} = 'Fey::Meta::Method::Constructor';
+
+    return $self;
+}
+
+
 sub _search_cache
 {
     my $self = shift;
@@ -490,16 +501,6 @@ sub _build__count_sql
 
     return $select;
 }
-
-sub make_immutable
-{
-    my $self = shift;
-
-    $self->SUPER::make_immutable
-        ( constructor_class => 'Fey::Meta::Method::Constructor',
-        );
-}
-
 
 no Moose;
 
