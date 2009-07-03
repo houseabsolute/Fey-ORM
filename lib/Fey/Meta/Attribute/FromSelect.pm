@@ -8,6 +8,16 @@ use Moose::Util::TypeConstraints;
 
 extends 'Moose::Meta::Attribute';
 
+has select =>
+    ( is  => 'ro',
+      isa => 'Fey::SQL::Select',
+    );
+
+has bind_params =>
+    ( is  => 'ro',
+      isa => 'CodeRef',
+    );
+
 
 sub _process_options
 {
@@ -39,9 +49,6 @@ sub _new
 
     return $self;
 }
-
-sub select { $_[0]->{select} }
-sub bind_params { $_[0]->{bind_params} }
 
 sub _make_default_from_select
 {
