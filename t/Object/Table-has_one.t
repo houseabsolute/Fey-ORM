@@ -107,7 +107,7 @@ plan tests => 12;
 
     package Message;
 
-    __PACKAGE__->meta()->remove_attribute('user');
+    __PACKAGE__->meta()->remove_has_one('user');
 
     has_one $schema->table('User');
 
