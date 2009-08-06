@@ -37,7 +37,7 @@ __END__
 
 =head1 NAME
 
-Fey::Meta::Attribute::WithInflator - an attribute metaclass for attributes with an inflator
+Fey::Meta::Attribute::FromInflator - an attribute metaclass for attributes with an inflator
 
 =head1 SYNOPSIS
 
