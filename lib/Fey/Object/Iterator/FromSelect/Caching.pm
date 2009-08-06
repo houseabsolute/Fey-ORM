@@ -100,14 +100,14 @@ __END__
 
 =head1 NAME
 
-Fey::Object::Iterator::Caching - A caching subclass of Fey::Object::Iterator
+Fey::Object::Iterator::FromSelect::Caching - A caching subclass of Fey::Object::Iterator::FromSelect
 
 =head1 SYNOPSIS
 
-  use Fey::Object::Iterator::Caching;
+  use Fey::Object::Iterator::FromSelect::Caching;
 
   my $iter =
-      Fey::Object::Iterator::Caching->new
+      Fey::Object::Iterator::FromSelect::Caching->new
           ( classes     => 'MyApp::User',
             select      => $select,
             dbh         => $dbh,
@@ -128,7 +128,7 @@ Fey::Object::Iterator::Caching - A caching subclass of Fey::Object::Iterator
 =head1 DESCRIPTION
 
 This class implements a caching subclass of
-L<Fey::Object::Iterator::FromSelect>. This means that it caches
+L<Fey::Object::Iterator::FromSelect::FromSelect>. This means that it caches
 objects it creates internally. When C<< $iterator->reset() >> is
 called it will re-use those objects before fetching more data from the
 DBMS.
