@@ -1,3 +1,10 @@
+0.27   2009-08-18
+
+- Changed all code that checked for a Fey::SQL::Select object to instead check
+  that the object does the Fey;:Role::SQL::ReturnsData role. This lets you
+  pass a union to an object iterator, among other things.
+
+
 0.26   2009-07-03
 
 - Changes to work with the latest Moose (0.86).

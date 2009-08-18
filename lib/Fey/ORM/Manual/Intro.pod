@@ -371,10 +371,9 @@ value of a single C<SELECT> query. For example, user objects might
 have a C<< $user->message_count() >> attribute.
 
 L<Fey::ORM> provides an attribute metaclass,
-L<Fey::Meta::Attribute::FromSelect>, which manages the details of
-executing the query and sticking the value in an attribute. You just
-provide a L<Fey::SQL::Select> object and an optional subroutine
-reference for the bind parameters.
+L<Fey::Meta::Attribute::FromSelect>, which manages the details of executing
+the query and sticking the value in an attribute. You just provide a query
+object and an optional subroutine reference for the bind parameters.
 
   package Forum::Model::User;
 

@@ -11,7 +11,7 @@ extends 'Fey::Meta::HasMany';
 
 has 'select' =>
     ( is       => 'ro',
-      isa      => 'Fey::SQL::Select',
+      does     => 'Fey::Role::SQL::ReturnsData',
       required => 1,
     );
 
@@ -41,12 +41,12 @@ __END__
 
 =head1 NAME
 
-Fey::Meta::HasMany::ViaSelect - A parent for has-one metaclasses based on a L<Fey::SQL::Select> object
+Fey::Meta::HasMany::ViaSelect - A parent for has-one metaclasses based on a query object
 
 =head1 DESCRIPTION
 
 This class implements a has-one relationship for a class, based on a
-provided (or deduced) L<Fey::SQL::Select> object.
+provided (or deduced) query object.
 
 =head1 CONSTRUCTOR OPTIONS
 
@@ -56,8 +56,8 @@ This class accepts the following constructor options:
 
 =item * select
 
-The L<Fey::SQL::Select> object which defines the relationship between
-the tables.
+An object which does the L<Fey::Role::SQL::ReturnsData> role. This query
+defines the relationship between the tables.
 
 =item * bind_params
 

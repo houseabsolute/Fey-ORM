@@ -9,8 +9,8 @@ use Moose::Util::TypeConstraints;
 extends 'Moose::Meta::Attribute';
 
 has select =>
-    ( is  => 'ro',
-      isa => 'Fey::SQL::Select',
+    ( is   => 'ro',
+      does => 'Fey::Role::SQL::ReturnsData',
     );
 
 has bind_params =>
@@ -57,8 +57,8 @@ sub _make_default_from_select
     my $bind_sub = shift;
     my $type     = shift;
 
-    die 'The select parameter must be a Fey::SQL::Select object'
-        unless blessed $select && $select->isa('Fey::SQL::Select');
+    die 'The select parameter must be do the Fey::Role::SQL::ReturnsData role'
+        unless blessed $select && $select->can('does') && $select->does('Fey::Role::SQL::ReturnsData');
 
     my $wantarray = 0;
     $wantarray = 1
@@ -129,7 +129,7 @@ normal Moose attribute options.
 
 =item * select
 
-This must be a L<Fey::SQL::Select> object (or subclass). It is required.
+This must do the L<Fey::Role::SQL::ReturnsData> role. It is required.
 
 =item * bind_params
 
@@ -151,7 +151,7 @@ C<Moose::Meta::Attribute>:
 
 =head2 $attr->select()
 
-Returns the L<Fey::SQL::Select> object associated with this attribute.
+Returns the query object associated with this attribute.
 
 =head2 $attr->bind_params()
 

@@ -236,12 +236,11 @@ attribute.
 This is an alternative form of C<has_one()> that lets you declare a
 relationship to another table via an arbitrary SELECT statement.
 
-In this form, you provide a L<Fey::SQL::Select> object to define the
-SQL used to fetch the foreign row. You can provide a C<bind_params>
-parameter as a code reference, which will be called as a method on
-your object. It is expected to return one or more bind parameters. The
-C<cache> parameter works exactly the same as in the first form of
-C<has_one()>.
+In this form, you provide a query object to define the SQL used to fetch the
+foreign row. You can provide a C<bind_params> parameter as a code reference,
+which will be called as a method on your object. It is expected to return one
+or more bind parameters. The C<cache> parameter works exactly the same as in
+the first form of C<has_one()>.
 
 In this form the C<undef> parameter defaults to true, but you can set
 it to a false value.

@@ -21,7 +21,7 @@ has dbh =>
 
 has select =>
     ( is       => 'ro',
-      isa      => 'Fey::SQL::Select',
+      does     => 'Fey::Role::SQL::ReturnsData',
       required => 1,
     );
 
@@ -256,8 +256,9 @@ A connected DBI handle
 
 =item * select
 
-This should be a L<Fey::SQL::Select> object representing the C<SELECT>
-statement that this iterator will iterator over.
+This can be any object which does the L<Fey::Role::SQL::ReturnsData>
+role. Usually this will be a L<Fey::SQL::Select> object. This object should be
+a query which returns the data that this iterator will iterate over.
 
 =item * bind_params
 
