@@ -12,9 +12,9 @@ use Moose::Exporter;
 use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods
-    ( with_caller => [qw( has_table has_policy has_one has_many transform )],
-      as_is       => [qw( inflate deflate handles )],
-      also        => 'Moose'
+    ( with_meta => [qw( has_table has_policy has_one has_many transform )],
+      as_is     => [qw( inflate deflate handles )],
+      also      => 'Moose'
     );
 
 sub init_meta
@@ -31,16 +31,16 @@ sub init_meta
 
 sub has_table
 {
-    my $caller  = shift;
+    my $meta = shift;
 
     my ($table) = pos_validated_list( \@_, { isa => 'Fey::Table' } );
 
-    $caller->meta()->_associate_table($table);
+    $meta->_associate_table($table);
 }
 
 sub has_policy
 {
-    my $caller = shift;
+    my $meta   = shift;
     my $policy = shift;
 
     unless ( ref $policy )
@@ -50,12 +50,12 @@ sub has_policy
         $policy = $policy->Policy();
     }
 
-    $caller->meta()->set_policy($policy);
+    $meta->set_policy($policy);
 }
 
 sub transform
 {
-    my $caller = shift;
+    my $meta = shift;
 
     my @p;
 
@@ -65,7 +65,7 @@ sub transform
 
     for my $name (@_)
     {
-        $caller->meta()->_add_transform( $name => %p );
+        $meta->_add_transform( $name => %p );
     }
 }
 
@@ -91,7 +91,7 @@ sub handles ($)
 
 sub has_one
 {
-    my $caller = shift;
+    my $meta = shift;
 
     my %p;
     if ( @_ == 1 )
@@ -105,12 +105,12 @@ sub has_one
         %p = ( %p, @_ );
     }
 
-    $caller->meta()->add_has_one(%p);
+    $meta->add_has_one(%p);
 }
 
 sub has_many
 {
-    my $caller = shift;
+    my $meta = shift;
 
     my %p;
     if ( @_ == 1 )
@@ -125,7 +125,7 @@ sub has_many
 
     }
 
-    $caller->meta()->add_has_many(%p);
+    $meta->add_has_many(%p);
 }
 
 1;

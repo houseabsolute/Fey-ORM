@@ -11,8 +11,8 @@ use Moose::Exporter;
 use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods
-    ( with_caller => [qw( has_schema )],
-      also        => 'Moose'
+    ( with_meta => [qw( has_schema )],
+      also      => 'Moose'
     );
 
 
@@ -30,11 +30,11 @@ sub init_meta
 
 sub has_schema
 {
-    my $caller = shift;
+    my $meta = shift;
 
     my ($schema) = pos_validated_list( \@_, { isa => 'Fey::Schema' } );
 
-    $caller->meta()->_associate_schema($schema);
+    $meta->_associate_schema($schema);
 }
 
 1;
