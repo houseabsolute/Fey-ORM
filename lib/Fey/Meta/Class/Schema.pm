@@ -7,7 +7,6 @@ use Fey::DBIManager;
 use Fey::Exceptions qw( param_error );
 
 use Moose;
-use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
 use MooseX::Params::Validate qw( pos_validated_list );
 use MooseX::SemiAffordanceAccessor;
@@ -15,15 +14,15 @@ use MooseX::SemiAffordanceAccessor;
 extends 'Moose::Meta::Class';
 
 class_has '_SchemaClassMap' =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'ro',
-      isa       => 'HashRef[Fey::Schema]',
-      default   => sub { {} },
-      lazy      => 1,
-      provides  => { get    => 'SchemaForClass',
-                     set    => '_SetSchemaForClass',
-                     exists => '_ClassHasSchema',
-                   },
+    ( traits  => [ 'Hash' ],
+      is      => 'ro',
+      isa     => 'HashRef[Fey::Schema]',
+      default => sub { {} },
+      lazy    => 1,
+      handles => { SchemaForClass     => 'get',
+                   _SetSchemaForClass => 'set',
+                   _ClassHasSchema    => 'exists',
+                 },
     );
 
 has 'schema' =>

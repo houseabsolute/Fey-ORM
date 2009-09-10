@@ -24,9 +24,10 @@ has associated_class =>
     );
 
 has name =>
-    ( is         => 'ro',
-      isa        => 'Str',
-      lazy_build => 1,
+    ( is      => 'ro',
+      isa     => 'Str',
+      lazy    => 1,
+      builder => '_build_name',
     );
 
 has namer =>
@@ -48,9 +49,10 @@ has foreign_table =>
     );
 
 has is_cached =>
-    ( is         => 'ro',
-      isa        => 'Bool',
-      lazy_build => 1,
+    ( is      => 'ro',
+      isa     => 'Bool',
+      lazy    => 1,
+      builder => '_build_is_cached',
     );
 
 

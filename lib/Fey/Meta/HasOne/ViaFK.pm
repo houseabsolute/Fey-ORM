@@ -12,9 +12,10 @@ extends 'Fey::Meta::HasOne';
 
 
 has 'fk' =>
-    ( is         => 'ro',
-      isa        => 'Fey::FK',
-      lazy_build => 1,
+    ( is      => 'ro',
+      isa     => 'Fey::FK',
+      lazy    => 1,
+      builder => '_build_fk',
     );
 
 

@@ -14,7 +14,6 @@ my $builder =
                 'Fey::DBIManager'                => '0.07',
                 'List::MoreUtils'                => '0',
                 'Moose'                          => '0.86',
-                'MooseX::AttributeHelpers'       => '0.13',
                 'MooseX::ClassAttribute'         => '0.08',
                 'MooseX::SemiAffordanceAccessor' => '0',
                 'MooseX::StrictConstructor'      => '0.08',

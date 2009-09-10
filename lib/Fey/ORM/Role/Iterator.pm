@@ -5,7 +5,6 @@ use warnings;
 
 use List::MoreUtils qw( pairwise );
 use Moose::Role;
-use MooseX::AttributeHelpers;
 use Moose::Util::TypeConstraints;
 
 requires qw( _get_next_result reset );

@@ -18,22 +18,21 @@ use Fey::Meta::Method::Constructor;
 use List::MoreUtils qw( all );
 
 use Moose qw( extends with has );
-use MooseX::AttributeHelpers;
 use MooseX::ClassAttribute;
 use MooseX::SemiAffordanceAccessor;
 
 extends 'Moose::Meta::Class';
 
 class_has '_ClassToTableMap' =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'ro',
-      isa       => 'HashRef[Fey::Table]',
-      default   => sub { {} },
-      lazy      => 1,
-      provides  => { get    => 'TableForClass',
-                     set    => '_SetTableForClass',
-                     exists => '_ClassHasTable',
-                   },
+    ( traits  => [ 'Hash' ],
+      is      => 'ro',
+      isa     => 'HashRef[Fey::Table]',
+      default => sub { {} },
+      lazy    => 1,
+      handles => { TableForClass     => 'get',
+                   _SetTableForClass => 'set',
+                   _ClassHasTable    => 'exists',
+                 },
     );
 
 has '_object_cache_is_enabled' =>
@@ -59,26 +58,26 @@ has 'table' =>
     );
 
 has 'inflators' =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'ro',
-      isa       => 'HashRef[CodeRef]',
-      default   => sub { {} },
-      lazy      => 1,
-      provides  => { set    => '_add_inflator',
-                     exists => 'has_inflator',
-                   },
+    ( traits  => [ 'Hash' ],
+      is      => 'ro',
+      isa     => 'HashRef[CodeRef]',
+      default => sub { {} },
+      lazy    => 1,
+      handles => { _add_inflator => 'set',
+                   has_inflator  => 'exists',
+                 },
     );
 
 has 'deflators' =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'ro',
-      isa       => 'HashRef[CodeRef]',
-      default   => sub { {} },
-      lazy      => 1,
-      provides  => { set    => '_add_deflator',
-                     get    => 'deflator_for',
-                     exists => 'has_deflator',
-                   },
+    ( traits  => [ 'Hash' ],
+      is      => 'ro',
+      isa     => 'HashRef[CodeRef]',
+      default => sub { {} },
+      lazy    => 1,
+      handles  => { deflator_for  => 'get',
+                    _add_deflator => 'set',
+                    has_deflator  => 'exists',
+                  },
     );
 
 has 'schema_class' =>
@@ -96,31 +95,31 @@ has 'policy' =>
     );
 
 has '_has_ones' =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'ro',
-      isa       => 'HashRef[Fey::Meta::HasOne]',
-      default   => sub { {} },
-      lazy      => 1,
-      provides  => { set    => '_add_has_one',
-                     values => 'has_ones',
-                     get    => '_has_one',
-                     exists => '_has_has_one',
-                     delete => '_remove_has_one',
-                   },
+    ( traits  => [ 'Hash' ],
+      is      => 'ro',
+      isa     => 'HashRef[Fey::Meta::HasOne]',
+      default => sub { {} },
+      lazy    => 1,
+      handles  => { _has_one        => 'get',
+                    _add_has_one    => 'set',
+                    _has_has_one    => 'exists',
+                    has_ones        => 'values',
+                    _remove_has_one => 'delete',
+                  },
     );
 
 has '_has_manies' =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'ro',
-      isa       => 'HashRef[Fey::Meta::HasMany]',
-      default   => sub { {} },
-      lazy      => 1,
-      provides  => { set    => '_add_has_many',
-                     values => 'has_manies',
-                     get    => '_has_many',
-                     exists => '_has_has_many',
-                     delete => '_remove_has_many',
-                   },
+    ( traits   => [ 'Hash' ],
+      is       => 'ro',
+      isa      => 'HashRef[Fey::Meta::HasMany]',
+      default  => sub { {} },
+      lazy     => 1,
+      handles  => { _has_many        => 'get',
+                    _add_has_many    => 'set',
+                    _has_has_many    => 'exists',
+                    has_manies       => 'values',
+                    _remove_has_many => 'delete',
+                  },
     );
 
 has '_select_sql_cache' =>
@@ -138,9 +137,10 @@ has '_select_by_pk_sql' =>
     );
 
 has '_count_sql' =>
-    ( is         => 'ro',
-      isa        => 'Fey::SQL::Select',
-      lazy_build => 1,
+    ( is      => 'ro',
+      isa     => 'Fey::SQL::Select',
+      lazy    => 1,
+      builder => '_build_count_sql',
     );
 
 
@@ -476,7 +476,7 @@ sub remove_has_many
     $self->_remove_has_many( $has_many->name() );
 }
 
-sub _build__count_sql
+sub _build_count_sql
 {
     my $self = shift;
 

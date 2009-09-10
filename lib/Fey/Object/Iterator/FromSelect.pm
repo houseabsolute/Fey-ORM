@@ -8,7 +8,6 @@ use Fey::Exceptions qw( param_error );
 use Devel::GlobalDestruction;
 use Moose;
 use MooseX::SemiAffordanceAccessor;
-use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 
 with 'Fey::ORM::Role::Iterator';
@@ -33,13 +32,14 @@ has bind_params =>
     );
 
 has _sth =>
-    ( is         => 'ro',
-      isa        => 'DBI::st',
-      lazy_build => 1,
-      writer     => '_set_sth',
-      predicate  => '_has_sth',
-      clearer    => '_clear_sth',
-      init_arg   => undef,
+    ( is        => 'ro',
+      isa       => 'DBI::st',
+      writer    => '_set_sth',
+      predicate => '_has_sth',
+      clearer   => '_clear_sth',
+      init_arg  => undef,
+      lazy      => 1,
+      builder   => '_build_sth',
     );
 
 has 'attribute_map' =>
@@ -49,10 +49,11 @@ has 'attribute_map' =>
     );
 
 has _merged_attribute_map =>
-    ( is         => 'ro',
-      isa        => 'HashRef[HashRef[Str]]',
-      lazy_build => 1,
-      init_arg   => undef,
+    ( is       => 'ro',
+      isa      => 'HashRef[HashRef[Str]]',
+      init_arg => undef,
+      lazy     => 1,
+      builder  => '_build_merged_attribute_map',
     );
 
 no Moose;
@@ -119,7 +120,7 @@ sub _get_next_result
     return \@result;
 }
 
-sub _build__sth
+sub _build_sth
 {
     my $self = shift;
 
@@ -130,7 +131,7 @@ sub _build__sth
     return $sth;
 }
 
-sub _build__merged_attribute_map
+sub _build_merged_attribute_map
 {
     my $self = shift;
 
