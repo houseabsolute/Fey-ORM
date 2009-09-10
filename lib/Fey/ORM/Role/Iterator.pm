@@ -31,13 +31,13 @@ has classes =>
     );
 
 has index =>
-    ( metaclass => 'Counter',
+    ( traits   => [ 'Counter' ],
       is       => 'ro',
       isa      => 'Int',
       default  => 0,
       init_arg => undef,
-      provides => { 'inc'   => '_inc_index',
-                    'reset' => '_reset_index',
+      handles  => { _inc_index   => 'inc',
+                    _reset_index => 'reset',
                   },
     );
 
