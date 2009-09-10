@@ -308,7 +308,7 @@ straightforward example:
   # ORDER BY message_date DESC
   #    LIMIT 1
   my $select =
-      $schema->SQLFactoryClass()->new_select()
+      Forum::Model::Schema->SQLFactoryClass()->new_select()
              ->select( $message_table )
              ->from( $message_table )
              ->where( $message_table->column('parent_message_id'),
@@ -350,7 +350,7 @@ for a group:
   # ORDER BY Message.message_date DESC
 
   my $select =
-      $schema->SQLFactoryClass()->new_select()
+      Forum::Model::Schema->SQLFactoryClass()->new_select()
              ->select( $message_table )
              ->from( $message_table, $user_table )
              ->from( $user_table, $group_table )
@@ -385,7 +385,7 @@ object and an optional subroutine reference for the bind parameters.
   #     FROM Message
   #    WHERE user_id = ?
   my $select =
-      $schema->SQLFactoryClass()->new_select()
+      Forum::Model::Schema->SQLFactoryClass()->new_select()
              ->select($count)
              ->from( $message_table )
              ->where( $message_table->column('user_id'),
