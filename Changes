@@ -1,3 +1,10 @@
+0.28
+
+- Various changes to silence warnings from the latest Moose
+
+- Doc fixes - RT #48484 (Terrence Brannon) and #49595 (Guoying Qi)
+
+
 0.27   2009-08-18
 
 - Changed all code that checked for a Fey::SQL::Select object to instead check
