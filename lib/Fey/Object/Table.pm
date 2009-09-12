@@ -14,10 +14,7 @@ use Fey::Exceptions qw( param_error );
 use Fey::ORM::Exceptions qw( no_such_row );
 
 use Moose;
-
-extends 'Moose::Object';
-
-with 'MooseX::StrictConstructor::Role::Object';
+use MooseX::StrictConstructor;
 
 
 sub new

@@ -6,10 +6,7 @@ use warnings;
 use Fey::Meta::Class::Table;
 
 use Moose;
-
-extends 'Moose::Object';
-
-with 'MooseX::StrictConstructor::Role::Object';
+use MooseX::StrictConstructor;
 
 
 sub EnableObjectCaches
