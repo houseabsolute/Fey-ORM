@@ -131,6 +131,10 @@ sub SetSQLFactoryClass
     $class->meta()->set_sql_factory_class(@_);
 }
 
+no Moose;
+
+__PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
+
 1;
 
 __END__
