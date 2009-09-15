@@ -1,7 +1,5 @@
 0.28
 
-- Various changes to silence warnings from the latest Moose
-
 - Doc fixes - RT #48484 (Terrence Brannon) and #49595 (Guoying Qi)
 
 
