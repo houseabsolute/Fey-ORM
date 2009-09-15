@@ -3,12 +3,16 @@ package Fey::ORM::Table;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Class::MOP;
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
 
 use Moose ();
 use Moose::Exporter;
+use Moose::Util::MetaRole;
+use MooseX::ClassAttribute::Role::Meta::Class;
 use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods
@@ -170,7 +174,7 @@ Calling this function also generates a number of methods and
 attributes in the calling class.
 
 First, it generates one attribute for each column in the associated
-table. Of course, this assumes that your columns are namde in such a
+table. Of course, this assumes that your columns are named in such a
 way as to be usable as Perl methods.
 
 It also generates a predicate for each attribute, where the predicate
@@ -208,7 +212,7 @@ lc $has_one_table->name() >>, and caching will be turned on.
 If you want to change any of the defaults, you can use the
 multi-argument form. In this case, the first argument is the name of
 the attribute or method to add. Then you can specify various
-parameters by name. You must spceify a C<table>, of course.
+parameters by name. You must specify a C<table>, of course.
 
 The C<fk> parameter is required when there is more than one foreign
 key between the two tables. Finally, you can turn off caching by
@@ -269,7 +273,7 @@ will be no specific order to the results returned.
 If you want to change any of the defaults, you can use the
 multi-argument form. In this case, the first argument is the name of
 the attribute or method to add. Then you can specify various
-parameters by name. You must spceify a C<table>, of course.
+parameters by name. You must specify a C<table>, of course.
 
 The C<fk> parameter is required when there is more than one foreign
 key between the two tables. Finally, you can turn on caching by

@@ -3,6 +3,8 @@ package Fey::ORM::Policy;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Fey::Object::Policy;
 
 

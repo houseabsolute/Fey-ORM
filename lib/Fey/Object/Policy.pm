@@ -3,6 +3,8 @@ package Fey::Object::Policy;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use List::Util qw( first );
 use Moose;
 use MooseX::StrictConstructor;
@@ -68,7 +70,7 @@ L<Fey::ORM> works.
 
 =head1 METHODS
 
-This class accepts the following nethods:
+This class accepts the following methods:
 
 =head2 $policy->add_transform( matching => sub { ... }, inflate => sub { ... }, deflate => sub { ... } )
 

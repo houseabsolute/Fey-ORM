@@ -3,6 +3,8 @@ package Fey::ORM::Schema;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Fey::Meta::Class::Schema;
 use Fey::Object::Schema;
 

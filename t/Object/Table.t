@@ -13,7 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::define_live_classes();
 
-plan tests => 77;
+plan tests => 79;
 
 
 basic_tests();
@@ -109,11 +109,13 @@ sub basic_tests
 
     {
         User->new( username => 'does not exist at all' );
-        like( $@, qr/Could not find a row in User where username =/i,
+        like( User->ConstructorError(),
+              qr/Could not find a row in User where username =/i,
               'error message when we cannot find a matching row in the dbms' );
 
         User->new();
-        like( $@, qr/Could not find a row in User matching the values you provided/i,
+        like( User->ConstructorError(),
+              qr/Could not find a row in User matching the values you provided/i,
               'error message when we cannot find a matching row for any keys' );
     }
 
@@ -241,6 +243,13 @@ sub basic_tests
         is( $ug->group_id(), 3, 'UserGroup row group_id == 3' );
 
         $ug->delete();
+    }
+
+    {
+        $@ = 'an error';
+        my $user = User->new( user_id => 1244124 );
+
+        is( $@, 'an error', 'nonexistent rows do not overwrite $@' );
     }
 }
 

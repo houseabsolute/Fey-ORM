@@ -3,6 +3,8 @@ package Fey::Meta::Attribute::FromColumn;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Moose;
 
 extends 'Moose::Meta::Attribute';

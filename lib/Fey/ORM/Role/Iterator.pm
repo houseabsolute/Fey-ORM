@@ -3,6 +3,8 @@ package Fey::ORM::Role::Iterator;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use List::MoreUtils qw( pairwise );
 use Moose::Role;
 use Moose::Util::TypeConstraints;

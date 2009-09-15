@@ -3,6 +3,8 @@ package Fey::Meta::Attribute::FromSelect;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Moose;
 use Moose::Util::TypeConstraints;
 

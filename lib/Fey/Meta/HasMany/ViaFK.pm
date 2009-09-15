@@ -3,6 +3,8 @@ package Fey::Meta::HasMany::ViaFK;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use List::MoreUtils qw( any );
 
 use Moose;

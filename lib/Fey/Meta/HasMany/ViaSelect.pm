@@ -3,6 +3,8 @@ package Fey::Meta::HasMany::ViaSelect;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Moose;
 use MooseX::StrictConstructor;
 

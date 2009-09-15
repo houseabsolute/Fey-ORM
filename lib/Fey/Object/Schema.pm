@@ -3,6 +3,8 @@ package Fey::Object::Schema;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Fey::Meta::Class::Table;
 
 use Moose;

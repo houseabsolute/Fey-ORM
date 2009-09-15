@@ -1,5 +1,10 @@
 0.28   2009-09-15
 
+- When a Fey::ORM::Table using class's constructor does not return an object,
+  the error message is no longer set in $@. Instead, you can call
+  MyClass->ConstructorError() to get the error. The value of $@ is preserved
+  in the constructor as whatever it was before the constructor was called.
+
 - Doc fixes - RT #48484 (Terrence Brannon) and #49595 (Guoying Qi)
 
 

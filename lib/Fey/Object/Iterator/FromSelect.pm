@@ -3,6 +3,8 @@ package Fey::Object::Iterator::FromSelect;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Fey::Exceptions qw( param_error );
 
 use Devel::GlobalDestruction;
@@ -383,9 +385,9 @@ map would look something like this:
       );
 
 The keys in the mapping are positions in the list of C<SELECT> clause
-elements. The numbers start from zero (0) just like a Perl array. The
-values are themselves a hash reference specifycing a "class" and
-"attribute" of that class.
+elements. The numbers start from zero (0) just like a Perl array. The values
+are themselves a hash reference specifying a "class" and "attribute" of that
+class.
 
 This explicit mapping is useful for more "exotic" queries. For example:
 

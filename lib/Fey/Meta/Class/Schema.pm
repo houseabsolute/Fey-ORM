@@ -3,6 +3,8 @@ package Fey::Meta::Class::Schema;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Fey::DBIManager;
 use Fey::Exceptions qw( param_error );
 

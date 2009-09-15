@@ -3,12 +3,15 @@ package Fey::Object::Table;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Fey::Literal::Function;
 use Fey::Placeholder;
 use Fey::SQL;
 use Fey::Table;
 use List::MoreUtils qw( all );
 use Scalar::Util qw( blessed );
+use Try::Tiny;
 
 use Fey::Exceptions qw( param_error );
 use Fey::ORM::Exceptions qw( no_such_row );
@@ -28,19 +31,54 @@ sub new
         return $instance if $instance;
     }
 
-    my $instance = eval { $class->SUPER::new(@_) };
+    my $instance;
+    my @args = @_;
 
-    if ( my $e = $@ )
+    $class->_ClearConstructorError();
+
+    try
     {
-        return if blessed $e && $e->isa('Fey::Exception::NoSuchRow');
-
-        die $e;
+        $instance = $class->SUPER::new(@args);
     }
+    catch
+    {
+        die $_ unless blessed $_ && $_->isa('Fey::Exception::NoSuchRow');
+        $class->_SetConstructorError($_);
+    };
+
+    return unless $instance;
 
     $class->meta()->_write_to_cache($instance)
         if $class->meta()->_object_cache_is_enabled();
 
     return $instance;
+}
+
+# I'd like to use MX::ClassAttribute but trying to apply this to each
+# Fey::ORM::Table-using class causes all sorts of weird errors.
+{
+    my %E;
+
+    sub ConstructorError
+    {
+        my $class = shift;
+
+        return $E{$class};
+    }
+
+    sub _SetConstructorError
+    {
+        my $class = shift;
+
+        $E{$class} = shift;
+    }
+
+    sub _ClearConstructorError
+    {
+        my $class = shift;
+
+        delete $E{$class};
+    }
 }
 
 sub BUILD
@@ -593,7 +631,11 @@ its parent class do most of the work. However, unlike the standard
 Moose constructor, this method may sometimes not return an object. If
 it attempts to load object data from the DBMS and cannot find anything
 matching the parameters given to the constructor, it will return
-false. When this happens you can check C<$@> for details on the error.
+false.
+
+If the constructor fails, you can check the value of C<<
+$class->ConstructorError >> for the error message. This is done so that
+calling the constructor does not overwrite any value already in C<$@>.
 
 If caching is enabled, then this method will attempt to find a
 matching object in the cache. A match is determined by looking for an
@@ -622,6 +664,15 @@ attempting to load the object from the DBMS. However, you still must
 pass values for the primary key, so that the object is identifiable in
 the DBMS.
 
+=head2 $class->ConstructorError()
+
+If the constructor does not return an object, this will always contain the
+error message from the constructor. This should always be something like
+"Could not a find a row in SomeTable matching the values you provided to the
+constructor" or "Could not find a row in SomeTable where table_id = 42".
+
+This error is cleared each time the class's constructor is called.
+
 =head2 $class->EnableObjectCache()
 
 =head2 $class->DisableObjectCache()
@@ -637,11 +688,11 @@ Returns the number of rows in the class's associated table.
 
 Clears the object cache for the calling class.
 
-=head3 $class->Table()
+=head2 $class->Table()
 
 Returns the L<Fey::Table> object passed to C<has_table()>.
 
-=head3 $class->SchemaClass()
+=head2 $class->SchemaClass()
 
 Returns the name of the class associated with the class's table's
 schema.
@@ -679,13 +730,13 @@ $class->insert() >>. However, it instead updates the values for an
 existing object's row. It will also make sure that the object's
 attributes are updated properly. In some cases, it will just clear the
 attribute, forcing it to be reloaded the next time it is
-accessed. This is necesasry when the update value was a
+accessed. This is necessary when the update value was a
 L<Fey::Literal>, since that could be a function that gets interpreted
 by the DBMS, such as C<NOW()>.
 
 =head2 $object->delete()
 
-This method delete's the object's associated row from the DBMS.
+This method deletes the object's associated row from the DBMS.
 
 The object is still usable after this method is called, but if you
 attempt to call any method that tries to access the DBMS it will

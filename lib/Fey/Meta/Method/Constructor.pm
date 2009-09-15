@@ -3,6 +3,8 @@ package Fey::Meta::Method::Constructor;
 use strict;
 use warnings;
 
+our $VERSION = '0.28';
+
 use Moose;
 
 extends 'Moose::Meta::Method::Constructor';
@@ -33,9 +35,12 @@ sub _initialize_body {
 
     # XXX - override
     $source .= "\n" . 'my $instance;';
+    $source .= "\n" . '$class->_ClearConstructorError();';
+    $source .= "\n" . 'my @args = @_;';
 
     # XXX - override
-    $source .= "\n" . 'eval {';
+    $source .= "\n" . 'Try::Tiny::try {';
+    $source .= "\n" . '@_ = @args;';
 
     # XXX - override
     $source .= "\n" . '$instance = ' . $self->_meta_instance->inline_create_instance('$class');
@@ -47,15 +52,17 @@ sub _initialize_body {
     $source .= ";\n" . $self->_generate_BUILDALL();
 
     # XXX - override
-    $source .= ";\n" . '};';
+    $source .= ";\n" . '}';
 
     # XXX - override
-    $source .= "\n" . 'if ( my $e = $@ ) {';
-    $source .= "\n" . '    return if Scalar::Util::blessed($e) && $e->isa(q{Fey::Exception::NoSuchRow});';
-    $source .= "\n" . '    ' . $self->_inline_throw_error('$e') . q{;};
-    $source .= "\n" . '}';
+    $source .= "\n" . 'Try::Tiny::catch {';
+    $source .= "\n" . '    die $_ unless Scalar::Util::blessed($_) && $_->isa(q{Fey::Exception::NoSuchRow});';
+    $source .= "\n" . '    $class->_SetConstructorError($_);';
+    $source .= "\n" . '    undef $instance;';
+    $source .= "\n" . '};';
 
     # XXX - override
+    $source .= "\n" . 'return unless $instance;';
     $source .= "\n" . $self->_inline_write_to_cache();
 
     $source .= "\n" . 'return $instance;';
