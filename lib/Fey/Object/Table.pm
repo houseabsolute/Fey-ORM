@@ -13,7 +13,7 @@ use Scalar::Util qw( blessed );
 use Fey::Exceptions qw( param_error );
 use Fey::ORM::Exceptions qw( no_such_row );
 
-use Moose;
+use Moose 0.90;
 use MooseX::StrictConstructor;
 
 
