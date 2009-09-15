@@ -5,6 +5,8 @@
   MyClass->ConstructorError() to get the error. The value of $@ is preserved
   in the constructor as whatever it was before the constructor was called.
 
+- Added a $VERSION to every .pm file that matches Fey::ORM.
+
 - Doc fixes - RT #48484 (Terrence Brannon) and #49595 (Guoying Qi)
 
 
