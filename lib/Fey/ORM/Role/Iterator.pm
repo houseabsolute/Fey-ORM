@@ -3,7 +3,7 @@ package Fey::ORM::Role::Iterator;
 use strict;
 use warnings;
 
-our $VERSION = '0.28';
+our $VERSION = '0.29';
 
 use List::AllUtils qw( pairwise );
 use Moose::Role;

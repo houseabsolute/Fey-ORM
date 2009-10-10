@@ -3,7 +3,7 @@ package Fey::Meta::Class::Table;
 use strict;
 use warnings;
 
-our $VERSION = '0.28';
+our $VERSION = '0.29';
 
 use Fey::Exceptions qw( param_error );
 use Fey::Hash::ColumnsKey;
