@@ -1,3 +1,10 @@
+0.29   2009-10-10
+
+- Allow any classes to be passed to an Iterator's constructor. However, unless
+  all the classes have a Table() method, you cannot get hashes back from the
+  iterator (next_as_hash(), etc.).
+
+
 0.28   2009-09-15
 
 - When a Fey::ORM::Table using class's constructor does not return an object,
