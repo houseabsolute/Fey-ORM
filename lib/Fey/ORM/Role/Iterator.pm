@@ -5,21 +5,15 @@ use warnings;
 
 our $VERSION = '0.28';
 
-use List::MoreUtils qw( pairwise );
+use List::AllUtils qw( pairwise );
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 
 requires qw( _get_next_result reset );
 
 my $arrayref_of_classes =
-    subtype
-          as 'ArrayRef[ClassName]',
-       => where { return 0 unless @{ $_ };
-                  return List::MoreUtils::all { $_->isa('Fey::Object::Table') } @{ $_ };
-                }
-       => message { my @contents = eval { @{$_} } ? @{$_} : $_;
-                    "Must be an array reference of Fey::Object::Table subclasses and you passed [@contents]";
-                  };
+    subtype as 'ArrayRef[ClassName]',
+    where { @{ $_ } > 0 };
 
 coerce $arrayref_of_classes
     => from 'ClassName'
@@ -43,6 +37,15 @@ has index =>
                   },
     );
 
+has _can_make_hashes =>
+    ( is       => 'ro',
+      isa      => 'Bool',
+      lazy     => 1,
+      init_arg => undef,
+      default  =>
+          sub { List::AllUtils::all { $_->can('Table') } @{ $_[0]->classes() } },
+    );
+
 
 sub next
 {
@@ -60,6 +63,9 @@ sub next
 sub next_as_hash
 {
     my $self = shift;
+
+    die 'Cannot make a hash unless all classes have a Table method'
+        unless $self->_can_make_hashes();
 
     my @result = $self->next();
 
