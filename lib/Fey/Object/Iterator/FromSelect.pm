@@ -320,11 +320,17 @@ the object's associated table.
 
 If the statement handle is exhausted, this method returns false.
 
+This method will throw an exception unless all of the iterator's classes have
+a C<Table()> method.
+
 =head2 $iterator->remaining_as_hashes()
 
 This returns all of the I<remaining> sets of objects as a list of hash
 references. Each hash ref is keyed on the table name of the associated
 object's class.
+
+This method will throw an exception unless all of the iterator's classes have
+a C<Table()> method.
 
 =head2 $iterator->all_as_hashes()
 
@@ -332,6 +338,9 @@ This returns all of the sets of objects as a list of hash
 references. If necessary, it will call C<< $iterator->reset() >>
 first. Each hash ref is keyed on the table name of the associated
 object's class.
+
+This method will throw an exception unless all of the iterator's classes have
+a C<Table()> method.
 
 =head2 $iterator->reset()
 

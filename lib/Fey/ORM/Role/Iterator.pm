@@ -64,7 +64,7 @@ sub next_as_hash
 {
     my $self = shift;
 
-    die 'Cannot make a hash unless all classes have a Table method'
+    die 'Cannot make a hash unless all classes have a Table() method'
         unless $self->_can_make_hashes();
 
     my @result = $self->next();

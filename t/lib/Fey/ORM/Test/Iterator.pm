@@ -279,6 +279,50 @@ sub run_shared_tests
         is( $message, undef, 'message object is undefined' );
         ok( $user, 'user object is defined' );
     }
+
+    {
+        my $sql = Fey::SQL->new_select
+                      ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                      ->from( $schema->table('User') )
+                      ->order_by( $schema->table('User')->column('user_id') );
+
+        my $iterator = _make_iterator( $class,
+                                       classes => 'FakeUser',
+                                       dbh     => $dbh,
+                                       select  => $sql,
+                                       attribute_map =>
+                                           { 0 => { class     => 'FakeUser',
+                                                    attribute => 'user_id',
+                                                  },
+                                             1 => { class     => 'FakeUser',
+                                                    attribute => 'username',
+                                                  },
+                                             2 => { class     => 'FakeUser',
+                                                    attribute => 'email',
+                                                  },
+                                           },
+                                     );
+
+        my $user = $iterator->next();
+        isa_ok( $user, 'FakeUser' );
+
+        is( $user->user_id(), 1,
+            'user_id = 1' );
+        is( $user->username(), 'autarch',
+            'username = autarch' );
+        is( $user->email(), 'autarch@example.com',
+            'email = autarch@example.com' );
+
+        throws_ok( sub { $iterator->next_as_hash() },
+                   qr/\QCannot make a hash unless all classes have a Table() method/,
+                   'cannot call next_as_hash when iterating with FakeUser class' );
+        throws_ok( sub { $iterator->remaining_as_hashes() },
+                   qr/\QCannot make a hash unless all classes have a Table() method/,
+                   'cannot call remaining_as_hashes when iterating with FakeUser class' );
+        throws_ok( sub { $iterator->all_as_hashes() },
+                   qr/\QCannot make a hash unless all classes have a Table() method/,
+                   'cannot call all_as_hashes when iterating with FakeUser class' );
+    }
 }
 
 sub _make_iterator
@@ -298,6 +342,16 @@ sub _make_iterator
     {
         return $class->new(%p);
     }
+}
+
+{
+    package FakeUser;
+
+    use Moose;
+
+    has [ qw( user_id username email ) ] => ( is => 'ro' );
+
+    no Moose;
 }
 
 1;
