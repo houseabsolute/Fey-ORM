@@ -508,7 +508,7 @@ sub pk_values_hash
           @{ $self->Table()->primary_key() }
         );
 
-    return map { $_ => $self->_deflated_value($_) } @cols;
+    return map { $cols[$_] => $vals[$_] } 0..$#vals;
 }
 
 sub pk_values_list
