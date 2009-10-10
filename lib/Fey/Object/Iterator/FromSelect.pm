@@ -253,6 +253,10 @@ names. These should be classes associated with the tables from which
 data is being C<SELECT>ed. The iterator will return an object of each
 class in order when C<< $iterator->next() >> is called.
 
+This can be any class, not just a class which uses
+L<Fey::ORM::Table>. However, the iterator methods below which return hashes
+only work when all the classes have a C<Table()> method.
+
 =item * dbh
 
 A connected DBI handle
