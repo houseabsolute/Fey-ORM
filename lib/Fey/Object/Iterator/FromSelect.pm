@@ -106,7 +106,7 @@ sub _get_next_result
         # FIXME - This eval is kind of a band-aid. It is possible
         # (especially with DBD::Mock) for %attr to contain bogus data
         # (wrong types). However, it's also possible for %attr to
-        # contain undefs for non-NULLable columns when iterator over
+        # contain undefs for non-NULLable columns when iterating over
         # the results of a select, especially outer joins.
         #
         # In the outer join case, we do want to ignore object
