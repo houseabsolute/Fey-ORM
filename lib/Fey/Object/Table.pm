@@ -9,7 +9,7 @@ use Fey::Literal::Function;
 use Fey::Placeholder;
 use Fey::SQL;
 use Fey::Table;
-use List::MoreUtils qw( all );
+use List::AllUtils qw( all );
 use Scalar::Util qw( blessed );
 use Try::Tiny;
 
