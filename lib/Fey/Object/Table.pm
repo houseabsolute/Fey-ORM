@@ -207,7 +207,12 @@ sub insert_many
 
     for my $key ( sort keys %{ $rows[0] } )
     {
-        if ( blessed $rows[0]{$key} && $rows[0]{$key}->isa('Fey::Literal') )
+        my $val = $rows[0]{$key};
+
+        if ( defined $val
+             && blessed $val
+             && $val->can('does')
+             && $val->does('Fey::Role::IsLiteral') )
         {
             push @literal_row_keys, $key;
             push @ref_row_keys, $key;
@@ -216,7 +221,7 @@ sub insert_many
         {
             push @non_literal_row_keys, $key;
             push @ref_row_keys, $key
-                if ref $rows[0]{$key};
+                if ref $val;
         }
     }
 
@@ -344,7 +349,11 @@ sub _insert_for_data
     my $ph = Fey::Placeholder->new();
 
     my @vals =
-        ( map { $_ => ( blessed $data->{$_} && $data->{$_}->isa('Fey::Literal') ? $data->{$_} : $ph ) }
+        ( map { $_ => ( defined $data->{$_}
+                        && blessed $data->{$_}
+                        && $data->{$_}->can('does')
+                        && $data->{$_}->does('Fey::Role::IsLiteral')
+                        ? $data->{$_} : $ph ) }
           sort keys %{ $data }
         );
     $insert->values(@vals);
