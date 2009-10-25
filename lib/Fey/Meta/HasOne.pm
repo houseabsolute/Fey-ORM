@@ -3,7 +3,7 @@ package Fey::Meta::HasOne;
 use strict;
 use warnings;
 
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 
 use Fey::Exceptions qw( param_error );
 
