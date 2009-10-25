@@ -13,7 +13,7 @@ use Fey::ORM::Test::Iterator;
 use Fey::Test;
 
 
-plan tests => 47;
+plan tests => 50;
 
 Fey::ORM::Test::Iterator::run_shared_tests('Fey::Object::Iterator::FromSelect');
 

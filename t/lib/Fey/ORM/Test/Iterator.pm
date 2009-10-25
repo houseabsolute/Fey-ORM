@@ -329,6 +329,38 @@ sub run_shared_tests
                    qr/\QCannot make a hash unless all classes have a Table() method/,
                    'cannot call all_as_hashes when iterating with FakeUser class' );
     }
+
+
+    if ( $class->can('raw_row') )
+    {
+        my $sql = Fey::SQL->new_select
+                          ->select( $schema->table('User')->columns( qw( user_id username email ) ) )
+                          ->from( $schema->table('User') )
+                          ->order_by( $schema->table('User')->column('user_id') );
+
+        my $iterator = _make_iterator( $class,
+                                       classes => 'User',
+                                       dbh     => $dbh,
+                                       select  => $sql,
+                                     );
+
+        $iterator->next();
+
+        is_deeply( $iterator->raw_row(),
+                   [ 1, 'autarch', 'autarch@example.com' ],
+                   'raw_row returns expected data' );
+
+        $iterator->next();
+
+        is_deeply( $iterator->raw_row(),
+                   [ 42, 'bubba', 'bubba@example.com' ],
+                   'raw_row returns expected data' );
+
+        $iterator->next();
+
+        is( $iterator->raw_row(), undef,
+            'raw_row returns undef when iterator is exhausted' );
+    }
 }
 
 sub _make_iterator

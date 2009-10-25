@@ -14,6 +14,10 @@
   Now, providing an explicit map means you must provide a mapping for every
   select clause element you want to pass to an object.
 
+- Added Fey::Object::Iterator::FromSelect->raw_row(). This method lets you get
+  the raw data for a row after calling ->next(). This is handy if the select
+  contained data that does not fit into a particular class.
+
 0.29   2009-10-10
 
 - Allow any classes to be passed to an Iterator's constructor. However, unless

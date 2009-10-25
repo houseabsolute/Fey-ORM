@@ -58,6 +58,14 @@ has _class_attributes_by_position =>
       builder  => '_build_class_attributes_by_position',
     );
 
+has raw_row =>
+    ( is       => 'rw',
+      isa      => 'Maybe[ArrayRef]',
+      init_arg => undef,
+      writer   => '_set_raw_row',
+    );
+
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 
@@ -92,8 +100,11 @@ sub _get_next_result
 
     my $sth = $self->_sth();
 
-    my $row = $sth->fetchrow_arrayref()
-        or return;
+    my $row = $sth->fetchrow_arrayref();
+
+    $self->_set_raw_row($row);
+
+    return unless $row;
 
     my $map = $self->_class_attributes_by_position();
 
@@ -371,6 +382,12 @@ returns the first objects. Internally this means that the statement
 handle will be executed again. It's possible that data will have
 changed in the DBMS since then, meaning that the iterator will return
 different objects after a reset.
+
+=head2 $iterator->raw_row()
+
+Returns an array reference containing the I<raw> data returned by the query on
+the most recent call to C<< $iterator->next() >>. Once the iterator is
+exhausted, this method returns C<undef>.
 
 =head2 $iterator->DEMOLISH()
 
