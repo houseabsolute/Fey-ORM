@@ -271,6 +271,12 @@ sub run_shared_tests
                                        { 0 => { class     => 'Message',
                                                 attribute => 'message_id',
                                               },
+                                         1 => { class     => 'User',
+                                                attribute => 'user_id',
+                                              },
+                                         2 => { class     => 'User',
+                                                attribute => 'username',
+                                              },
                                        },
                                      );
 

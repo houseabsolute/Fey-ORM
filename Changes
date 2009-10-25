@@ -1,3 +1,19 @@
+0.30
+
+- The Fey::Object::Iterator::FromSelect class used to expect that the number
+  of elements in the select object's select clause matched the number of items
+  actually returned by the select in each row. However, if you used a Term to
+  do a "SELECT *" this assumption was broken. The assumption meant that even
+  providing an explicit attribute map in this case did not work.
+
+- As a corrolary, Fey::Object::Iterator::FromSelect used to attempt to merge
+  an explicit attribute map with what was implied by any columns in the select
+  object's select clause. This was never actually documented, and has been
+  removed.
+
+  Now, providing an explicit map means you must provide a mapping for every
+  select clause element you want to pass to an object.
+
 0.29   2009-10-10
 
 - Allow any classes to be passed to an Iterator's constructor. However, unless

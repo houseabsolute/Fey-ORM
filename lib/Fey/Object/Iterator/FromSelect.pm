@@ -50,12 +50,12 @@ has 'attribute_map' =>
       default => sub { return {} },
     );
 
-has _merged_attribute_map =>
+has _class_attributes_by_position =>
     ( is       => 'ro',
       isa      => 'HashRef[HashRef[Str]]',
       init_arg => undef,
       lazy     => 1,
-      builder  => '_build_merged_attribute_map',
+      builder  => '_build_class_attributes_by_position',
     );
 
 no Moose;
@@ -95,7 +95,7 @@ sub _get_next_result
     my $row = $sth->fetchrow_arrayref()
         or return;
 
-    my $map = $self->_merged_attribute_map();
+    my $map = $self->_class_attributes_by_position();
 
     my @result;
     for my $class ( @{ $self->classes() } )
@@ -133,23 +133,26 @@ sub _build_sth
     return $sth;
 }
 
-sub _build_merged_attribute_map
+sub _has_explicit_attribute_map
 {
     my $self = shift;
 
-    my %map;
+    return keys %{ $self->attribute_map() };
+}
+
+sub _build_class_attributes_by_position
+{
+    my $self = shift;
+
+    return $self->_remap_explicit_attribute_map()
+        if $self->_has_explicit_attribute_map;
 
     my $x = 0;
+    my %map;
 
     for my $s ( $self->select()->select_clause_elements() )
     {
-        if ( my $attr = $self->attribute_map()->{$x} )
-        {
-            my $class = $attr->{class};
-
-            $map{$class}{$x} = $attr->{attribute};
-        }
-        elsif ( $s->can('table') )
+        if ( $s->can('table') )
         {
             my $class = Fey::Meta::Class::Table->ClassForTable( $s->table() );
 
@@ -157,6 +160,21 @@ sub _build_merged_attribute_map
         }
 
         $x++;
+    }
+
+    return \%map;
+}
+
+sub _remap_explicit_attribute_map
+{
+    my $self = shift;
+
+    my $explicit_map = $self->attribute_map();
+
+    my %map;
+    for my $pos ( keys %{ $explicit_map } )
+    {
+        $map{ $explicit_map->{$pos}{class} }{$pos} = $explicit_map->{$pos}{attribute};
     }
 
     return \%map;
@@ -389,12 +407,16 @@ map would look something like this:
       ( classes       => [ 'User', 'Message' ],
         dbh           => $dbh,
         select        => $select,
-        attribute_map => { 1 => { class     => 'User',
+        attribute_map => { 0 => { class     => 'User',
+                                  attribute => 'user_id',
+                                },
+                           1 => { class     => 'User',
                                   attribute => 'username',
                                 },
                            3 => { class     => 'Message',
-                                  attribute => 'size',
+                                  attribute => 'message_id',
                                 },
+                         },
       );
 
 The keys in the mapping are positions in the list of C<SELECT> clause
