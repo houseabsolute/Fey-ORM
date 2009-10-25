@@ -1,4 +1,4 @@
-0.30
+0.30   2009-10-25
 
 - The Fey::Object::Iterator::FromSelect class used to expect that the number
   of elements in the select object's select clause matched the number of items
