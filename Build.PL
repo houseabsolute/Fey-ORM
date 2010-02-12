@@ -24,7 +24,7 @@ my $builder =
           build_requires =>
               { 'Fey::Test'       => '0.05',
                 'Test::Exception' => '0',
-                'Test::More'      => '0',
+                'Test::More'      => '0.88',
               },
           recursive_test_files => 1,
           create_makefile_pl   => 'traditional',
