@@ -3,7 +3,7 @@ package Fey::Meta::HasMany;
 use strict;
 use warnings;
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 
 use Fey::Exceptions qw( param_error );
 use Fey::Object::Iterator::FromSelect;

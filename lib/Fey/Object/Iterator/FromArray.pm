@@ -3,7 +3,7 @@ package Fey::Object::Iterator::FromArray;
 use strict;
 use warnings;
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 
 use Moose;
 use MooseX::SemiAffordanceAccessor;

@@ -3,7 +3,7 @@ package Fey::Object::Policy;
 use strict;
 use warnings;
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 
 use List::Util qw( first );
 use Moose;

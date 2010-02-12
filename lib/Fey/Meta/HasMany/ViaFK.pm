@@ -3,7 +3,7 @@ package Fey::Meta::HasMany::ViaFK;
 use strict;
 use warnings;
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 
 use List::AllUtils qw( any );
 
