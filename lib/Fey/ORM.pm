@@ -32,8 +32,7 @@ A "table-based" class for the User table:
 
   has_one $schema->table('Group');
 
-  has_many 'messages' =>
-      ( table =>  $schema->table('Messages') );
+  has_many 'messages' => ( table => $schema->table('Messages') );
 
 C<MyApp::Model::Schema> might look like this:
 
@@ -44,16 +43,16 @@ C<MyApp::Model::Schema> might look like this:
 
   use Fey::ORM::Schema;
 
-  my $source =
-      Fey::DBIManager::Source->new( dsn  => 'dbi:Pg:dbname=MyApp',
-                                    user => 'myapp',
-                                  );
+  my $source = Fey::DBIManager::Source->new(
+      dsn  => 'dbi:Pg:dbname=MyApp',
+      user => 'myapp',
+  );
 
   my $schema = Fey::Loader->new( dbh => $source->dbh() )->make_schema();
 
   has_schema $schema;
 
-  __PACKAGE__->DBIManager()->add_source($source);
+__PACKAGE__->DBIManager()->add_source($source);
 
 Then in your application:
 

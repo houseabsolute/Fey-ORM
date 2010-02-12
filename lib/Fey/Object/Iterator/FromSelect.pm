@@ -2,6 +2,7 @@ package Fey::Object::Iterator::FromSelect;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -14,88 +15,80 @@ use MooseX::StrictConstructor;
 
 with 'Fey::ORM::Role::Iterator';
 
-has dbh =>
-    ( is       => 'ro',
-      isa      => 'DBI::db',
-      required => 1,
-    );
+has dbh => (
+    is       => 'ro',
+    isa      => 'DBI::db',
+    required => 1,
+);
 
-has select =>
-    ( is       => 'ro',
-      does     => 'Fey::Role::SQL::ReturnsData',
-      required => 1,
-    );
+has select => (
+    is       => 'ro',
+    does     => 'Fey::Role::SQL::ReturnsData',
+    required => 1,
+);
 
-has bind_params =>
-    ( is      => 'ro',
-      isa     => 'ArrayRef',
-      lazy    => 1,
-      default => sub { [ $_[0]->select()->bind_params() ] },
-    );
+has bind_params => (
+    is      => 'ro',
+    isa     => 'ArrayRef',
+    lazy    => 1,
+    default => sub { [ $_[0]->select()->bind_params() ] },
+);
 
-has _sth =>
-    ( is        => 'ro',
-      isa       => 'DBI::st',
-      writer    => '_set_sth',
-      predicate => '_has_sth',
-      clearer   => '_clear_sth',
-      init_arg  => undef,
-      lazy      => 1,
-      builder   => '_build_sth',
-    );
+has _sth => (
+    is        => 'ro',
+    isa       => 'DBI::st',
+    writer    => '_set_sth',
+    predicate => '_has_sth',
+    clearer   => '_clear_sth',
+    init_arg  => undef,
+    lazy      => 1,
+    builder   => '_build_sth',
+);
 
-has 'attribute_map' =>
-    ( is      => 'ro',
-      isa     => 'HashRef[HashRef[Str]]',
-      default => sub { return {} },
-    );
+has 'attribute_map' => (
+    is      => 'ro',
+    isa     => 'HashRef[HashRef[Str]]',
+    default => sub { return {} },
+);
 
-has _class_attributes_by_position =>
-    ( is       => 'ro',
-      isa      => 'HashRef[HashRef[Str]]',
-      init_arg => undef,
-      lazy     => 1,
-      builder  => '_build_class_attributes_by_position',
-    );
+has _class_attributes_by_position => (
+    is       => 'ro',
+    isa      => 'HashRef[HashRef[Str]]',
+    init_arg => undef,
+    lazy     => 1,
+    builder  => '_build_class_attributes_by_position',
+);
 
-has raw_row =>
-    ( is       => 'rw',
-      isa      => 'Maybe[ArrayRef]',
-      init_arg => undef,
-      writer   => '_set_raw_row',
-    );
+has raw_row => (
+    is       => 'rw',
+    isa      => 'Maybe[ArrayRef]',
+    init_arg => undef,
+    writer   => '_set_raw_row',
+);
 
-
-no Moose;
-__PACKAGE__->meta()->make_immutable();
-
-
-sub BUILD
-{
+sub BUILD {
     my $self = shift;
 
     $self->_validate_attribute_map();
 }
 
-sub _validate_attribute_map
-{
+sub _validate_attribute_map {
     my $self = shift;
 
     my $map = $self->attribute_map();
 
-    return unless keys %{ $map };
+    return unless keys %{$map};
 
     my %valid_classes = map { $_ => 1 } @{ $self->classes() };
 
-    for my $class ( map { $_->{class} } values %{ $map } )
-    {
-        die "Cannot include a class in attribute_map ($class) unless it also in classes"
+    for my $class ( map { $_->{class} } values %{$map} ) {
+        die
+            "Cannot include a class in attribute_map ($class) unless it also in classes"
             unless $valid_classes{$class};
     }
 }
 
-sub _get_next_result
-{
+sub _get_next_result {
     my $self = shift;
 
     my $sth = $self->_sth();
@@ -109,9 +102,9 @@ sub _get_next_result
     my $map = $self->_class_attributes_by_position();
 
     my @result;
-    for my $class ( @{ $self->classes() } )
-    {
-        my %attr = map { $map->{$class}{$_} => $row->[$_] } keys %{ $map->{$class} };
+    for my $class ( @{ $self->classes() } ) {
+        my %attr = map { $map->{$class}{$_} => $row->[$_] }
+            keys %{ $map->{$class} };
         $attr{_from_query} = 1;
 
         # FIXME - This eval is kind of a band-aid. It is possible
@@ -133,8 +126,7 @@ sub _get_next_result
     return \@result;
 }
 
-sub _build_sth
-{
+sub _build_sth {
     my $self = shift;
 
     my $sth = $self->dbh()->prepare( $self->select()->sql( $self->dbh() ) );
@@ -144,15 +136,13 @@ sub _build_sth
     return $sth;
 }
 
-sub _has_explicit_attribute_map
-{
+sub _has_explicit_attribute_map {
     my $self = shift;
 
     return keys %{ $self->attribute_map() };
 }
 
-sub _build_class_attributes_by_position
-{
+sub _build_class_attributes_by_position {
     my $self = shift;
 
     return $self->_remap_explicit_attribute_map()
@@ -161,13 +151,12 @@ sub _build_class_attributes_by_position
     my $x = 0;
     my %map;
 
-    for my $s ( $self->select()->select_clause_elements() )
-    {
-        if ( $s->can('table') )
-        {
+    for my $s ( $self->select()->select_clause_elements() ) {
+        if ( $s->can('table') ) {
             my $class = Fey::Meta::Class::Table->ClassForTable( $s->table() );
 
-            $map{$class}{$x} = $s->can('alias_name') ? $s->alias_name() : $s->name();
+            $map{$class}{$x}
+                = $s->can('alias_name') ? $s->alias_name() : $s->name();
         }
 
         $x++;
@@ -176,23 +165,21 @@ sub _build_class_attributes_by_position
     return \%map;
 }
 
-sub _remap_explicit_attribute_map
-{
+sub _remap_explicit_attribute_map {
     my $self = shift;
 
     my $explicit_map = $self->attribute_map();
 
     my %map;
-    for my $pos ( keys %{ $explicit_map } )
-    {
-        $map{ $explicit_map->{$pos}{class} }{$pos} = $explicit_map->{$pos}{attribute};
+    for my $pos ( keys %{$explicit_map} ) {
+        $map{ $explicit_map->{$pos}{class} }{$pos}
+            = $explicit_map->{$pos}{attribute};
     }
 
     return \%map;
 }
 
-sub reset
-{
+sub reset {
     my $self = shift;
 
     $self->_finish_handle();
@@ -202,15 +189,13 @@ sub reset
     return;
 }
 
-sub DEMOLISH
-{
+sub DEMOLISH {
     my $self = shift;
 
     $self->_finish_handle();
 }
 
-sub _finish_handle
-{
+sub _finish_handle {
     my $self = shift;
 
     # We really don't care about cleanly finishing statement handles
@@ -222,9 +207,6 @@ sub _finish_handle
 
     $self->_sth()->finish() if $self->_sth()->{Active};
 }
-
-no Moose;
-no Moose::Util::TypeConstraints;
 
 __PACKAGE__->meta()->make_immutable();
 

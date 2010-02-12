@@ -2,6 +2,7 @@ package Fey::ORM::Table;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -14,26 +15,24 @@ use Moose::Exporter;
 use Moose::Util::MetaRole;
 use MooseX::Params::Validate qw( pos_validated_list );
 
-Moose::Exporter->setup_import_methods
-    ( with_meta => [qw( has_table has_policy has_one has_many transform )],
-      as_is     => [qw( inflate deflate handles )],
-      also      => 'Moose'
-    );
+Moose::Exporter->setup_import_methods(
+    with_meta => [qw( has_table has_policy has_one has_many transform )],
+    as_is     => [qw( inflate deflate handles )],
+    also      => 'Moose'
+);
 
-sub init_meta
-{
+sub init_meta {
     shift;
     my %p = @_;
 
-    return
-        Moose->init_meta( %p,
-                          base_class => 'Fey::Object::Table',
-                          metaclass  => 'Fey::Meta::Class::Table',
-                        );
+    return Moose->init_meta(
+        %p,
+        base_class => 'Fey::Object::Table',
+        metaclass  => 'Fey::Meta::Class::Table',
+    );
 }
 
-sub has_table
-{
+sub has_table {
     my $meta = shift;
 
     my ($table) = pos_validated_list( \@_, { isa => 'Fey::Table' } );
@@ -41,13 +40,11 @@ sub has_table
     $meta->_associate_table($table);
 }
 
-sub has_policy
-{
+sub has_policy {
     my $meta   = shift;
     my $policy = shift;
 
-    unless ( ref $policy )
-    {
+    unless ( ref $policy ) {
         Class::MOP::load_class($policy);
 
         $policy = $policy->Policy();
@@ -56,8 +53,7 @@ sub has_policy
     $meta->set_policy($policy);
 }
 
-sub transform
-{
+sub transform {
     my $meta = shift;
 
     my @p;
@@ -66,43 +62,35 @@ sub transform
 
     my %p = _combine_hashes(@p);
 
-    for my $name (@_)
-    {
+    for my $name (@_) {
         $meta->_add_transform( $name => %p );
     }
 }
 
-sub _combine_hashes
-{
-    return map { %{ $_ } } @_;
+sub _combine_hashes {
+    return map { %{$_} } @_;
 }
 
-sub inflate (&)
-{
+sub inflate (&) {
     return { inflate => $_[0] };
 }
 
-sub deflate (&)
-{
+sub deflate (&) {
     return { deflate => $_[0] };
 }
 
-sub handles ($)
-{
+sub handles ($) {
     return { handles => $_[0] };
 }
 
-sub has_one
-{
+sub has_one {
     my $meta = shift;
 
     my %p;
-    if ( @_ == 1 )
-    {
+    if ( @_ == 1 ) {
         ( $p{table} ) = shift;
     }
-    else
-    {
+    else {
         $p{name} = shift;
 
         %p = ( %p, @_ );
@@ -111,17 +99,14 @@ sub has_one
     $meta->add_has_one(%p);
 }
 
-sub has_many
-{
+sub has_many {
     my $meta = shift;
 
     my %p;
-    if ( @_ == 1 )
-    {
+    if ( @_ == 1 ) {
         ( $p{table} ) = shift;
     }
-    else
-    {
+    else {
         $p{name} = shift;
 
         %p = ( %p, @_ );

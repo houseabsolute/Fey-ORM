@@ -2,6 +2,7 @@ package Fey::Meta::Class::Schema;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -15,49 +16,47 @@ use MooseX::SemiAffordanceAccessor;
 
 extends 'Moose::Meta::Class';
 
-class_has '_SchemaClassMap' =>
-    ( traits  => [ 'Hash' ],
-      is      => 'ro',
-      isa     => 'HashRef[Fey::Schema]',
-      default => sub { {} },
-      lazy    => 1,
-      handles => { SchemaForClass     => 'get',
-                   _SetSchemaForClass => 'set',
-                   _ClassHasSchema    => 'exists',
-                 },
-    );
+class_has '_SchemaClassMap' => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[Fey::Schema]',
+    default => sub { {} },
+    lazy    => 1,
+    handles => {
+        SchemaForClass     => 'get',
+        _SetSchemaForClass => 'set',
+        _ClassHasSchema    => 'exists',
+    },
+);
 
-has 'schema' =>
-    ( is        => 'rw',
-      isa       => 'Fey::Schema',
-      writer    => '_set_schema',
-      predicate => '_has_schema',
-    );
+has 'schema' => (
+    is        => 'rw',
+    isa       => 'Fey::Schema',
+    writer    => '_set_schema',
+    predicate => '_has_schema',
+);
 
-has 'dbi_manager' =>
-    ( is        => 'rw',
-      isa       => 'Fey::DBIManager',
-      lazy      => 1,
-      default   => sub { Fey::DBIManager->new() },
-    );
+has 'dbi_manager' => (
+    is      => 'rw',
+    isa     => 'Fey::DBIManager',
+    lazy    => 1,
+    default => sub { Fey::DBIManager->new() },
+);
 
-has 'sql_factory_class' =>
-    ( is        => 'rw',
-      isa       => 'ClassName',
-      lazy      => 1,
-      default   => 'Fey::SQL',
-    );
+has 'sql_factory_class' => (
+    is      => 'rw',
+    isa     => 'ClassName',
+    lazy    => 1,
+    default => 'Fey::SQL',
+);
 
-
-sub ClassForSchema
-{
-    my $class    = shift;
+sub ClassForSchema {
+    my $class = shift;
     my ($schema) = pos_validated_list( \@_, { isa => 'Fey::Schema' } );
 
     my $map = $class->_SchemaClassMap();
 
-    for my $class_name ( keys %{ $map } )
-    {
+    for my $class_name ( keys %{$map} ) {
         return $class_name
             if $map->{$class_name}->name() eq $schema->name();
     }
@@ -65,8 +64,7 @@ sub ClassForSchema
     return;
 }
 
-sub _associate_schema
-{
+sub _associate_schema {
     my $self   = shift;
     my $schema = shift;
 
@@ -82,8 +80,6 @@ sub _associate_schema
 
     $self->_set_schema($schema);
 }
-
-no Moose;
 
 __PACKAGE__->meta()->make_immutable();
 

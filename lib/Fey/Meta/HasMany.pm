@@ -2,6 +2,7 @@ package Fey::Meta::HasMany;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -14,75 +15,65 @@ use MooseX::StrictConstructor;
 
 extends 'Fey::Meta::FK';
 
+has associated_method => (
+    is       => 'rw',
+    isa      => 'Moose::Meta::Method',
+    init_arg => undef,
+    lazy     => 1,
+    builder  => '_build_associated_method',
+);
 
-has associated_method =>
-    ( is       => 'rw',
-      isa      => 'Moose::Meta::Method',
-      init_arg => undef,
-      lazy     => 1,
-      builder  => '_build_associated_method',
-    );
+subtype 'Fey.ORM.Type.ClassDoesIterator' => as 'ClassName' =>
+    where { $_[0]->meta()->does_role('Fey::ORM::Role::Iterator') } =>
+    message {"$_[0] does not do the Fey::ORM::Role::Iterator role"};
 
-subtype 'Fey.ORM.Type.ClassDoesIterator'
-    => as 'ClassName'
-    => where { $_[0]->meta()->does_role('Fey::ORM::Role::Iterator') }
-    => message { "$_[0] does not do the Fey::ORM::Role::Iterator role" };
+has 'iterator_class' => (
+    is      => 'ro',
+    isa     => 'Fey.ORM.Type.ClassDoesIterator',
+    lazy    => 1,
+    builder => '_build_iterator_class',
+);
 
-has 'iterator_class' =>
-    ( is      => 'ro',
-      isa     => 'Fey.ORM.Type.ClassDoesIterator',
-      lazy    => 1,
-      builder => '_build_iterator_class',
-    );
-
-
-sub _build_iterator_class
-{
+sub _build_iterator_class {
     my $self = shift;
 
-    return
-        $self->is_cached()
+    return $self->is_cached()
         ? 'Fey::Object::Iterator::FromSelect::Caching'
         : 'Fey::Object::Iterator::FromSelect';
 }
 
-sub _build_is_cached { 0 }
+sub _build_is_cached {0}
 
-sub _build_associated_method
-{
+sub _build_associated_method {
     my $self = shift;
 
     my $method;
-    if ( $self->is_cached() )
-    {
+    if ( $self->is_cached() ) {
         my $iter_attr_name = q{___} . $self->name() . q{_iterator};
 
-        $self->associated_class()->add_attribute
-            ( $iter_attr_name,
-              is       => 'ro',
-              isa      => $self->iterator_class(),
-              lazy     => 1,
-              default  => $self->_make_iterator_maker(),
-              init_arg => undef,
-            );
+        $self->associated_class()->add_attribute(
+            $iter_attr_name,
+            is       => 'ro',
+            isa      => $self->iterator_class(),
+            lazy     => 1,
+            default  => $self->_make_iterator_maker(),
+            init_arg => undef,
+        );
 
         $method = sub { return $_[0]->$iter_attr_name()->clone() };
     }
-    else
-    {
+    else {
         $method = $self->_make_iterator_maker();
     }
 
-    return
-        $self->associated_class()->method_metaclass()
-             ->wrap( name         => $self->name(),
-                     package_name => $self->associated_class()->name(),
-                     body         => $method,
-                   );
+    return $self->associated_class()->method_metaclass()->wrap(
+        name         => $self->name(),
+        package_name => $self->associated_class()->name(),
+        body         => $method,
+    );
 }
 
-sub _make_subref_for_sql
-{
+sub _make_subref_for_sql {
     my $self     = shift;
     my $select   = shift;
     my $bind_sub = shift;
@@ -91,25 +82,24 @@ sub _make_subref_for_sql
 
     my $iterator_class = $self->iterator_class();
 
-    return
-        sub { my $self = shift;
+    return sub {
+        my $self = shift;
 
-              my $class = $self->meta()->ClassForTable($target_table);
+        my $class = $self->meta()->ClassForTable($target_table);
 
-              my $dbh = $self->_dbh($select);
+        my $dbh = $self->_dbh($select);
 
-              return
-                  $iterator_class->new( classes     => $class,
-                                        dbh         => $dbh,
-                                        select      => $select,
-                                        bind_params => [ $self->$bind_sub() ],
-                                      );
-            };
+        return $iterator_class->new(
+            classes     => $class,
+            dbh         => $dbh,
+            select      => $select,
+            bind_params => [ $self->$bind_sub() ],
+        );
+    };
 
 }
 
-sub attach_to_class
-{
+sub attach_to_class {
     my $self  = shift;
     my $class = shift;
 
@@ -118,9 +108,8 @@ sub attach_to_class
     $class->add_method( $self->name() => $self->associated_method() );
 }
 
-sub detach_from_class
-{
-    my $self  = shift;
+sub detach_from_class {
+    my $self = shift;
 
     return unless $self->associated_class();
 
@@ -128,10 +117,6 @@ sub detach_from_class
 
     $self->_clear_associated_class();
 }
-
-
-no Moose;
-no Moose::Util::TypeConstraints;
 
 __PACKAGE__->meta()->make_immutable();
 

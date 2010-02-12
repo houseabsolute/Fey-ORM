@@ -2,6 +2,7 @@ package Fey::Object::Iterator::FromSelect::Caching;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -11,36 +12,37 @@ use MooseX::StrictConstructor;
 
 extends 'Fey::Object::Iterator::FromSelect';
 
-has _cached_results =>
-    ( traits   => [ 'Array' ],
-      is       => 'ro',
-      isa      => 'ArrayRef[ArrayRef]',
-      lazy     => 1,
-      default  => sub { [] },
-      init_arg => undef,
-      handles  => { _cache_result      => 'push',
-                    _get_cached_result => 'get',
-                  },
-      # for cloning
-      writer   => '_set_cached_results',
-      # for testability
-      clearer  => '_clear_cached_results',
-    );
+has _cached_results => (
+    traits   => ['Array'],
+    is       => 'ro',
+    isa      => 'ArrayRef[ArrayRef]',
+    lazy     => 1,
+    default  => sub { [] },
+    init_arg => undef,
+    handles  => {
+        _cache_result      => 'push',
+        _get_cached_result => 'get',
+    },
 
-has '_sth_is_exhausted' =>
-    ( is       => 'rw',
-      isa      => 'Bool',
-      init_arg => undef,
-    );
+    # for cloning
+    writer => '_set_cached_results',
 
-sub _get_next_result
-{
+    # for testability
+    clearer => '_clear_cached_results',
+);
+
+has '_sth_is_exhausted' => (
+    is       => 'rw',
+    isa      => 'Bool',
+    init_arg => undef,
+);
+
+sub _get_next_result {
     my $self = shift;
 
     my $result = $self->_get_cached_result( $self->index() );
 
-    unless ($result)
-    {
+    unless ($result) {
         # Some drivers (DBD::Pg, at least) will blow up if we try to
         # call a ->fetch type method on an exhausted statement
         # handle. DBD::SQLite can handle this, so it is not tested.
@@ -48,8 +50,7 @@ sub _get_next_result
 
         $result = $self->SUPER::_get_next_result();
 
-        unless ($result)
-        {
+        unless ($result) {
             $self->_set_sth_is_exhausted(1);
             return;
         }
@@ -60,15 +61,13 @@ sub _get_next_result
     return $result;
 }
 
-sub reset
-{
+sub reset {
     my $self = shift;
 
     $self->_reset_index();
 }
 
-sub clone
-{
+sub clone {
     my $self = shift;
 
     my $clone = $self->meta()->clone_object($self);
@@ -90,8 +89,6 @@ sub clone
 
     return $clone;
 }
-
-no Moose;
 
 __PACKAGE__->meta()->make_immutable();
 

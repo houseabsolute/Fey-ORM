@@ -2,6 +2,7 @@ package Fey::Object::Iterator::FromArray;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -12,41 +13,36 @@ use Moose::Util::TypeConstraints;
 
 with 'Fey::ORM::Role::Iterator';
 
-my $iterable_arrayref =
-    subtype
-           as 'ArrayRef[ArrayRef[Object|Undef]]'
-        => message { 'You must provide an array reference of which each '
-                     . ' element is in turn an array reference. The inner '
-                     . ' references should contain objects or undef.' };
+my $iterable_arrayref
+    = subtype as 'ArrayRef[ArrayRef[Object|Undef]]' => message {
+    'You must provide an array reference of which each '
+        . ' element is in turn an array reference. The inner '
+        . ' references should contain objects or undef.';
+    };
 
-coerce $iterable_arrayref
-    => from 'ArrayRef[Object|Undef]',
-    => via { [ map { [ $_ ] } @{$_} ] };
+coerce $iterable_arrayref => from 'ArrayRef[Object|Undef]', => via {
+    [ map { [$_] } @{$_} ];
+};
 
-has '_objects' =>
-    ( is       => 'ro',
-      isa      => $iterable_arrayref,
-      coerce   => 1,
-      required => 1,
-      init_arg => 'objects',
-    );
+has '_objects' => (
+    is       => 'ro',
+    isa      => $iterable_arrayref,
+    coerce   => 1,
+    required => 1,
+    init_arg => 'objects',
+);
 
-sub _get_next_result
-{
+sub _get_next_result {
     my $self = shift;
 
     return $self->_objects()->[ $self->index() ];
 }
 
-sub reset
-{
+sub reset {
     my $self = shift;
 
     $self->_reset_index();
 }
-
-no Moose;
-no Moose::Util::TypeConstraints;
 
 __PACKAGE__->meta()->make_immutable();
 

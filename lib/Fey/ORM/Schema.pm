@@ -2,6 +2,7 @@ package Fey::ORM::Schema;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -12,26 +13,23 @@ use Moose 0.98 ();
 use Moose::Exporter;
 use MooseX::Params::Validate qw( pos_validated_list );
 
-Moose::Exporter->setup_import_methods
-    ( with_meta => [qw( has_schema )],
-      also      => 'Moose'
-    );
+Moose::Exporter->setup_import_methods(
+    with_meta => [qw( has_schema )],
+    also      => 'Moose'
+);
 
-
-sub init_meta
-{
+sub init_meta {
     shift;
     my %p = @_;
 
-    return
-        Moose->init_meta( %p,
-                          base_class => 'Fey::Object::Schema',
-                          metaclass  => 'Fey::Meta::Class::Schema',
-                        );
+    return Moose->init_meta(
+        %p,
+        base_class => 'Fey::Object::Schema',
+        metaclass  => 'Fey::Meta::Class::Schema',
+    );
 }
 
-sub has_schema
-{
+sub has_schema {
     my $meta = shift;
 
     my ($schema) = pos_validated_list( \@_, { isa => 'Fey::Schema' } );

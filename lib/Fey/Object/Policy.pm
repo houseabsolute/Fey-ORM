@@ -2,6 +2,7 @@ package Fey::Object::Policy;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -10,51 +11,46 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::SemiAffordanceAccessor;
 
-has '_transforms' =>
-    ( traits   => [ 'Array' ],
-      is       => 'ro',
-      isa      => 'ArrayRef[HashRef]',
-      default  => sub { [] },
-      init_arg => undef,
-      handles  => { add_transform => 'push',
-                    transforms    => 'elements',
-                  },
-    );
+has '_transforms' => (
+    traits   => ['Array'],
+    is       => 'ro',
+    isa      => 'ArrayRef[HashRef]',
+    default  => sub { [] },
+    init_arg => undef,
+    handles  => {
+        add_transform => 'push',
+        transforms    => 'elements',
+    },
+);
 
-has 'has_one_namer' =>
-    ( is       => 'rw',
-      isa      => 'CodeRef',
-      default  => \&_dumb_namer,
-      required => 1,
-    );
+has 'has_one_namer' => (
+    is       => 'rw',
+    isa      => 'CodeRef',
+    default  => \&_dumb_namer,
+    required => 1,
+);
 
-has 'has_many_namer' =>
-    ( is       => 'rw',
-      isa      => 'CodeRef',
-      default  => \&_dumb_namer,
-      required => 1,
-    );
+has 'has_many_namer' => (
+    is       => 'rw',
+    isa      => 'CodeRef',
+    default  => \&_dumb_namer,
+    required => 1,
+);
 
-
-sub transform_for_column
-{
+sub transform_for_column {
     my $self   = shift;
     my $column = shift;
 
     return first { $_->{matching}->($column) } $self->transforms();
 }
 
-sub _dumb_namer
-{
+sub _dumb_namer {
     return sub { lc $_[0]->name() };
 }
-
-no Moose;
 
 __PACKAGE__->meta()->make_immutable();
 
 1;
-
 
 __END__
 

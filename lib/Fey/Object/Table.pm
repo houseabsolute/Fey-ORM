@@ -2,6 +2,7 @@ package Fey::Object::Table;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -19,14 +20,12 @@ use Fey::ORM::Exceptions qw( no_such_row );
 use Moose 0.90;
 use MooseX::StrictConstructor;
 
-
-sub new
-{
+sub new {
     my $class = shift;
 
-    if ( $class->meta()->_object_cache_is_enabled() )
-    {
-        my $instance = $class->meta()->_search_cache( ref $_[0] ? $_[0] : { @_ } );
+    if ( $class->meta()->_object_cache_is_enabled() ) {
+        my $instance
+            = $class->meta()->_search_cache( ref $_[0] ? $_[0] : {@_} );
 
         return $instance if $instance;
     }
@@ -36,12 +35,10 @@ sub new
 
     $class->_ClearConstructorError();
 
-    try
-    {
+    try {
         $instance = $class->SUPER::new(@args);
     }
-    catch
-    {
+    catch {
         die $_ unless blessed $_ && $_->isa('Fey::Exception::NoSuchRow');
         $class->_SetConstructorError($_);
     };
@@ -59,88 +56,80 @@ sub new
 {
     my %E;
 
-    sub ConstructorError
-    {
+    sub ConstructorError {
         my $class = shift;
 
         return $E{$class};
     }
 
-    sub _SetConstructorError
-    {
+    sub _SetConstructorError {
         my $class = shift;
 
         $E{$class} = shift;
     }
 
-    sub _ClearConstructorError
-    {
+    sub _ClearConstructorError {
         my $class = shift;
 
         delete $E{$class};
     }
 }
 
-sub BUILD
-{
+sub BUILD {
     my $self = shift;
     my $p    = shift;
 
-    if ( delete $p->{_from_query} )
-    {
+    if ( delete $p->{_from_query} ) {
         $self->_require_pk($p);
 
         return;
-    };
+    }
 
     $self->_load_from_dbms($p);
 
     return;
 }
 
-sub _require_pk
-{
+sub _require_pk {
     my $self = shift;
     my $p    = shift;
 
-    return if all { defined $p->{$_} } map { $_->name() } @{ $self->Table()->primary_key() };
+    return
+        if all { defined $p->{$_} }
+        map { $_->name() } @{ $self->Table()->primary_key() };
 
     my $package = ref $self;
-    param_error "$package->new() requires that you pass the primary key if you set _from_query to true.";
+    param_error
+        "$package->new() requires that you pass the primary key if you set _from_query to true.";
 }
 
-sub EnableObjectCache
-{
+sub EnableObjectCache {
     my $class = shift;
 
     $class->meta()->_set_object_cache_is_enabled(1);
 }
 
-sub DisableObjectCache
-{
+sub DisableObjectCache {
     my $class = shift;
 
     $class->meta()->_set_object_cache_is_enabled(0);
 }
 
-sub ClearObjectCache
-{
+sub ClearObjectCache {
     my $class = shift;
 
     $class->meta()->_clear_object_cache();
 }
 
-sub _load_from_dbms
-{
+sub _load_from_dbms {
     my $self = shift;
     my $p    = shift;
 
-    for my $key ( @{ $self->Table()->candidate_keys() } )
-    {
-        my @names = map { $_->name() } @{ $key };
+    for my $key ( @{ $self->Table()->candidate_keys() } ) {
+        my @names = map { $_->name() } @{$key};
         next unless all { defined $p->{$_} } @names;
 
-        return if $self->_load_from_key( $key, [ @{ $p }{ @names } ] );
+        return if $self->_load_from_key( $key, [ @{$p}{@names} ] );
     }
 
     my $error = 'Could not find a row in ' . $self->Table()->name();
@@ -149,8 +138,7 @@ sub _load_from_dbms
     no_such_row $error;
 }
 
-sub _load_from_key
-{
+sub _load_from_key {
     my $self = shift;
     my $key  = shift;
     my $bind = shift;
@@ -164,8 +152,7 @@ sub _load_from_key
 
     my @where;
 
-    for ( my $i = 0; $i < @{ $key }; $i++ )
-    {
+    for ( my $i = 0; $i < @{$key}; $i++ ) {
         push @where, $key->[$i]->name() . q{ = } . $bind->[$i];
     }
 
@@ -174,16 +161,14 @@ sub _load_from_key
     no_such_row $error;
 }
 
-sub insert
-{
+sub insert {
     my $class = shift;
     my %p     = @_;
 
-    return $class->insert_many(\%p);
+    return $class->insert_many( \%p );
 }
 
-sub insert_many
-{
+sub insert_many {
     my $class = shift;
     my @rows  = @_;
 
@@ -193,11 +178,11 @@ sub insert_many
 
     my $sth = $dbh->prepare( $insert->sql($dbh) );
 
-    my @auto_inc_columns =
-        ( grep { ! exists $rows[0]->{$_} }
-          map { $_->name() }
-          grep { $_->is_auto_increment() }
-          $class->Table->columns() );
+    my @auto_inc_columns = (
+        grep { !exists $rows[0]->{$_} }
+        map  { $_->name() }
+        grep { $_->is_auto_increment() } $class->Table->columns()
+    );
 
     my $table_name = $class->Table()->name();
 
@@ -205,71 +190,68 @@ sub insert_many
     my @literal_row_keys;
     my @ref_row_keys;
 
-    for my $key ( sort keys %{ $rows[0] } )
-    {
+    for my $key ( sort keys %{ $rows[0] } ) {
         my $val = $rows[0]{$key};
 
-        if ( defined $val
-             && blessed $val
-             && $val->can('does')
-             && $val->does('Fey::Role::IsLiteral') )
-        {
+        if (   defined $val
+            && blessed $val
+            && $val->can('does')
+            && $val->does('Fey::Role::IsLiteral') ) {
             push @literal_row_keys, $key;
-            push @ref_row_keys, $key;
+            push @ref_row_keys,     $key;
         }
-        else
-        {
+        else {
             push @non_literal_row_keys, $key;
-            push @ref_row_keys, $key
+            push @ref_row_keys,         $key
                 if ref $val;
         }
     }
 
-    my @bind_attributes = $class->_bind_attributes_for( $dbh, @non_literal_row_keys );
+    my @bind_attributes
+        = $class->_bind_attributes_for( $dbh, @non_literal_row_keys );
 
     my $wantarray = wantarray;
 
     my @objects;
-    for my $row (@rows)
-    {
+    for my $row (@rows) {
         push @objects,
-            $class->_insert_one_row
-                ( $row,
-                  $dbh,
-                  $sth,
-                  \@non_literal_row_keys,
-                  \@ref_row_keys,
-                  \@bind_attributes,
-                  \@auto_inc_columns,
-                  $table_name,
-                  $wantarray,
-                );
+            $class->_insert_one_row(
+            $row,
+            $dbh,
+            $sth,
+            \@non_literal_row_keys,
+            \@ref_row_keys,
+            \@bind_attributes,
+            \@auto_inc_columns,
+            $table_name,
+            $wantarray,
+            );
     }
 
     return $wantarray ? @objects : $objects[0];
 }
 
-sub _bind_attributes_for
-{
+sub _bind_attributes_for {
     my $self = shift;
     my $dbh  = shift;
     my @keys = @_;
 
     return unless $dbh->{Driver}{Name} eq 'Pg';
 
-    my @attr = map { lc $self->Table()->column($_)->type() eq 'bytea'
-                     ? { pg_type => DBD::Pg::PG_BYTEA() }
-                     : {}
-                   } @keys;
+    my @attr = map {
+        lc $self->Table()->column($_)->type() eq 'bytea'
+            ? { pg_type => DBD::Pg::PG_BYTEA() }
+            : {}
+    } @keys;
 
-    return unless grep { keys %{ $_ } } @attr;
+    return unless grep { keys %{$_} } @attr;
 
     return @attr;
 }
 
-sub _insert_one_row
-{
-    my $class                = shift;
+sub _insert_one_row {
+    my $class = shift;
+
     # This is really grotesque
     my $row                  = shift;
     my $dbh                  = shift;
@@ -281,51 +263,48 @@ sub _insert_one_row
     my $table_name           = shift;
     my $wantarray            = shift;
 
-    $class->_sth_execute( $sth,
-                          [ map { $class->_deflated_value( $_, $row->{$_} ) }
-                            @{ $non_literal_row_keys } ],
-                          $bind_attributes,
-                        );
+    $class->_sth_execute(
+        $sth,
+        [
+            map { $class->_deflated_value( $_, $row->{$_} ) }
+                @{$non_literal_row_keys}
+        ],
+        $bind_attributes,
+    );
 
     return unless defined $wantarray;
 
     my %auto_inc;
-    for my $col ( @{ $auto_inc_columns } )
-    {
-        $auto_inc{$col} =
-            $dbh->last_insert_id( undef, undef, $table_name, $col );
+    for my $col ( @{$auto_inc_columns} ) {
+        $auto_inc{$col}
+            = $dbh->last_insert_id( undef, undef, $table_name, $col );
     }
 
-    delete @{ $row }{ @{ $ref_row_keys } }
-        if @{ $ref_row_keys };
+    delete @{$row}{ @{$ref_row_keys} }
+        if @{$ref_row_keys};
 
-    return $class->new( %{ $row }, %auto_inc, _from_query => 1 );
+    return $class->new( %{$row}, %auto_inc, _from_query => 1 );
 }
 
-sub _sth_execute
-{
+sub _sth_execute {
     my $self = shift;
     my $sth  = shift;
     my $vals = shift;
     my $attr = shift;
 
-    if ( @{ $attr } )
-    {
-        for ( my $i = 0; $i < @{ $vals }; $i++ )
-        {
+    if ( @{$attr} ) {
+        for ( my $i = 0; $i < @{$vals}; $i++ ) {
             $sth->bind_param( $i + 1, $vals->[$i], $attr->[$i] );
         }
 
         return $sth->execute();
     }
-    else
-    {
-        return $sth->execute( @{ $vals } );
+    else {
+        return $sth->execute( @{$vals} );
     }
 }
 
-sub _deflated_value
-{
+sub _deflated_value {
     my $self = shift;
     my $name = shift;
     my $val  = @_ ? shift : $self->$name();
@@ -335,8 +314,7 @@ sub _deflated_value
     return $meth ? $self->$meth($val) : $val;
 }
 
-sub _insert_for_data
-{
+sub _insert_for_data {
     my $class = shift;
     my $data  = shift;
 
@@ -344,25 +322,27 @@ sub _insert_for_data
 
     my $table = $class->Table();
 
-    $insert->into( $table->columns( sort keys %{ $data } ) );
+    $insert->into( $table->columns( sort keys %{$data} ) );
 
     my $ph = Fey::Placeholder->new();
 
-    my @vals =
-        ( map { $_ => ( defined $data->{$_}
-                        && blessed $data->{$_}
-                        && $data->{$_}->can('does')
-                        && $data->{$_}->does('Fey::Role::IsLiteral')
-                        ? $data->{$_} : $ph ) }
-          sort keys %{ $data }
-        );
+    my @vals = (
+        map {
+            $_ => ( defined $data->{$_}
+                    && blessed $data->{$_}
+                    && $data->{$_}->can('does')
+                    && $data->{$_}->does('Fey::Role::IsLiteral')
+                ? $data->{$_}
+                : $ph )
+            }
+            sort keys %{$data}
+    );
     $insert->values(@vals);
 
     return $insert;
 }
 
-sub update
-{
+sub update {
     my $self = shift;
     my %p    = @_;
 
@@ -372,10 +352,11 @@ sub update
 
     $update->update($table);
 
-    $update->set( map { $table->column($_) => $self->_deflated_value( $_, $p{$_} ) } sort keys %p );
+    $update->set(
+        map { $table->column($_) => $self->_deflated_value( $_, $p{$_} ) }
+        sort keys %p );
 
-    for my $col ( @{ $table->primary_key() } )
-    {
+    for my $col ( @{ $table->primary_key() } ) {
         my $name = $col->name();
 
         $update->where( $col, '=', $self->_deflated_value($name) );
@@ -385,24 +366,22 @@ sub update
 
     my $sth = $dbh->prepare( $update->sql($dbh) );
 
-    my @attr = $self->_bind_attributes_for( $dbh,
-                                            ( sort keys %p,
-                                              map { $_->name() }
-                                              @{ $table->primary_key() }
-                                            ),
-                                          );
+    my @attr = $self->_bind_attributes_for(
+        $dbh,
+        (
+            sort keys %p,
+            map { $_->name() } @{ $table->primary_key() }
+        ),
+    );
 
     $self->_sth_execute( $sth, [ $update->bind_params() ], \@attr );
 
-    for my $k ( sort keys %p )
-    {
-        if ( ref $p{$k} )
-        {
+    for my $k ( sort keys %p ) {
+        if ( ref $p{$k} ) {
             my $clear = q{_clear_} . $k;
             $self->$clear();
         }
-        else
-        {
+        else {
             my $set = q{_set_} . $k;
             $self->$set( $p{$k} );
         }
@@ -411,8 +390,7 @@ sub update
     return;
 }
 
-sub delete
-{
+sub delete {
     my $self = shift;
 
     my $delete = $self->SchemaClass()->SQLFactoryClass()->new_delete();
@@ -421,8 +399,7 @@ sub delete
 
     $delete->from($table);
 
-    for my $col ( @{ $table->primary_key() } )
-    {
+    for my $col ( @{ $table->primary_key() } ) {
         my $name = $col->name();
 
         $delete->where( $col, '=', $self->_deflated_value($name) );
@@ -435,13 +412,13 @@ sub delete
     return;
 }
 
-sub _get_column_value
-{
+sub _get_column_value {
     my $self = shift;
 
-    my $col_values = $self->_get_column_values( $self->meta()->_select_by_pk_sql(),
-                                                [ $self->pk_values_list() ],
-                                              );
+    my $col_values = $self->_get_column_values(
+        $self->meta()->_select_by_pk_sql(),
+        [ $self->pk_values_list() ],
+    );
 
     my $name = shift;
 
@@ -451,8 +428,7 @@ sub _get_column_value
 # Based on discussions on #moose, this could be done more elegantly
 # with a custom instance metaclass that lazily initializes a batch of
 # attributes at once.
-sub _get_column_values
-{
+sub _get_column_values {
     my $self   = shift;
     my $select = shift;
     my $bind   = shift;
@@ -461,7 +437,7 @@ sub _get_column_values
 
     my $sth = $dbh->prepare( $select->sql($dbh) );
 
-    $sth->execute( @{ $bind } );
+    $sth->execute( @{$bind} );
 
     my %col_values;
     $sth->bind_columns( \( @col_values{ @{ $sth->{NAME} } } ) );
@@ -477,13 +453,11 @@ sub _get_column_values
     return \%col_values;
 }
 
-sub _set_column_values_from_hashref
-{
+sub _set_column_values_from_hashref {
     my $self   = shift;
     my $values = shift;
 
-    for my $col ( keys %{ $values } )
-    {
+    for my $col ( keys %{$values} ) {
         my $set = q{_set_} . $col;
         my $has = q{has_} . $col;
 
@@ -492,8 +466,7 @@ sub _set_column_values_from_hashref
     }
 }
 
-sub _dbh
-{
+sub _dbh {
     my $self = shift;
     my $sql  = shift;
 
@@ -505,42 +478,32 @@ sub _dbh
     return $source->dbh();
 }
 
-sub pk_values_hash
-{
+sub pk_values_hash {
     my $self = shift;
 
     my @vals = $self->pk_values_list()
         or return;
 
-    my @cols =
-        ( map { $_->name() }
-          @{ $self->Table()->primary_key() }
-        );
+    my @cols = ( map { $_->name() } @{ $self->Table()->primary_key() } );
 
-    return map { $cols[$_] => $vals[$_] } 0..$#vals;
+    return map { $cols[$_] => $vals[$_] } 0 .. $#vals;
 }
 
-sub pk_values_list
-{
+sub pk_values_list {
     my $self = shift;
 
-    my @cols =
-        ( map { $_->name() }
-          @{ $self->Table()->primary_key() }
-        );
+    my @cols = ( map { $_->name() } @{ $self->Table()->primary_key() } );
 
     return map { $self->_deflated_value($_) } @cols;
 }
 
-sub _MakeSelectByPKSQL
-{
+sub _MakeSelectByPKSQL {
     my $class = shift;
 
     return $class->_SelectSQLForKey( $class->Table->primary_key() );
 }
 
-sub _SelectSQLForKey
-{
+sub _SelectSQLForKey {
     my $class = shift;
     my $key   = shift;
 
@@ -552,28 +515,27 @@ sub _SelectSQLForKey
 
     my $table = $class->Table();
 
-    my %key = map { $_->name() => 1 } @{ $key };
+    my %key = map { $_->name() => 1 } @{$key};
 
-    my @non_key =
-        grep { ! $key{ $_->name() } } $table->columns();
+    my @non_key
+        = grep { !$key{ $_->name() } } $table->columns();
 
     # This is a bit of a hack for tables that consist just of a key
     # (like a UserGroup table with a user_id and group_id). We need to
     # select _something_ or else shit blows up.
-    my @select = @non_key ? @non_key : @{ $key };
+    my @select = @non_key ? @non_key : @{$key};
 
     $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
     $select->select( sort { $a->name() cmp $b->name() } @select );
     $select->from($table);
-    $select->where( $_, '=', Fey::Placeholder->new() ) for @{ $key };
+    $select->where( $_, '=', Fey::Placeholder->new() ) for @{$key};
 
     $cache->store( $key => $select );
 
     return $select;
 }
 
-sub Count
-{
+sub Count {
     my $class = shift;
 
     my $select = $class->meta()->_count_sql();
@@ -585,21 +547,17 @@ sub Count
     return $row->[0];
 }
 
-sub Table
-{
+sub Table {
     my $class = shift;
 
     return $class->meta()->table();
 }
 
-sub SchemaClass
-{
+sub SchemaClass {
     my $class = shift;
 
     return $class->meta()->schema_class();
 }
-
-no Moose;
 
 __PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
 

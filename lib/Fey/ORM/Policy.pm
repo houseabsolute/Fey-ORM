@@ -7,20 +7,25 @@ our $VERSION = '0.31';
 
 use Fey::Object::Policy;
 
-
 {
     my @subs;
 
-    BEGIN
-    {
-        @subs = qw( Policy transform_all matching inflate deflate
-                    has_one_namer has_many_namer );
+    BEGIN {
+        @subs = qw(
+            Policy
+            transform_all
+            matching
+            inflate
+            deflate
+            has_one_namer
+            has_many_namer
+        );
     }
 
-    use Sub::Exporter -setup =>
-        { exports => \@subs,
-          groups  => { default => \@subs },
-        };
+    use Sub::Exporter -setup => {
+        exports => \@subs,
+        groups  => { default => \@subs },
+    };
 }
 
 # I could use MooseX::ClassAttribute and add a class attribute to the
@@ -30,45 +35,38 @@ use Fey::Object::Policy;
 {
     my %Policies;
 
-    sub Policy
-    {
+    sub Policy {
         my $caller = shift;
 
         return $Policies{$caller} ||= Fey::Object::Policy->new();
     }
 }
 
-sub transform_all
-{
+sub transform_all {
     my $class = caller();
 
     $class->Policy()->add_transform( {@_} );
 }
 
-sub matching (&)
-{
+sub matching (&) {
     return ( matching => $_[0] );
 }
 
-sub inflate (&)
-{
+sub inflate (&) {
     return ( inflate => $_[0] );
 }
 
-sub deflate (&)
-{
+sub deflate (&) {
     return ( deflate => $_[0] );
 }
 
-sub has_one_namer (&)
-{
+sub has_one_namer (&) {
     my $class = caller();
 
     $class->Policy()->set_has_one_namer( $_[0] );
 }
 
-sub has_many_namer (&)
-{
+sub has_many_namer (&) {
     my $class = caller();
 
     $class->Policy()->set_has_many_namer( $_[0] );

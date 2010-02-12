@@ -78,8 +78,8 @@ object along the way.
   use Fey::Loader;
   use Fey::ORM::Schema;
 
-  my $source =
-      Fey::DBIManager::Source->new( dsn => 'dbi:SQLite:dbname=/tmp/forum.sqlite' );
+  my $source = Fey::DBIManager::Source->new(
+      dsn => 'dbi:SQLite:dbname=/tmp/forum.sqlite' );
 
   my $schema = Fey::Loader->new( dbh => $source->dbh() )->make_schema();
 
@@ -136,9 +136,10 @@ You can also delete them:
 
 Finally, you can create new users:
 
-  my $user = Fey::Model::User->insert( username => 'autarch',
-                                       email    => 'autarch@urth.org',
-                                     );
+  my $user = Fey::Model::User->insert(
+      username => 'autarch',
+      email    => 'autarch@urth.org',
+  );
 
 You'll notice that we didn't provide a C<user_id> value. When a column
 is auto-incremented, as is the case with C<User.user_id>,
@@ -215,10 +216,10 @@ simply C<< lc $table->name() >>. Depending on your table naming
 scheme, this may or may not work. If the two tables have more than one
 foreign key between them, you must specify the foreign key explicitly:
 
-  has_one 'user' =>
-      ( table => Forum::Model::Schema->Schema()->table('User'),
-        fk    => ...,
-      );
+  has_one 'user' => (
+      table => Forum::Model::Schema->Schema()->table('User'),
+      fk    => ...,
+  );
 
 By default, C<has_one()> attributes cache the result of the lookup, so
 that future calls to the same attribute method return the object
@@ -249,8 +250,7 @@ messages.
 
   my $messages = $user->messages();
 
-  while ( my $message = $messages->next() )
-  {
+  while ( my $message = $messages->next() ) {
       print $message->message_id();
   }
 
@@ -260,10 +260,10 @@ be created. If a large number of objects will be created, caching
 would use a huge amount of memory. However, you can turn caching on
 explicitly:
 
-  has_many 'messages' =>
-      ( table => Forum::Model::Schema->Schema()->table('Message'),
-        cache => 1,
-      );
+  has_many 'messages' => (
+      table => Forum::Model::Schema->Schema()->table('Message'),
+      cache => 1,
+  );
 
 In this case, a C<< $user->messages() >> I<attribute> is created which
 returns a L<Fey::Object::Iterator::FromSelect::Caching>
@@ -316,11 +316,10 @@ straightforward example:
              ->order_by( $message_table->column('message_date'), 'DESC' )
              ->limit(1);
 
-  has_one 'most_recent_child' =>
-      ( table       => $schema->table('Message')
-        select      => $select,
-        bind_params => sub { $_[0]->message_id() },
-      );
+  has_one 'most_recent_child' => (
+      table       => $schema->table('Message') select => $select,
+      bind_params => sub { $_[0]->message_id() },
+  );
 
 With this declaration, the C<Forum::Model::Message> class now has a
 C<< $message->most_recent_child() >> attribute. This attribute will
@@ -358,11 +357,11 @@ for a group:
                       '=', Fey::Placeholder->new() )
              ->order_by( $message_table->column('message_date'), 'DESC' );
 
-  has_many 'messages' =>
-      ( table       => $message_table,
-        select      => $select,
-        bind_params => sub { $_[0]->group_id() },
-      );
+  has_many 'messages' => (
+      table       => $message_table,
+      select      => $select,
+      bind_params => sub { $_[0]->group_id() },
+  );
 
 =head1 FromSelect ATTRIBUTE METACLASS
 
@@ -377,9 +376,10 @@ object and an optional subroutine reference for the bind parameters.
 
   package Forum::Model::User;
 
-  my $count =
-      Fey::Literal::Function->new
-          ( 'COUNT', $message_table->column('message_id') );
+  my $count = Fey::Literal::Function->new(
+      'COUNT',
+      $message_table->column('message_id'),
+  );
 
   #   SELECT COUNT( Message.message_id )
   #     FROM Message
@@ -391,13 +391,13 @@ object and an optional subroutine reference for the bind parameters.
              ->where( $message_table->column('user_id'),
                       '=', Fey::Placeholder->new() );
 
-  has 'message_count' =>
-      ( metaclass   => 'FromSelect',
-        is          => 'ro',
-        isa         => 'Int',
-        select      => $select,
-        bind_params => sub { $_[0]->user-id() },
-      );
+  has 'message_count' => (
+      metaclass   => 'FromSelect',
+      is          => 'ro',
+      isa         => 'Int',
+      select      => $select,
+      bind_params => sub { $_[0]->user - id() },
+  );
 
 =head1 USING Fey
 
@@ -409,8 +409,7 @@ power of the core Fey SQL generation tools with your classes:
   use DateTime;
   use Fey::Object::Iterator::FromSelect;
 
-  sub RecentMessages
-  {
+  sub RecentMessages {
       my $class = shift;
 
       my $schema = $class->SchemaClass()->Schema();
@@ -428,12 +427,11 @@ power of the core Fey SQL generation tools with your classes:
 
       my $sth = $dbh->prepare( $select->sql($dbh) );
 
-      return
-          Fey::Object::Iterator::FromSelect->new
-              ( classes     => [ $class->meta()->ClassForTable( $message_t, $user_t ) ],
-                handle      => $sth,
-                bind_params => [ $select->bind_params() ],
-              );
+      return Fey::Object::Iterator::FromSelect->new(
+          classes => [ $class->meta()->ClassForTable( $message_t, $user_t ) ],
+          handle  => $sth,
+          bind_params => [ $select->bind_params() ],
+      );
   }
 
 This is all a bit verbose for now, but future versions of L<Fey::ORM>
@@ -480,14 +478,13 @@ inherit from that class:
 
   package MyApp::Controller::Base;
 
-  sub begin : Private
-  {
+  sub begin : Private {
       my $self = shift;
       my $c    = shift;
 
       MyApp::Model::Schema->ClearObjectCaches();
 
-      ...
+      ...;
   }
 
 You could also provide your own C<Catalyst::Request> subclass and do

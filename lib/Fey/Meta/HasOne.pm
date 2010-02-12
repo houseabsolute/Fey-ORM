@@ -2,6 +2,7 @@ package Fey::Meta::HasOne;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -12,39 +13,37 @@ use MooseX::StrictConstructor;
 
 extends 'Fey::Meta::FK';
 
+has associated_attribute => (
+    is       => 'rw',
+    isa      => 'Maybe[Moose::Meta::Attribute]',
+    init_arg => undef,
+    lazy     => 1,
+    builder  => '_build_associated_attribute',
+);
 
-has associated_attribute =>
-    ( is       => 'rw',
-      isa      => 'Maybe[Moose::Meta::Attribute]',
-      init_arg => undef,
-      lazy     => 1,
-      builder  => '_build_associated_attribute',
-    );
+has associated_method => (
+    is       => 'rw',
+    isa      => 'Maybe[Moose::Meta::Method]',
+    init_arg => undef,
+    lazy     => 1,
+    builder  => '_build_associated_method',
+);
 
-has associated_method =>
-    ( is       => 'rw',
-      isa      => 'Maybe[Moose::Meta::Method]',
-      init_arg => undef,
-      lazy     => 1,
-      builder  => '_build_associated_method',
-    );
+has allows_undef => (
+    is      => 'ro',
+    isa     => 'Bool',
+    lazy    => 1,
+    builder => '_build_allows_undef',
+);
 
-has allows_undef =>
-    ( is      => 'ro',
-      isa     => 'Bool',
-      lazy    => 1,
-      builder => '_build_allows_undef',
-    );
+has handles => (
+    is => 'ro',
 
-has handles =>
-    ( is  => 'ro',
-      # just gets passed on for attribute creation
-      isa => 'Any',
-    );
+    # just gets passed on for attribute creation
+    isa => 'Any',
+);
 
-
-sub _build_associated_attribute
-{
+sub _build_associated_attribute {
     my $self = shift;
 
     return unless $self->is_cached();
@@ -57,79 +56,67 @@ sub _build_associated_attribute
     my $type = 'Fey::Object::Table';
     $type = "Maybe[$type]" if $self->allows_undef();
 
-    my %attr_p =
-        ( is        => 'rw',
-          isa       => $type,
-          lazy      => 1,
-          default   => $self->_make_subref(),
-          writer    => q{_set_} . $self->name(),
-          predicate => q{_has_} . $self->name(),
-          clearer   => q{_clear_} . $self->name(),
-        );
+    my %attr_p = (
+        is        => 'rw',
+        isa       => $type,
+        lazy      => 1,
+        default   => $self->_make_subref(),
+        writer    => q{_set_} . $self->name(),
+        predicate => q{_has_} . $self->name(),
+        clearer   => q{_clear_} . $self->name(),
+    );
 
     $attr_p{handles} = $self->handles()
         if $self->handles();
 
-    return
-        $self->associated_class()->attribute_metaclass()
-             ->new( $self->name(),
-                    %attr_p,
-                  );
+    return $self->associated_class()->attribute_metaclass()->new(
+        $self->name(),
+        %attr_p,
+    );
 }
 
-sub _build_is_cached { 1 }
+sub _build_is_cached {1}
 
-sub _build_associated_method
-{
+sub _build_associated_method {
     my $self = shift;
 
     return if $self->is_cached();
 
-    return
-        $self->associated_class()->method_metaclass()
-             ->wrap( name         => $self->name(),
-                     package_name => $self->associated_class()->name(),
-                     body         => $self->_make_subref(),
-                   );
+    return $self->associated_class()->method_metaclass()->wrap(
+        name         => $self->name(),
+        package_name => $self->associated_class()->name(),
+        body         => $self->_make_subref(),
+    );
 }
 
-sub attach_to_class
-{
+sub attach_to_class {
     my $self  = shift;
     my $class = shift;
 
     $self->_set_associated_class($class);
 
-    if ( $self->is_cached() )
-    {
+    if ( $self->is_cached() ) {
         $class->add_attribute( $self->associated_attribute() );
     }
-    else
-    {
+    else {
         $class->add_method( $self->name() => $self->associated_method() );
     }
 }
 
-sub detach_from_class
-{
-    my $self  = shift;
+sub detach_from_class {
+    my $self = shift;
 
     return unless $self->associated_class();
 
-    if ( $self->is_cached() )
-    {
+    if ( $self->is_cached() ) {
         $self->associated_class->remove_attribute( $self->name() );
     }
-    else
-    {
+    else {
         $self->associated_class->remove_method( $self->name() );
     }
 
     $self->_clear_associated_class();
 }
-
-
-no Moose;
 
 __PACKAGE__->meta()->make_immutable();
 

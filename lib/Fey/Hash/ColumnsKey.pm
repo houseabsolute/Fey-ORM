@@ -5,31 +5,27 @@ use warnings;
 
 our $VERSION = '0.31';
 
-
-sub new
-{
+sub new {
     my $class = shift;
 
     return bless {}, $class;
 }
 
-sub get
-{
+sub get {
     my $self     = shift;
     my $key_cols = shift;
 
-    my $key = join "\0", map { $_->name() } @{ $key_cols };
+    my $key = join "\0", map { $_->name() } @{$key_cols};
 
     return $self->{$key};
 }
 
-sub store
-{
+sub store {
     my $self     = shift;
     my $key_cols = shift;
     my $sql      = shift;
 
-    my $key = join "\0", map { $_->name() } @{ $key_cols };
+    my $key = join "\0", map { $_->name() } @{$key_cols};
 
     return $self->{$key} = $sql;
 }

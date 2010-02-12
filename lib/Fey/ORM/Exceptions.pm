@@ -7,16 +7,16 @@ our $VERSION = '0.31';
 
 use Fey::Exceptions;
 
-
 my %E;
-BEGIN
-{
-    %E = ( 'Fey::Exception::NoSuchRow' =>
-           { description => 'No row was found for a specified key.',
-             isa         => 'Fey::Exception',
-             alias       => 'no_such_row',
-           },
-         );
+
+BEGIN {
+    %E = (
+        'Fey::Exception::NoSuchRow' => {
+            description => 'No row was found for a specified key.',
+            isa         => 'Fey::Exception',
+            alias       => 'no_such_row',
+        },
+    );
 }
 
 use Exception::Class (%E);
@@ -25,7 +25,6 @@ Fey::Exception->Trace(1);
 
 use Sub::Exporter -setup =>
     { exports => [ map { $_->{alias} || () } values %E ] };
-
 
 1;
 

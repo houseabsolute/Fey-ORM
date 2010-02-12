@@ -2,6 +2,7 @@ package Fey::Meta::Class::Table;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -25,163 +26,166 @@ use MooseX::SemiAffordanceAccessor;
 
 extends 'Moose::Meta::Class';
 
-class_has '_ClassToTableMap' =>
-    ( traits  => [ 'Hash' ],
-      is      => 'ro',
-      isa     => 'HashRef[Fey::Table]',
-      default => sub { {} },
-      lazy    => 1,
-      handles => { TableForClass     => 'get',
-                   _SetTableForClass => 'set',
-                   _ClassHasTable    => 'exists',
-                 },
-    );
+class_has '_ClassToTableMap' => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[Fey::Table]',
+    default => sub { {} },
+    lazy    => 1,
+    handles => {
+        TableForClass     => 'get',
+        _SetTableForClass => 'set',
+        _ClassHasTable    => 'exists',
+    },
+);
 
-has '_object_cache_is_enabled' =>
-    ( is      => 'rw',
-      isa     => 'Bool',
-      lazy    => 1,
-      default => 0,
-    );
+has '_object_cache_is_enabled' => (
+    is      => 'rw',
+    isa     => 'Bool',
+    lazy    => 1,
+    default => 0,
+);
 
-has '_object_cache' =>
-    ( is      => 'ro',
-      isa     => 'HashRef',
-      lazy    => 1,
-      default => sub { {} },
-      clearer => '_clear_object_cache',
-    );
+has '_object_cache' => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    lazy    => 1,
+    default => sub { {} },
+    clearer => '_clear_object_cache',
+);
 
-has 'table' =>
-    ( is        => 'rw',
-      isa       => 'Fey::Table',
-      writer    => '_set_table',
-      predicate => '_has_table',
-    );
+has 'table' => (
+    is        => 'rw',
+    isa       => 'Fey::Table',
+    writer    => '_set_table',
+    predicate => '_has_table',
+);
 
-has 'inflators' =>
-    ( traits  => [ 'Hash' ],
-      is      => 'ro',
-      isa     => 'HashRef[CodeRef]',
-      default => sub { {} },
-      lazy    => 1,
-      handles => { _add_inflator => 'set',
-                   has_inflator  => 'exists',
-                 },
-    );
+has 'inflators' => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[CodeRef]',
+    default => sub { {} },
+    lazy    => 1,
+    handles => {
+        _add_inflator => 'set',
+        has_inflator  => 'exists',
+    },
+);
 
-has 'deflators' =>
-    ( traits  => [ 'Hash' ],
-      is      => 'ro',
-      isa     => 'HashRef[CodeRef]',
-      default => sub { {} },
-      lazy    => 1,
-      handles  => { deflator_for  => 'get',
-                    _add_deflator => 'set',
-                    has_deflator  => 'exists',
-                  },
-    );
+has 'deflators' => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[CodeRef]',
+    default => sub { {} },
+    lazy    => 1,
+    handles => {
+        deflator_for  => 'get',
+        _add_deflator => 'set',
+        has_deflator  => 'exists',
+    },
+);
 
-has 'schema_class' =>
-    ( is      => 'ro',
-      isa     => 'ClassName',
-      lazy    => 1,
-      default => sub { Fey::Meta::Class::Schema
-                           ->ClassForSchema( $_[0]->table()->schema() ) },
-    );
+has 'schema_class' => (
+    is      => 'ro',
+    isa     => 'ClassName',
+    lazy    => 1,
+    default => sub {
+        Fey::Meta::Class::Schema->ClassForSchema( $_[0]->table()->schema() );
+    },
+);
 
-has 'policy' =>
-    ( is      => 'rw',
-      isa     => 'Fey::Object::Policy',
-      default => sub { Fey::Object::Policy->new() },
-    );
+has 'policy' => (
+    is      => 'rw',
+    isa     => 'Fey::Object::Policy',
+    default => sub { Fey::Object::Policy->new() },
+);
 
-has '_has_ones' =>
-    ( traits  => [ 'Hash' ],
-      is      => 'ro',
-      isa     => 'HashRef[Fey::Meta::HasOne]',
-      default => sub { {} },
-      lazy    => 1,
-      handles  => { _has_one        => 'get',
-                    _add_has_one    => 'set',
-                    _has_has_one    => 'exists',
-                    has_ones        => 'values',
-                    _remove_has_one => 'delete',
-                  },
-    );
+has '_has_ones' => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[Fey::Meta::HasOne]',
+    default => sub { {} },
+    lazy    => 1,
+    handles => {
+        _has_one        => 'get',
+        _add_has_one    => 'set',
+        _has_has_one    => 'exists',
+        has_ones        => 'values',
+        _remove_has_one => 'delete',
+    },
+);
 
-has '_has_manies' =>
-    ( traits   => [ 'Hash' ],
-      is       => 'ro',
-      isa      => 'HashRef[Fey::Meta::HasMany]',
-      default  => sub { {} },
-      lazy     => 1,
-      handles  => { _has_many        => 'get',
-                    _add_has_many    => 'set',
-                    _has_has_many    => 'exists',
-                    has_manies       => 'values',
-                    _remove_has_many => 'delete',
-                  },
-    );
+has '_has_manies' => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[Fey::Meta::HasMany]',
+    default => sub { {} },
+    lazy    => 1,
+    handles => {
+        _has_many        => 'get',
+        _add_has_many    => 'set',
+        _has_has_many    => 'exists',
+        has_manies       => 'values',
+        _remove_has_many => 'delete',
+    },
+);
 
-has '_select_sql_cache' =>
-    ( is      => 'ro',
-      isa     => 'Fey::Hash::ColumnsKey',
-      lazy    => 1,
-      default => sub { Fey::Hash::ColumnsKey->new() },
-    );
+has '_select_sql_cache' => (
+    is      => 'ro',
+    isa     => 'Fey::Hash::ColumnsKey',
+    lazy    => 1,
+    default => sub { Fey::Hash::ColumnsKey->new() },
+);
 
-has '_select_by_pk_sql' =>
-    ( is        => 'ro',
-      isa       => 'Fey::SQL::Select',
-      lazy      => 1,
-      default   => sub { return $_[0]->name()->_MakeSelectByPKSQL() },
-    );
+has '_select_by_pk_sql' => (
+    is      => 'ro',
+    isa     => 'Fey::SQL::Select',
+    lazy    => 1,
+    default => sub { return $_[0]->name()->_MakeSelectByPKSQL() },
+);
 
-has '_count_sql' =>
-    ( is      => 'ro',
-      isa     => 'Fey::SQL::Select',
-      lazy    => 1,
-      builder => '_build_count_sql',
-    );
+has '_count_sql' => (
+    is      => 'ro',
+    isa     => 'Fey::SQL::Select',
+    lazy    => 1,
+    builder => '_build_count_sql',
+);
 
-
-sub ClassForTable
-{
+sub ClassForTable {
     my $class = shift;
 
-    return @_ == 1 ? $class->_ClassForTable(@_) : map { $class->_ClassForTable($_) } @_;
+    return @_ == 1
+        ? $class->_ClassForTable(@_)
+        : map { $class->_ClassForTable($_) } @_;
 }
 
-sub _ClassForTable
-{
+sub _ClassForTable {
     my $class = shift;
     my $table = shift;
 
     my $map = $class->_ClassToTableMap();
 
-    for my $class_name ( keys %{ $map } )
-    {
+    for my $class_name ( keys %{$map} ) {
         my $potential_table = $map->{$class_name};
 
         return $class_name
-            if $potential_table->name()           eq $table->name()
-            && $potential_table->schema()->name() eq $table->schema()->name();
+            if $potential_table->name() eq $table->name()
+                && $potential_table->schema()->name() eq
+                $table->schema()->name();
     }
 
     return;
 }
 
-sub _search_cache
-{
+sub _search_cache {
     my $self = shift;
     my $p    = shift;
 
     my $cache = $self->_object_cache();
 
-    for my $key ( @{ $self->table()->candidate_keys() } )
-    {
-        my @names = map { $_->name() } @{ $key };
+    for my $key ( @{ $self->table()->candidate_keys() } ) {
+        my @names = map { $_->name() } @{$key};
         next unless all { defined $p->{$_} } @names;
 
         my $cache_key = join "\0", map { $_, $p->{$_} } sort @names;
@@ -191,20 +195,18 @@ sub _search_cache
     }
 }
 
-sub _write_to_cache
-{
+sub _write_to_cache {
     my $self   = shift;
     my $object = shift;
 
     my $cache = $self->_object_cache();
 
-    for my $key ( @{ $self->table()->candidate_keys() } )
-    {
-        my @names = map { $_->name() } @{ $key };
+    for my $key ( @{ $self->table()->candidate_keys() } ) {
+        my @names = map { $_->name() } @{$key};
 
         my @pieces = map { $_, $object->$_() } sort @names;
 
-        next unless all { defined } @pieces;
+        next unless all {defined} @pieces;
 
         my $cache_key = join "\0", @pieces;
 
@@ -212,8 +214,7 @@ sub _write_to_cache
     }
 }
 
-sub _associate_table
-{
+sub _associate_table {
     my $self  = shift;
     my $table = shift;
 
@@ -232,10 +233,11 @@ sub _associate_table
 
     param_error 'You must load your schema class before calling has_table()'
         unless $class
-        && $class->can('meta')
-        && $class->meta()->_has_schema();
+            && $class->can('meta')
+            && $class->meta()->_has_schema();
 
-    param_error 'A table object passed to has_table() must have at least one key'
+    param_error
+        'A table object passed to has_table() must have at least one key'
         unless @{ $table->primary_key() };
 
     $self->_SetTableForClass( $self->name() => $table );
@@ -245,34 +247,33 @@ sub _associate_table
     $self->_make_column_attributes();
 }
 
-sub _make_column_attributes
-{
+sub _make_column_attributes {
     my $self = shift;
 
     my $table = $self->table();
 
-    for my $column ( $table->columns() )
-    {
+    for my $column ( $table->columns() ) {
         my $name = $column->name();
 
         next if $self->has_method($name);
 
-        my %attr_p = ( metaclass => 'Fey::Meta::Attribute::FromColumn',
-                       is        => 'rw',
-                       isa       => $self->_type_for_column($column),
-                       lazy      => 1,
-                       default   => sub { $_[0]->_get_column_value($name) },
-                       column    => $column,
-                       writer    => q{_set_} . $name,
-                       clearer   => q{_clear_} . $name,
-                       predicate => q{has_} . $name,
-                     );
+        my %attr_p = (
+            metaclass => 'Fey::Meta::Attribute::FromColumn',
+            is        => 'rw',
+            isa       => $self->_type_for_column($column),
+            lazy      => 1,
+            default   => sub { $_[0]->_get_column_value($name) },
+            column    => $column,
+            writer    => q{_set_} . $name,
+            clearer   => q{_clear_} . $name,
+            predicate => q{has_} . $name,
+        );
 
         $self->add_attribute( $name, %attr_p );
 
         if ( my $transform = $self->policy()->transform_for_column($column) )
         {
-            $self->_add_transform( $name, %{ $transform } );
+            $self->_add_transform( $name, %{$transform} );
         }
     }
 }
@@ -280,19 +281,19 @@ sub _make_column_attributes
 # XXX - can this be overridden or customized? should it account for
 # per-column/policy-level transforms?
 {
-    my %FeyToMoose = ( text     => 'Str',
-                       blob     => 'Str',
-                       integer  => 'Int',
-                       float    => 'Num',
-                       datetime => 'Str',
-                       date     => 'Str',
-                       time     => 'Str',
-                       boolean  => 'Bool',
-                       other    => 'Value',
-                     );
+    my %FeyToMoose = (
+        text     => 'Str',
+        blob     => 'Str',
+        integer  => 'Int',
+        float    => 'Num',
+        datetime => 'Str',
+        date     => 'Str',
+        time     => 'Str',
+        boolean  => 'Bool',
+        other    => 'Value',
+    );
 
-    sub _type_for_column
-    {
+    sub _type_for_column {
         my $self   = shift;
         my $column = shift;
 
@@ -305,8 +306,7 @@ sub _make_column_attributes
     }
 }
 
-sub _add_transform
-{
+sub _add_transform {
     my $self = shift;
     my $name = shift;
     my %p    = @_;
@@ -316,20 +316,20 @@ sub _add_transform
     param_error "The column $name does not exist as an attribute"
         unless $attr;
 
-    $self->_add_inflator_to_attribute( $name, $attr, $p{inflate}, $p{handles} )
+    $self->_add_inflator_to_attribute( $name, $attr, $p{inflate},
+        $p{handles} )
         if $p{inflate};
 
-    if ( $p{deflate} )
-    {
-        param_error "Cannot provide more than one deflator for a column ($name)"
+    if ( $p{deflate} ) {
+        param_error
+            "Cannot provide more than one deflator for a column ($name)"
             if $self->has_deflator($name);
 
         $self->_add_deflator( $name => $p{deflate} );
     }
 }
 
-sub _add_inflator_to_attribute
-{
+sub _add_inflator_to_attribute {
     my $self     = shift;
     my $name     = shift;
     my $attr     = shift;
@@ -344,83 +344,85 @@ sub _add_inflator_to_attribute
     my $raw_name = $name . q{_raw};
 
     # XXX - should the private writer invoke the deflator?
-    my $raw_attr = $attr->clone( name    => $raw_name,
-                                 reader  => $raw_name,
-                               );
+    my $raw_attr = $attr->clone(
+        name   => $raw_name,
+        reader => $raw_name,
+    );
 
     $self->add_attribute($raw_attr);
 
     my $inflated_predicate = q{_has_inflated_} . $name;
     my $inflated_clear     = q{_clear_inflated_} . $name;
 
-    my $default = sub { my $self = shift;
+    my $default = sub {
+        my $self = shift;
 
-                        return $self->$inflator( $self->$raw_name() );
-                      };
+        return $self->$inflator( $self->$raw_name() );
+    };
 
     my %handles = $handles ? ( handles => $handles ) : ();
 
-    $self->add_attribute
-        ( $name,
-          metaclass     => 'Fey::Meta::Attribute::FromInflator',
-          is            => 'ro',
-          lazy          => 1,
-          default       => $default,
-          predicate     => $inflated_predicate,
-          clearer       => $inflated_clear,
-          init_arg      => undef,
-          raw_attribute => $raw_attr,
-          inflator      => $inflator,
-          %handles,
-        );
+    $self->add_attribute(
+        $name,
+        metaclass     => 'Fey::Meta::Attribute::FromInflator',
+        is            => 'ro',
+        lazy          => 1,
+        default       => $default,
+        predicate     => $inflated_predicate,
+        clearer       => $inflated_clear,
+        init_arg      => undef,
+        raw_attribute => $raw_attr,
+        inflator      => $inflator,
+        %handles,
+    );
 
-    my $clear_inflated =
-        sub { my $self = shift;
+    my $clear_inflated = sub {
+        my $self = shift;
 
-              $self->$inflated_clear();
-            };
+        $self->$inflated_clear();
+    };
 
     $self->add_after_method_modifier( $raw_attr->clearer(), $clear_inflated );
-    $self->add_after_method_modifier( $raw_attr->writer(), $clear_inflated );
+    $self->add_after_method_modifier( $raw_attr->writer(),  $clear_inflated );
 
     $self->_add_inflator( $name => $inflator );
 }
 
-sub add_has_one
-{
+sub add_has_one {
     my $self = shift;
     my %p    = @_;
 
     param_error 'You must call has_table() before calling has_one().'
         unless $self->_has_table();
 
-    param_error 'You cannot pass both a select and fk parameter when creating a has-one relationship'
+    param_error
+        'You cannot pass both a select and fk parameter when creating a has-one relationship'
         if $p{select} && $p{fk};
 
-    my $class =
-        $p{select} ? 'Fey::Meta::HasOne::ViaSelect' : 'Fey::Meta::HasOne::ViaFK';
+    my $class
+        = $p{select}
+        ? 'Fey::Meta::HasOne::ViaSelect'
+        : 'Fey::Meta::HasOne::ViaFK';
 
     $p{foreign_table} = delete $p{table};
 
-    $p{is_cached}     = delete $p{cache}
+    $p{is_cached} = delete $p{cache}
         if exists $p{cache};
-    $p{allows_undef}  = delete $p{undef}
+    $p{allows_undef} = delete $p{undef}
         if exists $p{undef};
 
-    my $has_one =
-        $class->new
-            ( table => $self->table(),
-              namer => $self->policy()->has_one_namer(),
-              %p,
-            );
+    my $has_one = $class->new(
+        table => $self->table(),
+        namer => $self->policy()->has_one_namer(),
+        %p,
+    );
 
     $has_one->attach_to_class($self);
 
     $self->_add_has_one( $has_one->name() => $has_one );
 }
 
-sub remove_has_one
-{
+sub remove_has_one {
     my $self = shift;
     my $name = shift;
 
@@ -433,39 +435,39 @@ sub remove_has_one
     $self->_remove_has_one( $has_one->name() );
 }
 
-sub add_has_many
-{
+sub add_has_many {
     my $self = shift;
     my %p    = @_;
 
     param_error 'You must call has_table() before calling has_many().'
         unless $self->_has_table();
 
-    param_error 'You cannot pass both a select and fk parameter when creating a has-many relationship'
+    param_error
+        'You cannot pass both a select and fk parameter when creating a has-many relationship'
         if $p{select} && $p{fk};
 
-    my $class =
-        $p{select} ? 'Fey::Meta::HasMany::ViaSelect' : 'Fey::Meta::HasMany::ViaFK';
+    my $class
+        = $p{select}
+        ? 'Fey::Meta::HasMany::ViaSelect'
+        : 'Fey::Meta::HasMany::ViaFK';
 
     $p{foreign_table} = delete $p{table};
 
-    $p{is_cached}     = delete $p{cache}
+    $p{is_cached} = delete $p{cache}
         if exists $p{cache};
 
-    my $has_many =
-        $class->new
-            ( table => $self->table(),
-              namer => $self->policy()->has_many_namer(),
-              %p,
-            );
+    my $has_many = $class->new(
+        table => $self->table(),
+        namer => $self->policy()->has_many_namer(),
+        %p,
+    );
 
     $has_many->attach_to_class($self);
 
     $self->_add_has_many( $has_many->name() => $has_many );
 }
 
-sub remove_has_many
-{
+sub remove_has_many {
     my $self = shift;
     my $name = shift;
 
@@ -478,30 +480,25 @@ sub remove_has_many
     $self->_remove_has_many( $has_many->name() );
 }
 
-sub _build_count_sql
-{
+sub _build_count_sql {
     my $self = shift;
 
     my $table = $self->table();
 
     my $select = $self->schema_class()->SQLFactoryClass()->new_select();
 
-    $select
-        ->select( Fey::Literal::Function->new( 'COUNT', '*' ) )
+    $select->select( Fey::Literal::Function->new( 'COUNT', '*' ) )
         ->from($table);
 
     return $select;
 }
 
 sub make_immutable {
-    shift->SUPER::make_immutable
-        ( @_,
-          constructor_class => 'Fey::Meta::Method::Constructor',
-        );
+    shift->SUPER::make_immutable(
+        @_,
+        constructor_class => 'Fey::Meta::Method::Constructor',
+    );
 }
-
-
-no Moose;
 
 __PACKAGE__->meta()->make_immutable();
 

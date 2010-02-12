@@ -2,6 +2,7 @@ package Fey::Object::Schema;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -10,30 +11,25 @@ use Fey::Meta::Class::Table;
 use Moose;
 use MooseX::StrictConstructor;
 
-
-sub EnableObjectCaches
-{
+sub EnableObjectCaches {
     my $class = shift;
 
     $_->EnableObjectCache() for $class->_TableClasses();
 }
 
-sub DisableObjectCaches
-{
+sub DisableObjectCaches {
     my $class = shift;
 
     $_->DisableObjectCache() for $class->_TableClasses();
 }
 
-sub ClearObjectCaches
-{
+sub ClearObjectCaches {
     my $class = shift;
 
     $_->ClearObjectCache() for $class->_TableClasses();
 }
 
-sub _TableClasses
-{
+sub _TableClasses {
     my $class = shift;
 
     my $schema = $class->Schema();
@@ -41,8 +37,7 @@ sub _TableClasses
     return Fey::Meta::Class::Table->ClassForTable( $schema->tables() );
 }
 
-sub RunInTransaction
-{
+sub RunInTransaction {
     my $class  = shift;
     my $sub    = shift;
     my $source = shift || $class->DBIManager()->default_source();
@@ -52,8 +47,7 @@ sub RunInTransaction
     my $dbh = $source->dbh();
 
     unless ( $source->allows_nested_transactions()
-             || $dbh->{AutoCommit} )
-    {
+        || $dbh->{AutoCommit} ) {
         $in_tran = 1;
     }
 
@@ -61,21 +55,17 @@ sub RunInTransaction
 
     my @r;
 
-    eval
-    {
+    eval {
         $dbh->begin_work()
             unless $in_tran;
 
-        if ( $wantarray )
-        {
+        if ($wantarray) {
             @r = $sub->();
         }
-        elsif ( defined $wantarray )
-        {
+        elsif ( defined $wantarray ) {
             $r[0] = $sub->();
         }
-        else
-        {
+        else {
             $sub->();
         }
 
@@ -83,8 +73,7 @@ sub RunInTransaction
             unless $in_tran;
     };
 
-    if ( my $e = $@ )
-    {
+    if ( my $e = $@ ) {
         $dbh->rollback
             unless $in_tran;
         die $e;
@@ -95,42 +84,35 @@ sub RunInTransaction
     return $wantarray ? @r : $r[0];
 }
 
-sub Schema
-{
+sub Schema {
     my $class = shift;
 
     return $class->meta()->schema();
 }
 
-sub DBIManager
-{
+sub DBIManager {
     my $class = shift;
 
     return $class->meta()->dbi_manager();
 }
 
-sub SetDBIManager
-{
+sub SetDBIManager {
     my $class = shift;
 
     $class->meta()->set_dbi_manager(@_);
 }
 
-sub SQLFactoryClass
-{
+sub SQLFactoryClass {
     my $class = shift;
 
     return $class->meta()->sql_factory_class();
 }
 
-sub SetSQLFactoryClass
-{
+sub SetSQLFactoryClass {
     my $class = shift;
 
     $class->meta()->set_sql_factory_class(@_);
 }
-
-no Moose;
 
 __PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
 

@@ -5,96 +5,90 @@ use warnings;
 
 our $VERSION = '0.31';
 
+use namespace::autoclean;
 use Moose;
 use Moose::Util::TypeConstraints;
 
 extends 'Moose::Meta::Attribute';
 
-has select =>
-    ( is   => 'ro',
-      does => 'Fey::Role::SQL::ReturnsData',
-    );
+has select => (
+    is   => 'ro',
+    does => 'Fey::Role::SQL::ReturnsData',
+);
 
-has bind_params =>
-    ( is  => 'ro',
-      isa => 'CodeRef',
-    );
+has bind_params => (
+    is  => 'ro',
+    isa => 'CodeRef',
+);
 
-
-sub _process_options
-{
+sub _process_options {
     my $class   = shift;
     my $name    = shift;
     my $options = shift;
 
     $options->{lazy} = 1;
 
-    $options->{default} =
-        $class->_make_default_from_select
-            ( $options->{select},
-              $options->{bind_params},
-              $options->{isa},
-            );
+    $options->{default} = $class->_make_default_from_select(
+        $options->{select},
+        $options->{bind_params},
+        $options->{isa},
+    );
 
     return $class->SUPER::_process_options( $name, $options );
-};
+}
 
-sub _new
-{
+sub _new {
     my $class = shift;
     my $options = @_ == 1 ? $_[0] : {@_};
 
     my $self = $class->SUPER::_new($options);
 
-    $self->{select} = $options->{select};
+    $self->{select}      = $options->{select};
     $self->{bind_params} = $options->{bind_params};
 
     return $self;
 }
 
-sub _make_default_from_select
-{
+sub _make_default_from_select {
     my $class    = shift;
     my $select   = shift;
     my $bind_sub = shift;
     my $type     = shift;
 
     die 'The select parameter must be do the Fey::Role::SQL::ReturnsData role'
-        unless blessed $select && $select->can('does') && $select->does('Fey::Role::SQL::ReturnsData');
+        unless blessed $select
+            && $select->can('does')
+            && $select->does('Fey::Role::SQL::ReturnsData');
 
     my $wantarray = 0;
     $wantarray = 1
         if defined $type
-           && find_type_constraint($type)->is_a_type_of('ArrayRef');
+            && find_type_constraint($type)->is_a_type_of('ArrayRef');
 
-    return
-        sub { my $self = shift;
+    return sub {
+        my $self = shift;
 
-              my $dbh =
-                  $self->_dbh($select);
+        my $dbh = $self->_dbh($select);
 
-              my @select_p =
-                  ( $select->sql($dbh), {},
-                    $bind_sub ? $self->$bind_sub() : ()
-                  );
+        my @select_p = (
+            $select->sql($dbh), {},
+            $bind_sub ? $self->$bind_sub() : ()
+        );
 
-              my $col = $dbh->selectcol_arrayref(@select_p)
-                  or return;
+        my $col = $dbh->selectcol_arrayref(@select_p)
+            or return;
 
-              return $wantarray ? $col : $col->[0];
-            };
+        return $wantarray ? $col : $col->[0];
+    };
 }
-
-no Moose;
-no Moose::Util::TypeConstraints;
 
 # The parent class's constructor is not a Moose::Object-based
 # constructor, so we don't want to inline one that is.
 __PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
 
-package # hide from PAUSE
+package    # hide from PAUSE
     Moose::Meta::Attribute::Custom::FromSelect;
-sub register_implementation { 'Fey::Meta::Attribute::FromSelect' }
+sub register_implementation {'Fey::Meta::Attribute::FromSelect'}
 
 1;
 

@@ -2,6 +2,7 @@ package Fey::ORM::Role::Iterator;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -11,44 +12,42 @@ use Moose::Util::TypeConstraints;
 
 requires qw( _get_next_result reset );
 
-my $arrayref_of_classes =
-    subtype as 'ArrayRef[ClassName]',
-    where { @{ $_ } > 0 };
+my $arrayref_of_classes
+    = subtype as 'ArrayRef[ClassName]',
+    where { @{$_} > 0 };
 
-coerce $arrayref_of_classes
-    => from 'ClassName'
-    => via { return [ $_ ] };
+coerce $arrayref_of_classes => from 'ClassName' => via { return [$_] };
 
-has classes =>
-    ( is       => 'ro',
-      isa      => $arrayref_of_classes,
-      coerce   => 1,
-      required => 1,
-    );
+has classes => (
+    is       => 'ro',
+    isa      => $arrayref_of_classes,
+    coerce   => 1,
+    required => 1,
+);
 
-has index =>
-    ( traits   => [ 'Counter' ],
-      is       => 'ro',
-      isa      => 'Int',
-      default  => 0,
-      init_arg => undef,
-      handles  => { _inc_index   => 'inc',
-                    _reset_index => 'reset',
-                  },
-    );
+has index => (
+    traits   => ['Counter'],
+    is       => 'ro',
+    isa      => 'Int',
+    default  => 0,
+    init_arg => undef,
+    handles  => {
+        _inc_index   => 'inc',
+        _reset_index => 'reset',
+    },
+);
 
-has _can_make_hashes =>
-    ( is       => 'ro',
-      isa      => 'Bool',
-      lazy     => 1,
-      init_arg => undef,
-      default  =>
-          sub { List::AllUtils::all { $_->can('Table') } @{ $_[0]->classes() } },
-    );
+has _can_make_hashes => (
+    is       => 'ro',
+    isa      => 'Bool',
+    lazy     => 1,
+    init_arg => undef,
+    default  => sub {
+        List::AllUtils::all { $_->can('Table') } @{ $_[0]->classes() };
+    },
+);
 
-
-sub next
-{
+sub next {
     my $self = shift;
 
     my $result = $self->_get_next_result();
@@ -57,11 +56,10 @@ sub next
 
     $self->_inc_index();
 
-    return wantarray ? @{ $result } : $result->[0];
+    return wantarray ? @{$result} : $result->[0];
 }
 
-sub next_as_hash
-{
+sub next_as_hash {
     my $self = shift;
 
     die 'Cannot make a hash unless all classes have a Table() method'
@@ -71,13 +69,11 @@ sub next_as_hash
 
     return unless @result;
 
-    return
-        pairwise { $a->Table()->name() => $b }
-        @{ $self->classes() }, @result;
+    return pairwise { $a->Table()->name() => $b } @{ $self->classes() },
+        @result;
 }
 
-sub all
-{
+sub all {
     my $self = shift;
 
     $self->reset() if $self->index();
@@ -85,8 +81,7 @@ sub all
     return $self->remaining();
 }
 
-sub all_as_hashes
-{
+sub all_as_hashes {
     my $self = shift;
 
     $self->reset() if $self->index();
@@ -94,34 +89,27 @@ sub all_as_hashes
     return $self->remaining_as_hashes();
 }
 
-sub remaining
-{
+sub remaining {
     my $self = shift;
 
     my @result;
-    while ( my @r = $self->next() )
-    {
+    while ( my @r = $self->next() ) {
         push @result, @r == 1 ? @r : \@r;
     }
 
     return @result;
 }
 
-sub remaining_as_hashes
-{
+sub remaining_as_hashes {
     my $self = shift;
 
     my @result;
-    while ( my %r = $self->next_as_hash() )
-    {
+    while ( my %r = $self->next_as_hash() ) {
         push @result, \%r;
     }
 
     return @result;
 }
-
-no Moose::Role;
-no Moose::Util::TypeConstraints;
 
 1;
 

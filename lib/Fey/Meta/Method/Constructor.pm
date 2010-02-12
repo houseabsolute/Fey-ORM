@@ -2,6 +2,7 @@ package Fey::Meta::Method::Constructor;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.31';
 
@@ -15,6 +16,7 @@ with 'MooseX::StrictConstructor::Role::Meta::Method::Constructor';
 # good way to override it (note the eval it does at the end).
 sub _initialize_body {
     my $self = shift;
+
     # TODO:
     # the %options should also include a both
     # a call 'initializer' and call 'SUPER::'
@@ -26,9 +28,15 @@ sub _initialize_body {
     $source .= "\n" . 'my $class = shift;';
 
     $source .= "\n" . 'return $class->Moose::Object::new(@_)';
-    $source .= "\n" . '    if $class ne \'' . $self->associated_metaclass->name . '\';';
+    $source
+        .= "\n"
+        . '    if $class ne \''
+        . $self->associated_metaclass->name . '\';';
 
-    $source .= "\n" . 'my $params = ' . $self->_generate_BUILDARGS('$class', '@_');
+    $source
+        .= "\n"
+        . 'my $params = '
+        . $self->_generate_BUILDARGS( '$class', '@_' );
 
     # XXX - override
     $source .= ";\n" . $self->_inline_search_cache();
@@ -43,7 +51,10 @@ sub _initialize_body {
     $source .= "\n" . '@_ = @args;';
 
     # XXX - override
-    $source .= "\n" . '$instance = ' . $self->_meta_instance->inline_create_instance('$class');
+    $source
+        .= "\n"
+        . '$instance = '
+        . $self->_meta_instance->inline_create_instance('$class');
     $source .= ";\n";
 
     $source .= $self->_generate_params( '$params', '$class' );
@@ -56,7 +67,8 @@ sub _initialize_body {
 
     # XXX - override
     $source .= "\n" . 'Try::Tiny::catch {';
-    $source .= "\n" . '    die $_ unless Scalar::Util::blessed($_) && $_->isa(q{Fey::Exception::NoSuchRow});';
+    $source .= "\n"
+        . '    die $_ unless Scalar::Util::blessed($_) && $_->isa(q{Fey::Exception::NoSuchRow});';
     $source .= "\n" . '    $class->_SetConstructorError($_);';
     $source .= "\n" . '    undef $instance;';
     $source .= "\n" . '};';
@@ -75,26 +87,28 @@ sub _initialize_body {
 
     my $attrs = $self->_attributes;
 
-    my @type_constraints = map {
-        $_->can('type_constraint') ? $_->type_constraint : undef
-    } @$attrs;
+    my @type_constraints
+        = map { $_->can('type_constraint') ? $_->type_constraint : undef }
+        @$attrs;
 
-    my @type_constraint_bodies = map {
-        defined $_ ? $_->_compiled_type_constraint : undef;
-    } @type_constraints;
+    my @type_constraint_bodies
+        = map { defined $_ ? $_->_compiled_type_constraint : undef; }
+        @type_constraints;
 
     my ( $code, $e ) = $self->_compile_code(
-        code => $source,
+        code        => $source,
         environment => {
-            '$meta'      => \$self,
-            '$metaclass' => \( $self->associated_metaclass ),
-            '$attrs'     => \$attrs,
-            '@type_constraints' => \@type_constraints,
+            '$meta'                   => \$self,
+            '$metaclass'              => \( $self->associated_metaclass ),
+            '$attrs'                  => \$attrs,
+            '@type_constraints'       => \@type_constraints,
             '@type_constraint_bodies' => \@type_constraint_bodies,
         },
     );
 
-    $self->throw_error("Could not eval the constructor :\n\n$source\n\nbecause :\n\n$e", error => $e, data => $source )
+    $self->throw_error(
+        "Could not eval the constructor :\n\n$source\n\nbecause :\n\n$e",
+        error => $e, data => $source )
         if $e;
 
     $self->{'body'} = $code;
@@ -104,8 +118,7 @@ sub _expected_method_class {
     return 'Fey::Object::Table';
 }
 
-sub _inline_search_cache
-{
+sub _inline_search_cache {
     my $self = shift;
 
     my $source = "\n" . 'if ( $metaclass->_object_cache_is_enabled() ) {';
@@ -114,14 +127,12 @@ sub _inline_search_cache
     $source .= "\n" . '}';
 }
 
-sub _inline_write_to_cache
-{
+sub _inline_write_to_cache {
     my $self = shift;
 
-    return "\n" . '$metaclass->_write_to_cache($instance) if $metaclass->_object_cache_is_enabled();';
+    return "\n"
+        . '$metaclass->_write_to_cache($instance) if $metaclass->_object_cache_is_enabled();';
 }
-
-no Moose;
 
 1;
 
