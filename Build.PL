@@ -17,6 +17,7 @@ my $builder =
                 'MooseX::ClassAttribute'         => '0.13',
                 'MooseX::SemiAffordanceAccessor' => '0',
                 'MooseX::StrictConstructor'      => '0.08',
+                'namespace::autoclean'           => '0',
                 'Scalar::Util'                   => '0',
                 'Sub::Exporter'                  => '0',
               },
