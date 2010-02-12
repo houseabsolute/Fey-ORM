@@ -1,14 +1,13 @@
 use strict;
 use warnings;
 
-use Test::More tests => 41;
+use Test::More;
 
 use lib 't/lib';
 
 use Fey::ORM::Test qw( schema );
 
 my $Schema = schema();
-
 
 {
     package Group;
@@ -17,8 +16,10 @@ my $Schema = schema();
 
     eval { has_table $Schema->table('Group') };
 
-    ::like( $@, qr/must load your schema class/,
-            'cannot call has_table() before schema class is loaded' );
+    ::like(
+        $@, qr/must load your schema class/,
+        'cannot call has_table() before schema class is loaded'
+    );
 }
 
 {
@@ -28,19 +29,15 @@ my $Schema = schema();
 
     has_schema $Schema;
 
-
     package Email;
 
-    sub new
-    {
+    sub new {
         return bless \$_[1], $_[0];
     }
 
-    sub as_string
-    {
+    sub as_string {
         return ${ $_[0] };
     }
-
 
     package User;
 
@@ -48,33 +45,40 @@ my $Schema = schema();
 
     has_table $Schema->table('User');
 
-    transform 'email'
-        => inflate { return Email->new( $_[1] ) }
-        => deflate { return $_[1]->as_string() };
+    transform 'email' => inflate { return Email->new( $_[1] ) } =>
+        deflate { return $_[1]->as_string() };
 
     eval { has_table $Schema->table('User') };
-    ::like( $@, qr/more than once per class/,
-            'cannot call has_table() more than once for a class' );
+    ::like(
+        $@, qr/more than once per class/,
+        'cannot call has_table() more than once for a class'
+    );
 
     package User2;
 
     use Fey::ORM::Table;
 
     eval { has_table $Schema->table('User') };
-    ::like( $@, qr/associate the same table with multiple classes/,
-            'cannot associate the same table with multiple classes' );
+    ::like(
+        $@, qr/associate the same table with multiple classes/,
+        'cannot associate the same table with multiple classes'
+    );
 
     my $table = Fey::Table->new( name => 'User2' );
 
     eval { has_table $table };
-    ::like( $@, qr/must have a schema/,
-            'tables passed to has_table() must have a schema' );
+    ::like(
+        $@, qr/must have a schema/,
+        'tables passed to has_table() must have a schema'
+    );
 
     $Schema->add_table($table);
 
     eval { has_table $table };
-    ::like( $@, qr/must have at least one key/,
-            'tables passed to has_table() must have at least one key' );
+    ::like(
+        $@, qr/must have at least one key/,
+        'tables passed to has_table() must have at least one key'
+    );
 }
 
 {
@@ -86,86 +90,124 @@ my $Schema = schema();
 }
 
 {
-    ok( User->isa('Fey::Object::Table'),
-        q{User->isa('Fey::Object::Table')} );
+    ok(
+        User->isa('Fey::Object::Table'),
+        q{User->isa('Fey::Object::Table')}
+    );
     can_ok( 'User', 'Table' );
-    is( User->Table()->name(), 'User',
-        'User->Table() returns User table' );
+    is(
+        User->Table()->name(), 'User',
+        'User->Table() returns User table'
+    );
 
-    is( Fey::Meta::Class::Table->TableForClass('User')->name(), 'User',
-        q{Fey::Meta::Class::Table->TableForClass('User') returns User table} );
+    is(
+        Fey::Meta::Class::Table->TableForClass('User')->name(), 'User',
+        q{Fey::Meta::Class::Table->TableForClass('User') returns User table}
+    );
 
-    is( Fey::Meta::Class::Table->ClassForTable( $Schema->table('User') ), 'User',
-        q{Fey::Meta::Class::Table->ClassForTable('User') returns User class} );
+    is(
+        Fey::Meta::Class::Table->ClassForTable( $Schema->table('User') ),
+        'User',
+        q{Fey::Meta::Class::Table->ClassForTable('User') returns User class}
+    );
 
-    is_deeply( [ Fey::Meta::Class::Table->ClassForTable( $Schema->tables( 'User', 'Group' ) ) ],
-               [ 'User', 'Group' ],
-               q{Fey::Meta::Class::Table->ClassForTable( 'User', 'Group' ) returns expected classes} );
+    is_deeply(
+        [
+            Fey::Meta::Class::Table->ClassForTable(
+                $Schema->tables( 'User', 'Group' )
+            )
+        ],
+        [ 'User', 'Group' ],
+        q{Fey::Meta::Class::Table->ClassForTable( 'User', 'Group' ) returns expected classes}
+    );
 
-    for my $column ( $Schema->table('User')->columns() )
-    {
+    for my $column ( $Schema->table('User')->columns() ) {
         my $name = $column->name();
 
         can_ok( 'User', $name );
-        is( User->meta()->get_attribute($name)->column(),
+        is(
+            User->meta()->get_attribute($name)->column(),
             $column,
-            "column for $name meta-attribute matches column from table" );
+            "column for $name meta-attribute matches column from table"
+        );
     }
 
-    is( ref User->meta()->get_attribute('email')->inflator(),
+    is(
+        ref User->meta()->get_attribute('email')->inflator(),
         'CODE',
-        'inflator for email attribute is a code ref' );
+        'inflator for email attribute is a code ref'
+    );
 
     can_ok( 'User', 'email_raw' );
 
-    is ( User->meta()->get_attribute('user_id')->type_constraint()->name(),
-         'Int',
-         'type for user_id is Int' );
+    is(
+        User->meta()->get_attribute('user_id')->type_constraint()->name(),
+        'Int',
+        'type for user_id is Int'
+    );
 
-    is ( User->meta()->get_attribute('username')->type_constraint()->name(),
-         'Str',
-         'type for username is Str' );
+    is(
+        User->meta()->get_attribute('username')->type_constraint()->name(),
+        'Str',
+        'type for username is Str'
+    );
 
-    is ( User->meta()->get_attribute('email_raw')->type_constraint()->name(),
-         'Str|Undef',
-         'type for email is Str|Undef' );
+    is(
+        User->meta()->get_attribute('email_raw')->type_constraint()->name(),
+        'Str|Undef',
+        'type for email is Str|Undef'
+    );
 
-    ok( User->meta()->has_inflator('email'), 'User has an inflator coderef for email' );
-    ok( User->meta()->has_deflator('email'), 'User has a deflator coderef for email' );
+    ok( User->meta()->has_inflator('email'),
+        'User has an inflator coderef for email' );
+    ok( User->meta()->has_deflator('email'),
+        'User has a deflator coderef for email' );
 
-    my $user = User->new( user_id     => 1,
-                          email       => 'test@example.com',
-                          _from_query => 1,
-                        );
+    my $user = User->new(
+        user_id     => 1,
+        email       => 'test@example.com',
+        _from_query => 1,
+    );
 
-    ok( ! ref $user->email_raw(),
-        'email_raw() returns a plain string' );
-    is( $user->email_raw(), 'test@example.com',
-        'email_raw = test@example.com' );
+    ok(
+        !ref $user->email_raw(),
+        'email_raw() returns a plain string'
+    );
+    is(
+        $user->email_raw(), 'test@example.com',
+        'email_raw = test@example.com'
+    );
 
     my $email = $user->email();
     isa_ok( $email, 'Email' );
     is( $email, $user->email(), 'inflated values are cached' );
 
     $user->_clear_email();
-    ok( ! $user->has_email(),
-        'predicate for email is false after is cleared' );
-    ok( ! $user->_has_inflated_email(),
-        'clearer also clears inflated value' );
+    ok(
+        !$user->has_email(),
+        'predicate for email is false after is cleared'
+    );
+    ok(
+        !$user->_has_inflated_email(),
+        'clearer also clears inflated value'
+    );
 }
 
 {
-    my $user = User->new( user_id     => 2,
-                          email       => 'test@example.com',
-                          _from_query => 1,
-                        );
+    my $user = User->new(
+        user_id     => 2,
+        email       => 'test@example.com',
+        _from_query => 1,
+    );
 
     # makes sure that the default gets built
     $user->email();
 
     $user->_set_email('test2@example.com');
-    is( $user->email()->as_string(), 'test2@example.com',
-        'setting an inflated attribute clears the inflated value so it gets rebuilt' );
+    is(
+        $user->email()->as_string(), 'test2@example.com',
+        'setting an inflated attribute clears the inflated value so it gets rebuilt'
+    );
 }
 
 {
@@ -173,52 +215,53 @@ my $Schema = schema();
 
     use Fey::ORM::Table;
 
-    sub message_id
-    {
+    sub message_id {
         return 'foo';
     }
 
     has_table $Schema->table('Message');
 
     # Testing passing >1 attribute to transform
-    transform qw( message quality )
-        => inflate { $_[0] }
-        => deflate { $_[0] };
+    transform qw( message quality ) => inflate { $_[0] } => deflate { $_[0] };
 
-    eval
-    {
-        transform 'message'
-            => inflate { $_[0] }
+    eval {
+        transform 'message' => inflate { $_[0] };
     };
 
-    ::like( $@, qr/more than one inflator/,
-            'cannot provide more than one inflator for a column' );
+    ::like(
+        $@, qr/more than one inflator/,
+        'cannot provide more than one inflator for a column'
+    );
 
-    eval
-    {
-        transform 'message'
-            => deflate { $_[0] }
+    eval {
+        transform 'message' => deflate { $_[0] };
     };
 
-    ::like( $@, qr/more than one deflator/,
-            'cannot provide more than one deflator for a column' );
+    ::like(
+        $@, qr/more than one deflator/,
+        'cannot provide more than one deflator for a column'
+    );
 
-    eval
-    {
-        transform 'nosuchcolumn'
-            => deflate { $_[0] }
+    eval {
+        transform 'nosuchcolumn' => deflate { $_[0] };
     };
 
-    ::like( $@, qr/\QThe column nosuchcolumn does not exist as an attribute/,
-            'cannot transform a nonexistent column' );
+    ::like(
+        $@, qr/\QThe column nosuchcolumn does not exist as an attribute/,
+        'cannot transform a nonexistent column'
+    );
 }
 
 {
-    ok( Message->meta()->has_deflator('message'), 'Message has a deflator coderef for message' );
-    ok( Message->meta()->has_deflator('quality'), 'Message has a deflator coderef for quality' );
+    ok( Message->meta()->has_deflator('message'),
+        'Message has a deflator coderef for message' );
+    ok( Message->meta()->has_deflator('quality'),
+        'Message has a deflator coderef for quality' );
 
-    is( Message->message_id(), 'foo',
-        'column attributes do not overwrite existing methods' );
+    is(
+        Message->message_id(), 'foo',
+        'column attributes do not overwrite existing methods'
+    );
 }
 
 my $Schema2 = schema();
@@ -235,24 +278,32 @@ $Schema2->set_name('Schema2');
 
     has_table $Schema2->table('User');
 
-    transform 'email'
-        => inflate { return Email->new( $_[1] ) }
-        => handles { address => 'as_string' }
-        => deflate { return $_[1]->as_string() };
+    transform 'email' => inflate { return Email->new( $_[1] ) } =>
+        handles { address => 'as_string' } =>
+        deflate { return $_[1]->as_string() };
 
 }
 
 {
-    is( User2->Table()->name(), 'User',
-        'table for User2 class is User' );
-    is( User2->Table()->schema()->name(), 'Schema2',
-        'schema for User2 class table is Schema2' );
+    is(
+        User2->Table()->name(), 'User',
+        'table for User2 class is User'
+    );
+    is(
+        User2->Table()->schema()->name(), 'Schema2',
+        'schema for User2 class table is Schema2'
+    );
     ok( User2->can('address'), 'delegation for address was created' );
 
-    my $user = User2->new( user_id     => 2,
-                           email       => 'test@example.com',
-                           _from_query => 1,
-                         );
-    is( $user->address(), 'test@example.com',
-        'address method return stringified email address' );
+    my $user = User2->new(
+        user_id     => 2,
+        email       => 'test@example.com',
+        _from_query => 1,
+    );
+    is(
+        $user->address(), 'test@example.com',
+        'address method return stringified email address'
+    );
 }
+
+done_testing();

@@ -1,12 +1,11 @@
 use strict;
 use warnings;
 
-use Test::More tests => 12;
+use Test::More;
 
 use lib 't/lib';
 
 use Fey::ORM::Test qw( schema );
-
 
 {
     package Date;
@@ -21,12 +20,11 @@ use Fey::ORM::Test qw( schema );
 
     use Fey::ORM::Policy;
 
-    transform_all
-           matching { $_[0]->type eq 'date' }
-        => inflate  { Date->new( $_[1] ) }
-        => deflate  { defined $_[1] && ref $_[1] ? $_[1]->date() : $_[1] };
+    transform_all matching { $_[0]->type eq 'date' } =>
+        inflate { Date->new( $_[1] ) } =>
+        deflate { defined $_[1] && ref $_[1] ? $_[1]->date() : $_[1] };
 
-    has_one_namer  { lc $_[0]->name() . '_one' };
+    has_one_namer { lc $_[0]->name() . '_one' };
 
     has_many_namer { lc $_[0]->name() . '_many' };
 }
@@ -52,13 +50,17 @@ use Fey::ORM::Test qw( schema );
 
     isa_ok( $policy, 'Fey::Object::Policy' );
 
-    my $table = FakeTable->new( 'User' );
+    my $table = FakeTable->new('User');
 
-    is( $policy->has_one_namer()->($table), 'user_one',
-        'has_one_namer returns expected value when called' );
+    is(
+        $policy->has_one_namer()->($table), 'user_one',
+        'has_one_namer returns expected value when called'
+    );
 
-    is( $policy->has_many_namer()->($table), 'user_many',
-        'has_many_namer returns expected value' );
+    is(
+        $policy->has_many_namer()->($table), 'user_many',
+        'has_many_namer returns expected value'
+    );
 
     my @transforms = $policy->transforms();
     is( scalar @transforms, 1, 'policy has one transform' );
@@ -66,21 +68,33 @@ use Fey::ORM::Test qw( schema );
     my $col1 = FakeColumn->new('date');
     my $col2 = FakeColumn->new('int');
 
-    ok( $transforms[0]{matching}->($col1),
-        'date type column matches transform' );
-    ok( ! $transforms[0]{matching}->($col2),
-        'int type column does not match transform' );
+    ok(
+        $transforms[0]{matching}->($col1),
+        'date type column matches transform'
+    );
+    ok(
+        !$transforms[0]{matching}->($col2),
+        'int type column does not match transform'
+    );
 
     my $date = $transforms[0]{inflate}->( undef, '2009-01-01' );
-    is( $date->date(), '2009-01-01',
-        'inflate returns expected date object' );
-    is( $transforms[0]{deflate}->( undef, $date ), '2009-01-01',
-        'deflate returns expected string' );
+    is(
+        $date->date(), '2009-01-01',
+        'inflate returns expected date object'
+    );
+    is(
+        $transforms[0]{deflate}->( undef, $date ), '2009-01-01',
+        'deflate returns expected string'
+    );
 
-    ok( $policy->transform_for_column($col1),
-        'found a transform for date column' );
-    ok( ! $policy->transform_for_column($col2),
-        'did not find a transform for int column' );
+    ok(
+        $policy->transform_for_column($col1),
+        'found a transform for date column'
+    );
+    ok(
+        !$policy->transform_for_column($col2),
+        'did not find a transform for int column'
+    );
 }
 
 my $Schema = schema();
@@ -104,8 +118,10 @@ my $Schema = schema();
 }
 
 {
-    is( User->meta()->policy(), MyApp::Policy->Policy(),
-        'policy object was set from policy-defining class' );
+    is(
+        User->meta()->policy(), MyApp::Policy->Policy(),
+        'policy object was set from policy-defining class'
+    );
 }
 
 {
@@ -119,6 +135,10 @@ my $Schema = schema();
 }
 
 {
-    is( Group->meta()->policy(), MyApp::Policy->Policy(),
-        'policy object was set from an object' );
+    is(
+        Group->meta()->policy(), MyApp::Policy->Policy(),
+        'policy object was set from an object'
+    );
 }
+
+done_testing();

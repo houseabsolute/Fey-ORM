@@ -9,31 +9,27 @@ our @EXPORT_OK = qw( schema );
 
 use Fey::Test;
 
-
-sub schema
-{
+sub schema {
     return Fey::Test->mock_test_schema_with_fks();
 }
 
-sub require_sqlite
-{
+sub require_sqlite {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    unless ( eval "use Fey::Test::SQLite; 1" )
-    {
+    unless ( eval "use Fey::Test::SQLite; 1" ) {
         Test::More::plan skip_all => 'These tests require Fey::Test::SQLite';
     }
 }
 
-sub insert_user_data
-{
+sub insert_user_data {
     require_sqlite();
 
     my $dbh = Fey::Test::SQLite->dbh();
 
-    $dbh->do( 'DELETE FROM User' );
+    $dbh->do('DELETE FROM User');
 
-    my $insert = 'INSERT INTO User ( user_id, username, email ) VALUES ( ?, ?, ? )';
+    my $insert
+        = 'INSERT INTO User ( user_id, username, email ) VALUES ( ?, ?, ? )';
     my $sth = $dbh->prepare($insert);
 
     $sth->execute( 1,  'autarch', 'autarch@example.com' );
@@ -42,27 +38,26 @@ sub insert_user_data
     $sth->finish();
 }
 
-sub insert_message_data
-{
+sub insert_message_data {
     require_sqlite();
 
     my $dbh = Fey::Test::SQLite->dbh();
 
-    $dbh->do( 'DELETE FROM Message' );
+    $dbh->do('DELETE FROM Message');
 
-    my $insert = 'INSERT INTO Message ( message_id, message, user_id ) VALUES ( ?, ?, ? )';
+    my $insert
+        = 'INSERT INTO Message ( message_id, message, user_id ) VALUES ( ?, ?, ? )';
     my $sth = $dbh->prepare($insert);
 
-    $sth->execute( 1,  'body 1', 1 );
-    $sth->execute( 2,  'body 2', 1 );
+    $sth->execute( 1,  'body 1',  1 );
+    $sth->execute( 2,  'body 2',  1 );
     $sth->execute( 10, 'body 10', 42 );
     $sth->execute( 99, 'body 99', 42 );
 
     $sth->finish();
 }
 
-sub define_basic_classes
-{
+sub define_basic_classes {
     my $schema = schema();
 
     eval <<'EOF';
@@ -96,8 +91,7 @@ EOF
     die $@ if $@;
 }
 
-sub define_live_classes
-{
+sub define_live_classes {
     define_basic_classes();
 
     require_sqlite();
@@ -105,7 +99,8 @@ sub define_live_classes
     my $dbh = Fey::Test::SQLite->dbh();
     $dbh->{ShowErrorStatement} = 1;
 
-    Schema->DBIManager()->add_source( dbh => $dbh, dsn => Fey::Test::SQLite->dsn() );
+    Schema->DBIManager()
+        ->add_source( dbh => $dbh, dsn => Fey::Test::SQLite->dsn() );
 }
 
 1;

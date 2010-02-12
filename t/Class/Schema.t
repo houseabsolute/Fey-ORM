@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More;
 
 use lib 't/lib';
 
@@ -10,6 +10,7 @@ use Fey::ORM::Test qw( schema );
 my $Schema = schema();
 
 {
+
     package Schema;
 
     use Fey::ORM::Schema;
@@ -18,17 +19,25 @@ my $Schema = schema();
 }
 
 ok( Schema->meta()->_has_schema(), 'meta()->_has_schema() is true' );
-is( Schema->Schema()->name(), $Schema->name(),
-    'Schema() returns expected schema' );
+is(
+    Schema->Schema()->name(), $Schema->name(),
+    'Schema() returns expected schema'
+);
 isa_ok( Schema->DBIManager(), 'Fey::DBIManager' );
-is( Schema->SQLFactoryClass(), 'Fey::SQL',
-    'SQLFactoryClass() is Fey::SQL' );
-ok( Schema->isa('Fey::Object::Schema'),
-    q{Schema->isa('Fey::Object::Schema')} );
+is(
+    Schema->SQLFactoryClass(), 'Fey::SQL',
+    'SQLFactoryClass() is Fey::SQL'
+);
+ok(
+    Schema->isa('Fey::Object::Schema'),
+    q{Schema->isa('Fey::Object::Schema')}
+);
 
-is( Fey::Meta::Class::Schema->ClassForSchema($Schema),
+is(
+    Fey::Meta::Class::Schema->ClassForSchema($Schema),
     'Schema',
-    'ClassForSchema() return Schema as class name' );
+    'ClassForSchema() return Schema as class name'
+);
 
 {
     package Schema2;
@@ -37,6 +46,10 @@ is( Fey::Meta::Class::Schema->ClassForSchema($Schema),
 
     eval { has_schema $Schema };
 
-    ::like( $@, qr/associate the same schema with multiple classes/,
-            'cannot associate the same schema with multiple classes' );
+    ::like(
+        $@, qr/associate the same schema with multiple classes/,
+        'cannot associate the same schema with multiple classes'
+    );
 }
+
+done_testing();
