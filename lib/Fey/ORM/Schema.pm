@@ -8,7 +8,7 @@ our $VERSION = '0.30';
 use Fey::Meta::Class::Schema;
 use Fey::Object::Schema;
 
-use Moose ();
+use Moose 0.98 ();
 use Moose::Exporter;
 use MooseX::Params::Validate qw( pos_validated_list );
 

@@ -9,10 +9,9 @@ use Class::MOP;
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
 
-use Moose ();
+use Moose 0.98 ();
 use Moose::Exporter;
 use Moose::Util::MetaRole;
-use MooseX::ClassAttribute::Role::Meta::Class;
 use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods
