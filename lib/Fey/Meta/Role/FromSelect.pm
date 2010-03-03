@@ -108,7 +108,7 @@ sub _make_default_from_select_without_type {
         my $return = $dbh->$select_meth(@select_p)
             or return;
 
-        return wantarray ? @{$return} : $return;
+        return wantarray ? @{$return} : $return->[0];
     };
 }
 
