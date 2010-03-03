@@ -26,6 +26,7 @@ deflators
 dbms
 dbh
 DBI
+DBI's
 fk
 FromSelect
 inflator
