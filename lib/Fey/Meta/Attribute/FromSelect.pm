@@ -7,19 +7,10 @@ our $VERSION = '0.31';
 
 use namespace::autoclean;
 use Moose;
-use Moose::Util::TypeConstraints;
 
 extends 'Moose::Meta::Attribute';
 
-has select => (
-    is   => 'ro',
-    does => 'Fey::Role::SQL::ReturnsData',
-);
-
-has bind_params => (
-    is  => 'ro',
-    isa => 'CodeRef',
-);
+with 'Fey::Meta::Role::FromSelect';
 
 sub _process_options {
     my $class   = shift;
@@ -28,9 +19,10 @@ sub _process_options {
 
     $options->{lazy} = 1;
 
-    $options->{default} = $class->_make_default_from_select(
+    $options->{default} = $class->_make_sub_from_select(
         $options->{select},
         $options->{bind_params},
+        $options->{multi_column},
         $options->{isa},
     );
 
@@ -43,43 +35,11 @@ sub _new {
 
     my $self = $class->SUPER::_new($options);
 
-    $self->{select}      = $options->{select};
-    $self->{bind_params} = $options->{bind_params};
+    $self->{select}          = $options->{select};
+    $self->{bind_params}     = $options->{bind_params};
+    $self->{is_multi_column} = $options->{multi_column};
 
     return $self;
-}
-
-sub _make_default_from_select {
-    my $class    = shift;
-    my $select   = shift;
-    my $bind_sub = shift;
-    my $type     = shift;
-
-    die 'The select parameter must be do the Fey::Role::SQL::ReturnsData role'
-        unless blessed $select
-            && $select->can('does')
-            && $select->does('Fey::Role::SQL::ReturnsData');
-
-    my $wantarray = 0;
-    $wantarray = 1
-        if defined $type
-            && find_type_constraint($type)->is_a_type_of('ArrayRef');
-
-    return sub {
-        my $self = shift;
-
-        my $dbh = $self->_dbh($select);
-
-        my @select_p = (
-            $select->sql($dbh), {},
-            $bind_sub ? $self->$bind_sub() : ()
-        );
-
-        my $col = $dbh->selectcol_arrayref(@select_p)
-            or return;
-
-        return $wantarray ? $col : $col->[0];
-    };
 }
 
 # The parent class's constructor is not a Moose::Object-based
@@ -102,13 +62,13 @@ Fey::Meta::Attribute::FromSelect - an attribute metaclass for SELECT-based attri
 
   package MyApp::Song;
 
-  has 'average_rating' =>
-      ( metaclass   => 'FromSelect',
-        is          => 'ro',
-        isa         => 'Float',
-        select      => $select,
-        bind_params => sub { $_[0]->song_id() },
-      );
+  has average_rating => (
+      metaclass   => 'FromSelect',
+      is          => 'ro',
+      isa         => 'Float',
+      select      => $select,
+      bind_params => sub { $_[0]->song_id() },
+  );
 
 =head1 DESCRIPTION
 

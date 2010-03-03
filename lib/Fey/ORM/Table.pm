@@ -16,9 +16,10 @@ use Moose::Util::MetaRole;
 use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods(
-    with_meta => [qw( has_table has_policy has_one has_many transform )],
-    as_is     => [qw( inflate deflate handles )],
-    also      => 'Moose'
+    with_meta =>
+        [qw( has_table has_policy has_one has_many transform query )],
+    as_is => [qw( inflate deflate handles )],
+    also  => 'Moose'
 );
 
 sub init_meta {
@@ -114,6 +115,13 @@ sub has_many {
     }
 
     $meta->add_has_many(%p);
+}
+
+sub query {
+    my $meta = shift;
+    my $name = shift;
+
+    $meta->add_query_method( name => $name, @_ );
 }
 
 1;

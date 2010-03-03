@@ -18,6 +18,7 @@ use Fey::Meta::HasOne::ViaSelect;
 use Fey::Meta::HasMany::ViaFK;
 use Fey::Meta::HasMany::ViaSelect;
 use Fey::Meta::Method::Constructor;
+use Fey::Meta::Method::FromSelect;
 use List::AllUtils qw( all );
 
 use Moose qw( extends with has );
@@ -491,6 +492,19 @@ sub _build_count_sql {
         ->from($table);
 
     return $select;
+}
+
+sub add_query_method {
+    my $self = shift;
+
+    my $method = Fey::Meta::Method::FromSelect->new(
+        package_name => $self->name(),
+        @_,
+    );
+
+    $self->add_method( $method->name() => $method );
+
+    return;
 }
 
 sub make_immutable {
