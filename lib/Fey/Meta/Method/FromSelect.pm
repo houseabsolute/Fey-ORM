@@ -83,10 +83,9 @@ This must do the L<Fey::Role::SQL::ReturnsData> role. It is required.
 
 =item * bind_params
 
-This must be a subroutine reference, which when called will return an
-array of bind parameters for the query. This subref will be called as
-a method on the object which has the attribute. This is an optional
-parameter.
+This must be a subroutine reference, which when called will return an array of
+bind parameters for the query. This subref will be called as a method on the
+object which has the method. This is an optional parameter.
 
 =back
 
