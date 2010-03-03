@@ -3,7 +3,7 @@ package Fey::ORM::Exceptions;
 use strict;
 use warnings;
 
-our $VERSION = '0.31';
+our $VERSION = '0.32';
 
 use Fey::Exceptions;
 
