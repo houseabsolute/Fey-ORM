@@ -7,15 +7,16 @@ use Pod::Coverage::Moose;
 
 my %Exclude
     = map { $_ => 1 }
-    qw( Fey::Hash::ColumnsKey Fey::Meta::Method::Constructor );
+    qw( Fey::Hash::ColumnsKey Fey::Meta::Method::Constructor Fey::Meta::Role::FromSelect );
 
 my @mods = grep { !$Exclude{$_} } Test::Pod::Coverage::all_modules();
 
 plan tests => scalar @mods;
 
 my %Trustme = (
-    'Fey::ORM::Schema' => qr/^init_meta$/,
-    'Fey::ORM::Table'  => qr/^init_meta$/,
+    'Fey::ORM::Schema'              => qr/^init_meta$/,
+    'Fey::ORM::Table'               => qr/^init_meta$/,
+    'Fey::Meta::Method::FromSelect' => qr/^new$/,
 );
 
 for my $mod (@mods) {
