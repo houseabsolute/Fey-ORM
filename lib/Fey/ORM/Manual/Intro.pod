@@ -363,11 +363,44 @@ for a group:
       bind_params => sub { $_[0]->group_id() },
   );
 
+=head1 METHODS FROM A SELECT
+
+It is common to want to create a method in a class which executes a specific
+query based on the current object. For example, we might want to know how many
+messages a user has posted.
+
+The C<query> sugar function allows you to declare a C<SELECT>-based method.:
+
+  package Forum::Model::User;
+
+  my $count = Fey::Literal::Function->new(
+      'COUNT',
+      $message_table->column('message_id'),
+  );
+
+  #   SELECT COUNT( Message.message_id )
+  #     FROM Message
+  #    WHERE user_id = ?
+  my $select =
+      Forum::Model::Schema->SQLFactoryClass()->new_select()
+             ->select($count)
+             ->from( $message_table )
+             ->where( $message_table->column('user_id'),
+                      '=', Fey::Placeholder->new() );
+
+  query 'message_count' => (
+      select      => $select,
+      bind_params => sub { $_[0]->user->id() },
+  );
+
+This creates a C<< $user->message_count() >> method. When that method is
+called, the query is executed with the bound parameters returned from the
+C<bind_params> subroutine reference.
+
 =head1 FromSelect ATTRIBUTE METACLASS
 
-Quite often, you will want to have an attribute which reflects the
-value of a single C<SELECT> query. For example, user objects might
-have a C<< $user->message_count() >> attribute.
+If you don't want to re-execute the query each time, you can instead associate
+a query with an attribute.
 
 L<Fey::ORM> provides an attribute metaclass,
 L<Fey::Meta::Attribute::FromSelect>, which manages the details of executing
@@ -398,6 +431,23 @@ object and an optional subroutine reference for the bind parameters.
       select      => $select,
       bind_params => sub { $_[0]->user - id() },
   );
+
+When using an attribute is that the value is effectively cached after it is
+first retrieved. This could mean that it becomes inaccurate if something else
+updates the database after the attribute is populated.
+
+You can, of course, add a C<clearer> to the attribute, but you still have to
+know when to call the clearer.
+
+One advantage of using an attribute over a C<query> method is that the
+attribute's value can be set by passing a value to the constructor. This can
+be useful if you are going to fetch the attribute's value as part of a larger
+query.
+
+However, the downside is the possibility of stale, inaccurate data. Think
+carefully about how you will handle this problem. The best approach is
+probably to start with a C<query> method, and then switch to an attribute if
+needed to improve performance.
 
 =head1 USING Fey
 

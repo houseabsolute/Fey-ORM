@@ -285,6 +285,12 @@ You can also specify an C<order_by> parameter as an array
 reference. This should be an array like you would pass to C<<
 Fey::SQL::Select->order_by() >>.
 
+=head2 query $name => select => $select, bind_params => sub { ... }
+
+The C<query()> function declares a method based on the given query. This works
+much like declaring an attribute with the C<FromSelect> metaclass, but the
+value returned from the query is not stored in the object.
+
 =head2 transform $column1, $column2 => inflate { ... } => deflate { ... }
 
 The C<transform()> function declares an inflator, deflator, or both
