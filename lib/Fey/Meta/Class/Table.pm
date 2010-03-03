@@ -600,6 +600,12 @@ defined for the named column.
 Returns a boolean indicating whether or not there is an inflator
 defined for the named column.
 
+=head2 $meta->add_query_method(%options)
+
+Adds a new L<Fey::Meta::Method::FromSelect> method to the class. The
+C<%options> passed to this method will be passed to the
+L<Fey::Meta::Method::FromSelect> constructor.
+
 =head2 $meta->make_immutable()
 
 This class overrides C<< Moose::Meta::Class->make_immutable() >> in
