@@ -1,4 +1,4 @@
-0.32
+0.32   2010-03-06
 
 - Added a new sugar function to Fey::ORM::Table - query(). This allows you to
   declare a method based on a select. This is preferable to an attribute in
