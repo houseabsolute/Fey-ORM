@@ -1,4 +1,4 @@
-0.33
+0.33   2010-06-04
 
 - When loading an object's data from the dbms, Fey::ORM now always reloads the
   key. This should impose a minimal cost, and is important in some corner
