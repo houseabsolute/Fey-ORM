@@ -1,3 +1,12 @@
+0.33
+
+- When loading an object's data from the dbms, Fey::ORM now always reloads the
+  key. This should impose a minimal cost, and is important in some corner
+  cases, like Postgres's citext column, which does a case-insensitive
+  match. In that case, simply using the user-provided data can cause the
+  object to end up with the wrong value for the column in question.
+
+
 0.32   2010-03-06
 
 - Added a new sugar function to Fey::ORM::Table - query(). This allows you to

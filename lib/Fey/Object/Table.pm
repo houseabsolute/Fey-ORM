@@ -457,10 +457,8 @@ sub _set_column_values_from_hashref {
 
     for my $col ( keys %{$values} ) {
         my $set = q{_set_} . $col;
-        my $has = q{has_} . $col;
 
-        $self->$set( $values->{$col} )
-            unless $self->$has();
+        $self->$set( $values->{$col} );
     }
 }
 
@@ -513,15 +511,7 @@ sub _SelectSQLForKey {
 
     my $table = $class->Table();
 
-    my %key = map { $_->name() => 1 } @{$key};
-
-    my @non_key
-        = grep { !$key{ $_->name() } } $table->columns();
-
-    # This is a bit of a hack for tables that consist just of a key
-    # (like a UserGroup table with a user_id and group_id). We need to
-    # select _something_ or else shit blows up.
-    my @select = @non_key ? @non_key : @{$key};
+    my @select = $table->columns();
 
     $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
     $select->select( sort { $a->name() cmp $b->name() } @select );
