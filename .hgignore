@@ -11,3 +11,4 @@ META.yml
 Makefile.PL
 README
 Debian_CPANTS.txt
+Fey-ORM-*
