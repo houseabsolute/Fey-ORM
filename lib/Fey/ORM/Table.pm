@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.32';
-
 use Class::MOP;
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
@@ -126,11 +124,11 @@ sub query {
 
 1;
 
+# ABSTRACT: Provides sugar for table-based classes
+
 __END__
 
-=head1 NAME
-
-Fey::ORM::Table - Provides sugar for table-based classes
+=pod
 
 =head1 SYNOPSIS
 
@@ -358,21 +356,5 @@ C<handles> parameter.
                    creation_iso8601 => 'iso8601',
                  }
       => deflate { ... };
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 BUGS
-
-See L<Fey::ORM> for details.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut

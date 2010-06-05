@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.32';
-
 use Fey::Exceptions qw( param_error );
 
 use Devel::GlobalDestruction;
@@ -212,11 +210,11 @@ __PACKAGE__->meta()->make_immutable();
 
 1;
 
+# ABSTRACT: Wraps a DBI statement handle to construct objects from the results
+
 __END__
 
-=head1 NAME
-
-Fey::Object::Iterator::FromSelect - Wraps a DBI statement handle to construct objects from the results
+=pod
 
 =head1 SYNOPSIS
 
@@ -454,21 +452,5 @@ cause an error at object construction time.
 =head1 ROLES
 
 This class does the L<Fey::ORM::Role::Iterator> role.
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 BUGS
-
-See L<Fey::ORM> for details.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut

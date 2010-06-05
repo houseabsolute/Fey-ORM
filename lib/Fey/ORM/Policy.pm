@@ -3,8 +3,6 @@ package Fey::ORM::Policy;
 use strict;
 use warnings;
 
-our $VERSION = '0.32';
-
 use Fey::Object::Policy;
 
 {
@@ -74,11 +72,11 @@ sub has_many_namer (&) {
 
 1;
 
+# ABSTRACT: Declarative policies for Fey::ORM using classes
+
 __END__
 
-=head1 NAME
-
-Fey::ORM::Policy - Declarative policies for Fey::ORM using classes
+=pod
 
 =head1 SYNOPSIS
 
@@ -191,22 +189,6 @@ C<has_many()> methods.
 This methods returns the L<Fey::Object::Policy> object for your policy
 class. This method allows L<Fey::ORM::Table> to go get a policy object
 from a policy class name.
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 BUGS
-
-See L<Fey::ORM> for details.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut
 

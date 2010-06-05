@@ -1,6 +1,12 @@
-=head1 NAME
+package Fey::ORM::Manual;
 
-Fey::ORM::Manual - Fey::ORM Manual Index
+1;
+
+# ABSTRACT: Fey::ORM Manual Index
+
+__END__
+
+=pod
 
 =head1 DESCRIPTION
 
@@ -23,18 +29,6 @@ This is a list of module POD you should read:
 =head2 L<Fey::ORM::Schema>
 
 =head2 L<Fey::Object::Schema>
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut
 

@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.32';
-
 use Fey::Exceptions qw( param_error );
 use Fey::Object::Iterator::FromSelect;
 use Fey::Object::Iterator::FromSelect::Caching;
@@ -122,11 +120,11 @@ __PACKAGE__->meta()->make_immutable();
 
 1;
 
+# ABSTRACT: A parent for has-many metaclasses
+
 __END__
 
-=head1 NAME
-
-Fey::Meta::HasMany - A parent for has-many metaclasses
+=pod
 
 =head1 DESCRIPTION
 
@@ -198,21 +196,5 @@ Returns the method associated with this object, if any.
 
 If this object was attached to a class, it removes the method it made,
 and unsets the C<associated_class>.
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 BUGS
-
-See L<Fey::ORM> for details.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut

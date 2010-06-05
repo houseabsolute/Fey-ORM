@@ -3,18 +3,15 @@ package Fey::ORM;
 use strict;
 use warnings;
 
-our $VERSION = '0.32';
-
 use Moose 0.98 ();
-
 
 1;
 
+# ABSTRACT: A Fey-based ORM (If you like SQL, you might like Fey::ORM)
+
 __END__
 
-=head1 NAME
-
-Fey::ORM - A Fey-based ORM
+=pod
 
 =head1 SYNOPSIS
 
@@ -90,23 +87,11 @@ You should start by reading L<Fey::ORM::Manual::Intro>. This will walk
 you through creating a set of classes based on a schema. Then look at
 L<Fey::ORM::Manual> for a list of additional documentation.
 
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
 =head1 BUGS
 
 Please report any bugs or feature requests to
 C<bug-fey-orm@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut

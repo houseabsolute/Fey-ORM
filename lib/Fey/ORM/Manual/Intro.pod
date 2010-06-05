@@ -1,6 +1,12 @@
-=head1 NAME
+package Fey::ORM::Manual;
 
-Fey::ORM::Manual::Intro - Introduction to Fey::ORM
+1;
+
+# ABSTRACT: Introduction to Fey::ORM
+
+__END__
+
+=pod
 
 =head1 DESCRIPTION
 
@@ -539,17 +545,5 @@ inherit from that class:
 
 You could also provide your own C<Catalyst::Request> subclass and do
 the cache clearing in its constructor, or in a plugin of some sort.
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut

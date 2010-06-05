@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.32';
-
 use Moose;
 use MooseX::StrictConstructor;
 
@@ -35,11 +33,11 @@ __PACKAGE__->meta()->make_immutable();
 
 1;
 
+# ABSTRACT: A parent for has-one metaclasses based on a query object
+
 __END__
 
-=head1 NAME
-
-Fey::Meta::HasMany::ViaSelect - A parent for has-one metaclasses based on a query object
+=pod
 
 =head1 DESCRIPTION
 
@@ -81,21 +79,5 @@ Corresponds to the value passed to the constructor.
 =head2 $ho->bind_params()
 
 Corresponds to the value passed to the constructor.
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 BUGS
-
-See L<Fey::ORM> for details.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut

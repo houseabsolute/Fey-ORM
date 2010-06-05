@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.32';
-
 use List::AllUtils qw( pairwise );
 use Moose::Role;
 use Moose::Util::TypeConstraints;
@@ -113,11 +111,11 @@ sub remaining_as_hashes {
 
 1;
 
+# ABSTRACT: A role for things that iterate over Fey::Object::Table objects
+
 __END__
 
-=head1 NAME
-
-Fey::ORM::Role::Iterator - A role for things that iterate over Fey::Object::Table objects
+=pod
 
 =head1 SYNOPSIS
 
@@ -168,21 +166,5 @@ in L<Fey::Object::Iterator::FromSelect>.
 =head2 $iterator->remaining()
 
 =head2 $iterator->remaining_as_hashes()
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 BUGS
-
-See L<Fey::ORM> for details.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut

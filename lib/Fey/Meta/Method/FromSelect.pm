@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.32';
-
 use Moose;
 
 extends 'Moose::Meta::Method', 'Class::MOP::Method::Generated';
@@ -52,11 +50,11 @@ __PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
 
 1;
 
+# ABSTRACT: A method metaclass for SELECT-based methods
+
 __END__
 
-=head1 NAME
-
-Fey::Meta::Method::FromSelect - an method metaclass for SELECT-based methods
+=pod
 
 =head1 SYNOPSIS
 
@@ -114,21 +112,5 @@ attribute, if any.
 The generated method will use DBI's C<selectcol_arrayref()> method to fetch
 data from the database. If called in a list context, it returns all the values
 it retrieves. In scalar context, it returns just the first value.
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 BUGS
-
-See L<Fey::ORM> for details.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. The full text of the license
-can be found in the LICENSE file included with this module.
 
 =cut

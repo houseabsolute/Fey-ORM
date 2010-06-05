@@ -4,8 +4,6 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.32';
-
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 

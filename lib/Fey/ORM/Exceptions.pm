@@ -3,8 +3,6 @@ package Fey::ORM::Exceptions;
 use strict;
 use warnings;
 
-our $VERSION = '0.32';
-
 use Fey::Exceptions;
 
 my %E;
@@ -28,11 +26,11 @@ use Sub::Exporter -setup =>
 
 1;
 
+# ABSTRACT: Defines exceptions used for Fey::ORM
+
 __END__
 
-=head1 NAME
-
-Fey::ORM::Exceptions - Defines exceptions used for Fey::ORM
+=pod
 
 =head1 SYNOPSIS
 
@@ -54,20 +52,5 @@ used as a shorthand to throw a specific type of exception.
 Cannot find a row in a given table matching the given values
 
 =head2 no_such_row()
-
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
-=head1 BUGS
-
-See L<Fey> for details on how to report bugs.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2009 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
 
 =cut
