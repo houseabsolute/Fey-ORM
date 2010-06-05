@@ -102,19 +102,17 @@ __END__
 
   use Fey::Object::Iterator::FromSelect::Caching;
 
-  my $iter =
-      Fey::Object::Iterator::FromSelect::Caching->new
-          ( classes     => 'MyApp::User',
-            select      => $select,
-            dbh         => $dbh,
-            bind_params => \@bind,
-          );
+  my $iter = Fey::Object::Iterator::FromSelect::Caching->new(
+      classes     => 'MyApp::User',
+      select      => $select,
+      dbh         => $dbh,
+      bind_params => \@bind,
+  );
 
-  print $iter->index(); # 0
+  print $iter->index();    # 0
 
-  while ( my $user = $iter->next() )
-  {
-      print $iter->index(); # 1, 2, 3, ...
+  while ( my $user = $iter->next() ) {
+      print $iter->index();    # 1, 2, 3, ...
       print $user->username();
   }
 

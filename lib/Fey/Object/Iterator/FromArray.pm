@@ -56,23 +56,20 @@ __END__
 
   use Fey::Object::Iterator::FromArray;
 
-  my $iter =
-      Fey::Object::Iterator::Caching->new
-          ( classes => 'MyApp::User',
-            objects => \@users,
-          );
+  my $iter = Fey::Object::Iterator::Caching->new(
+      classes => 'MyApp::User',
+      objects => \@users,
+  );
 
-  my $iter2 =
-      Fey::Object::Iterator::Caching->new
-          ( classes => [ 'MyApp::User', 'MyApp::Group' ],
-            objects => [ [ $user1, $group1 ], [ $user2, $group1 ] ],
-          );
+  my $iter2 = Fey::Object::Iterator::Caching->new(
+      classes => [ 'MyApp::User', 'MyApp::Group' ],
+      objects => [ [ $user1, $group1 ], [ $user2, $group1 ] ],
+  );
 
-  print $iter->index(); # 0
+  print $iter->index();    # 0
 
-  while ( my $user = $iter->next() )
-  {
-      print $iter->index(); # 1, 2, 3, ...
+  while ( my $user = $iter->next() ) {
+      print $iter->index();    # 1, 2, 3, ...
       print $user->username();
   }
 
