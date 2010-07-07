@@ -159,6 +159,96 @@ sub _load_from_key {
     no_such_row $error;
 }
 
+# Based on discussions on #moose, this could be done more elegantly
+# with a custom instance metaclass that lazily initializes a batch of
+# attributes at once.
+sub _get_column_values {
+    my $self   = shift;
+    my $select = shift;
+    my $bind   = shift;
+
+    my $dbh = $self->_dbh($select);
+
+    my $sth = $dbh->prepare( $select->sql($dbh) );
+
+    $sth->execute( @{$bind} );
+
+    my %col_values;
+    $sth->bind_columns( \( @col_values{ @{ $sth->{NAME} } } ) );
+
+    my $fetched = $sth->fetch();
+
+    $sth->finish();
+
+    return unless $fetched;
+
+    $self->_set_column_values_from_hashref( \%col_values );
+
+    return \%col_values;
+}
+
+sub _set_column_values_from_hashref {
+    my $self   = shift;
+    my $values = shift;
+
+    for my $col ( keys %{$values} ) {
+        my $set = q{_set_} . $col;
+
+        $self->$set( $values->{$col} );
+    }
+}
+
+sub _get_column_value {
+    my $self = shift;
+
+    my $col_values = $self->_get_column_values(
+        $self->meta()->_select_by_pk_sql(),
+        [ $self->pk_values_list() ],
+    );
+
+    my $name = shift;
+
+    return $col_values->{$name};
+}
+
+sub pk_values_list {
+    my $self = shift;
+
+    my @cols = ( map { $_->name() } @{ $self->Table()->primary_key() } );
+
+    return map { $self->_deflated_value($_) } @cols;
+}
+
+sub _MakeSelectByPKSQL {
+    my $class = shift;
+
+    return $class->_SelectSQLForKey( $class->Table->primary_key() );
+}
+
+sub _SelectSQLForKey {
+    my $class = shift;
+    my $key   = shift;
+
+    my $cache = $class->meta()->_select_sql_cache();
+
+    my $select = $cache->get($key);
+
+    return $select if $select;
+
+    my $table = $class->Table();
+
+    my @select = $table->columns();
+
+    $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
+    $select->select( sort { $a->name() cmp $b->name() } @select );
+    $select->from($table);
+    $select->where( $_, '=', Fey::Placeholder->new() ) for @{$key};
+
+    $cache->store( $key => $select );
+
+    return $select;
+}
+
 sub insert {
     my $class = shift;
     my %p     = @_;
@@ -410,58 +500,6 @@ sub delete {
     return;
 }
 
-sub _get_column_value {
-    my $self = shift;
-
-    my $col_values = $self->_get_column_values(
-        $self->meta()->_select_by_pk_sql(),
-        [ $self->pk_values_list() ],
-    );
-
-    my $name = shift;
-
-    return $col_values->{$name};
-}
-
-# Based on discussions on #moose, this could be done more elegantly
-# with a custom instance metaclass that lazily initializes a batch of
-# attributes at once.
-sub _get_column_values {
-    my $self   = shift;
-    my $select = shift;
-    my $bind   = shift;
-
-    my $dbh = $self->_dbh($select);
-
-    my $sth = $dbh->prepare( $select->sql($dbh) );
-
-    $sth->execute( @{$bind} );
-
-    my %col_values;
-    $sth->bind_columns( \( @col_values{ @{ $sth->{NAME} } } ) );
-
-    my $fetched = $sth->fetch();
-
-    $sth->finish();
-
-    return unless $fetched;
-
-    $self->_set_column_values_from_hashref( \%col_values );
-
-    return \%col_values;
-}
-
-sub _set_column_values_from_hashref {
-    my $self   = shift;
-    my $values = shift;
-
-    for my $col ( keys %{$values} ) {
-        my $set = q{_set_} . $col;
-
-        $self->$set( $values->{$col} );
-    }
-}
-
 sub _dbh {
     my $self = shift;
     my $sql  = shift;
@@ -483,44 +521,6 @@ sub pk_values_hash {
     my @cols = ( map { $_->name() } @{ $self->Table()->primary_key() } );
 
     return map { $cols[$_] => $vals[$_] } 0 .. $#vals;
-}
-
-sub pk_values_list {
-    my $self = shift;
-
-    my @cols = ( map { $_->name() } @{ $self->Table()->primary_key() } );
-
-    return map { $self->_deflated_value($_) } @cols;
-}
-
-sub _MakeSelectByPKSQL {
-    my $class = shift;
-
-    return $class->_SelectSQLForKey( $class->Table->primary_key() );
-}
-
-sub _SelectSQLForKey {
-    my $class = shift;
-    my $key   = shift;
-
-    my $cache = $class->meta()->_select_sql_cache();
-
-    my $select = $cache->get($key);
-
-    return $select if $select;
-
-    my $table = $class->Table();
-
-    my @select = $table->columns();
-
-    $select = $class->SchemaClass()->SQLFactoryClass()->new_select();
-    $select->select( sort { $a->name() cmp $b->name() } @select );
-    $select->from($table);
-    $select->where( $_, '=', Fey::Placeholder->new() ) for @{$key};
-
-    $cache->store( $key => $select );
-
-    return $select;
 }
 
 sub Count {
