@@ -137,6 +137,15 @@ has '_select_sql_cache' => (
     default => sub { Fey::Hash::ColumnsKey->new() },
 );
 
+has '_sql_string_cache' => (
+    is      => 'ro',
+    isa     => 'HashRef[HashRef]',
+    lazy    => 1,
+    default => sub {
+        { {} }
+    },
+);
+
 has '_select_by_pk_sql' => (
     is      => 'ro',
     isa     => 'Fey::SQL::Select',

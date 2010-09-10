@@ -169,7 +169,7 @@ sub _get_column_values {
 
     my $dbh = $self->_dbh($select);
 
-    my $sth = $dbh->prepare( $select->sql($dbh) );
+    my $sth = $dbh->prepare( $self->_sql_string( $select, $dbh ) );
 
     $sth->execute( @{$bind} );
 
@@ -264,7 +264,7 @@ sub insert_many {
 
     my $dbh = $class->_dbh($insert);
 
-    my $sth = $dbh->prepare( $insert->sql($dbh) );
+    my $sth = $dbh->prepare( $class->_sql_string( $insert, $dbh ) );
 
     my @auto_inc_columns = (
         grep { !exists $rows[0]->{$_} }
@@ -452,7 +452,7 @@ sub update {
 
     my $dbh = $self->_dbh($update);
 
-    my $sth = $dbh->prepare( $update->sql($dbh) );
+    my $sth = $dbh->prepare( $self->_sql_string( $update, $dbh ) );
 
     my @attr = $self->_bind_attributes_for(
         $dbh,
@@ -495,7 +495,11 @@ sub delete {
 
     my $dbh = $self->_dbh($delete);
 
-    $dbh->do( $delete->sql($dbh), {}, $delete->bind_params() );
+    $dbh->do(
+        $self->_sql_string( $delete, $dbh ),
+        {},
+        $delete->bind_params()
+    );
 
     return;
 }
@@ -530,7 +534,7 @@ sub Count {
 
     my $dbh = $class->_dbh($select);
 
-    my $row = $dbh->selectcol_arrayref( $select->sql($dbh) );
+    my $row = $dbh->selectcol_arrayref( $class->_sql_string( $select, $dbh ) );
 
     return $row->[0];
 }
@@ -545,6 +549,16 @@ sub SchemaClass {
     my $class = shift;
 
     return $class->meta()->schema_class();
+}
+
+sub _sql_string {
+    my $self = shift;
+    my $sql  = shift;
+    my $dbh  = shift;
+
+    my $cache = $self->meta()->_sql_string_cache();
+
+    return $cache->{$sql}{$dbh} ||= $sql->sql($dbh);
 }
 
 __PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
