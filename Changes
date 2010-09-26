@@ -1,3 +1,8 @@
+0.35
+
+- Changes to work with Moose 1.09.
+
+
 0.34   2010-09-09
 
 - Added caching for commonly used stringified SQL queries. This speeds up

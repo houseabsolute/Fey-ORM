@@ -3,7 +3,7 @@ package Fey::ORM;
 use strict;
 use warnings;
 
-use Moose 0.98 ();
+use Moose 1.09 ();
 
 1;
 
