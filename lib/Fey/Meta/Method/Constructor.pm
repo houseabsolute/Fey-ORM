@@ -52,7 +52,7 @@ sub _initialize_body {
     $source
         .= "\n"
         . '$instance = '
-        . $self->_meta_instance->inline_create_instance('$class');
+        . $self->associated_metaclass()->inline_create_instance('$class');
     $source .= ";\n";
 
     $source .= $self->_generate_params( '$params', '$class' );
