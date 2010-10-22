@@ -1,12 +1,8 @@
-package Fey::ORM::Manual;
-
-1;
-
-# ABSTRACT: Introduction to Fey::ORM
-
-__END__
-
 =pod
+
+=head1 NAME
+
+Fey::ORM::Manual::Intro - Introduction to Fey::ORM
 
 =head1 DESCRIPTION
 

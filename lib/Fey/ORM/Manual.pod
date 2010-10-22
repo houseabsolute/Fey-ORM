@@ -1,12 +1,8 @@
-package Fey::ORM::Manual;
-
-1;
-
-# ABSTRACT: Fey::ORM Manual Index
-
-__END__
-
 =pod
+
+=head1 NAME
+
+Fey::ORM::Manual - Fey::ORM Manual Index
 
 =head1 DESCRIPTION
 
