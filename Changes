@@ -1,3 +1,9 @@
+0.36   2010-10-22
+
+- Some packaging tweaks so that the Fey::ORM::Manual::Intro docs show up on
+  search.cpan.
+
+
 0.35   2010-10-05
 
 - Changes to work with Moose 1.15.
