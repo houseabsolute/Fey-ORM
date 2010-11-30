@@ -1,3 +1,10 @@
+0.37
+
+- The caching added in 0.34 had some subtle heisenbugs because it used object
+  refaddrs as cache keys. Now we use Object::ID, which is slower but will not
+  cause false positive cache hits.
+
+
 0.36   2010-10-22
 
 - Some packaging tweaks so that the Fey::ORM::Manual::Intro docs show up on

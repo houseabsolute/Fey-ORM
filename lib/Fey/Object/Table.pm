@@ -9,6 +9,7 @@ use Fey::Placeholder;
 use Fey::SQL;
 use Fey::Table;
 use List::AllUtils qw( all );
+use Object::ID qw( object_id );
 use Scalar::Util qw( blessed );
 use Try::Tiny;
 
@@ -558,7 +559,7 @@ sub _sql_string {
 
     my $cache = $self->meta()->_sql_string_cache();
 
-    return $cache->{$sql}{$dbh} ||= $sql->sql($dbh);
+    return $cache->{ object_id($sql) . object_id($dbh) } ||= $sql->sql($dbh);
 }
 
 __PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
