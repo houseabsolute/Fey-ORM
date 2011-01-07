@@ -282,10 +282,13 @@ sub insert_many {
     for my $key ( sort keys %{ $rows[0] } ) {
         my $val = $rows[0]{$key};
 
-        if (   defined $val
+        if (
+               defined $val
             && blessed $val
             && $val->can('does')
-            && $val->does('Fey::Role::IsLiteral') ) {
+            && (   $val->does('Fey::Role::IsLiteral')
+                || $val->does('Fey::Role::SQL::ReturnsData') )
+            ) {
             push @literal_row_keys, $key;
             push @ref_row_keys,     $key;
         }
@@ -417,15 +420,19 @@ sub _insert_for_data {
 
     my @vals = (
         map {
-            $_ => ( defined $data->{$_}
+            $_ => (
+                defined $data->{$_}
                     && blessed $data->{$_}
                     && $data->{$_}->can('does')
-                    && $data->{$_}->does('Fey::Role::IsLiteral')
+                    && ( $data->{$_}->does('Fey::Role::IsLiteral')
+                    || $data->{$_}->does('Fey::Role::SQL::ReturnsData') )
                 ? $data->{$_}
-                : $ph )
+                : $ph
+                )
             }
             sort keys %{$data}
     );
+
     $insert->values(@vals);
 
     return $insert;
