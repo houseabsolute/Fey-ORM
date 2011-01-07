@@ -1,3 +1,8 @@
+0.38   2011-01-07
+
+- Allow the use of SQL queries as insert & update values.
+
+
 0.37   2010-11-30
 
 - The caching added in 0.34 had some subtle heisenbugs because it used object
