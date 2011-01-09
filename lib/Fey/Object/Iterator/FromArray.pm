@@ -56,12 +56,12 @@ __END__
 
   use Fey::Object::Iterator::FromArray;
 
-  my $iter = Fey::Object::Iterator::Caching->new(
+  my $iter = Fey::Object::Iterator::FromArray->new(
       classes => 'MyApp::User',
       objects => \@users,
   );
 
-  my $iter2 = Fey::Object::Iterator::Caching->new(
+  my $iter2 = Fey::Object::Iterator::FromArray->new(
       classes => [ 'MyApp::User', 'MyApp::Group' ],
       objects => [ [ $user1, $group1 ], [ $user2, $group1 ] ],
   );
