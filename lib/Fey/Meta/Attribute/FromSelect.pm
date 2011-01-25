@@ -2,8 +2,8 @@ package Fey::Meta::Attribute::FromSelect;
 
 use strict;
 use warnings;
-
 use namespace::autoclean;
+
 use Moose;
 
 extends 'Moose::Meta::Attribute';
