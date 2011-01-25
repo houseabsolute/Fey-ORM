@@ -10,10 +10,14 @@ use Moose;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
 
-subtype 'Fey.ORM.Type.TableWithSchema' => as 'Fey::Table' =>
-    where { $_[0]->has_schema() } => message {
-    'A table used for has-one or -many relationships must have a schema'
+#<<<
+subtype 'Fey.ORM.Type.TableWithSchema'
+    => as 'Fey::Table'
+    => where { $_[0]->has_schema() }
+    => message {
+        'A table used for has-one or -many relationships must have a schema'
     };
+#>>>
 
 has associated_class => (
     is       => 'rw',
@@ -89,8 +93,11 @@ sub _find_one_fk_between_tables {
             . '. You must specify one explicitly.';
     }
 
-    return $self->_invert_fk_if_necessary( $fk[0], $target_table,
-        $is_has_many );
+    return $self->_invert_fk_if_necessary(
+        $fk[0],
+        $target_table,
+        $is_has_many
+    );
 }
 
 # We may need to invert the meaning of source & target since source &
