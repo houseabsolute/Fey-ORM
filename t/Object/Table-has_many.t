@@ -66,7 +66,7 @@ Fey::ORM::Test::insert_user_data();
 {
     package User;
 
-    __PACKAGE__->meta()->remove_method('message');
+    __PACKAGE__->meta()->remove_has_many('message');
 
     has_many messages => (
         table    => Schema->Schema()->table('Message'),
@@ -91,7 +91,7 @@ Fey::ORM::Test::insert_user_data();
 {
     package User;
 
-    __PACKAGE__->meta()->remove_method('message');
+    __PACKAGE__->meta()->remove_has_many('message');
 
     has_many messages => (
         table    => Schema->Schema()->table('Message'),
@@ -172,71 +172,68 @@ Fey::ORM::Test::insert_user_data();
     # corresponding FKs in Fey::Test. The goal is to test that
     # has_many figures out the proper "direction" of the FK.
     my $fk1 = Fey::FK->new(
-        source_columns => [ $schema->table('User')->column('user_id') ],
-        target_columns => [ $schema->table('Message')->column('user_id') ],
+        source_columns => [ $schema->table('Message')->column('user_id') ],
+        target_columns => [ $schema->table('User')->column('user_id') ],
     );
 
     my $fk2 = Fey::FK->new(
-        source_columns => [ $schema->table('Message')->column('message_id') ],
-        target_columns =>
+        source_columns =>
             [ $schema->table('Message')->column('parent_message_id') ],
+        target_columns => [ $schema->table('Message')->column('message_id') ],
     );
 
     $schema->add_foreign_key($_) for $fk1, $fk2;
 
     package User;
 
-    __PACKAGE__->meta()->remove_method('messages');
+    __PACKAGE__->meta()->remove_has_many('messages');
 
     has_many messages => ( table => Schema->Schema()->table('Message') );
 
     package Message;
 
-    __PACKAGE__->meta()->remove_attribute('child_messages');
+    __PACKAGE__->meta()->remove_has_many('child_messages');
 
     has_many 'child_messages' =>
         ( table => Schema->Schema()->table('Message') );
-
 }
+
+inverted_fk_tests();
 
 {
-    my $user = User->new( user_id => 1 );
+    # This next set of tests is the same as the last, except this time we
+    # explicitly provide the Fey::FK object, and test that it gets inverted.
 
-    my $messages = $user->messages();
+    my $schema = Schema->Schema();
 
-    is_deeply(
-        [ sort map { $_->message_id() } $messages->all() ],
-        [ 1, 3, 9 ],
-        'messages() method returns iterator with expected message data'
+    package User;
+
+    __PACKAGE__->meta()->remove_has_many('messages');
+
+    my ($fk)
+        = $schema->foreign_keys_between_tables(
+        $schema->tables( 'Message', 'User' ) );
+
+    has_many messages => (
+        table => Schema->Schema()->table('Message'),
+        fk    => $fk,
     );
 
-    my $parent = Message->new( message_id => 1 );
+    package Message;
 
-    $messages = $parent->child_messages();
+    __PACKAGE__->meta()->remove_has_many('child_messages');
 
-    is_deeply(
-        [ sort map { $_->message_id() } $messages->all() ],
-        [ 3, 6, 9 ],
-        'messages() method returns iterator with expected message data'
-    );
-}
+    ($fk)
+        = $schema->foreign_keys_between_tables(
+        $schema->tables( 'Message', 'Message' ) );
 
-{
-    my $user = User->new( user_id => 1 );
-
-    my $messages = $user->messages();
-
-    $messages->next();
-    $messages->next();
-
-    $messages = $user->messages();
-
-    is_deeply(
-        [ sort map { $_->message_id() } $messages->all() ],
-        [ 1, 3, 9 ],
-        'messages() method resets iterator with each call'
+    has_many 'child_messages' => (
+        table => Schema->Schema()->table('Message'),
+        fk    => $fk,
     );
 }
+
+inverted_fk_tests();
 
 {
     package Message;
@@ -280,6 +277,49 @@ Fey::ORM::Test::insert_user_data();
         $message2->child_message_users(),
         'two objects do not share a single iterator'
     );
+}
+
+sub inverted_fk_tests {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    {
+        my $user = User->new( user_id => 1 );
+
+        my $messages = $user->messages();
+
+        is_deeply(
+            [ sort map { $_->message_id() } $messages->all() ],
+            [ 1, 3, 9 ],
+            'messages() method returns iterator with expected message data'
+        );
+
+        my $parent = Message->new( message_id => 1 );
+
+        $messages = $parent->child_messages();
+
+        is_deeply(
+            [ sort map { $_->message_id() } $messages->all() ],
+            [ 3, 6, 9 ],
+            'messages() method returns iterator with expected message data'
+        );
+    }
+
+    {
+        my $user = User->new( user_id => 1 );
+
+        my $messages = $user->messages();
+
+        $messages->next();
+        $messages->next();
+
+        $messages = $user->messages();
+
+        is_deeply(
+            [ sort map { $_->message_id() } $messages->all() ],
+            [ 1, 3, 9 ],
+            'messages() method resets iterator with each call'
+        );
+    }
 }
 
 done_testing();

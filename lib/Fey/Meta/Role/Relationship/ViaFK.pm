@@ -25,6 +25,16 @@ has _is_has_many => (
     default => sub { ( ref $_[0] ) =~ /HasMany/ ? 1 : 0 },
 );
 
+sub BUILD { }
+
+after BUILD => sub {
+    my $self = shift;
+
+    return unless $self->_has_fk();
+
+    $self->_set_fk( $self->_invert_fk_if_necessary( $self->fk() ) );
+};
+
 sub _build_fk {
     my $self = shift;
 

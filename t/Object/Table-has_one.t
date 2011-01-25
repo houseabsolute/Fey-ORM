@@ -62,7 +62,7 @@ Fey::ORM::Test::insert_user_data();
 {
     package Message;
 
-    __PACKAGE__->meta()->remove_attribute('user');
+    __PACKAGE__->meta()->remove_has_one('user');
 
     has_one 'user' => (
         table => Schema->Schema()->table('User'),
@@ -118,41 +118,45 @@ Fey::ORM::Test::insert_user_data();
 
     has_one $schema->table('User');
 
-    __PACKAGE__->meta()->remove_attribute('parent_message');
+    __PACKAGE__->meta()->remove_has_one('parent_message');
 
     has_one 'parent_message' => ( table => $schema->table('Message') );
 }
 
+inverted_fk_tests();
+
 {
+    # This next set of tests is the same as the last, except this time we
+    # explicitly provide the Fey::FK object, and test that it gets inverted.
 
-    my $parent = Message->insert(
-        message => 'parent body',
-        user_id => 1,
+    package Message;
+
+    my $schema = Schema->Schema();
+
+    __PACKAGE__->meta()->remove_has_one('user');
+
+    my ($fk)
+        = $schema->foreign_keys_between_tables(
+        $schema->tables( 'Message', 'User' ) );
+
+    has_one user => (
+        table => $schema->table('User'),
+        fk    => $fk,
     );
 
-    is(
-        $parent->user()->user_id(), 1,
-        'user() for parent message returns expected user object'
-    );
+    __PACKAGE__->meta()->remove_has_one('parent_message');
 
-    is(
-        $parent->parent_message(), undef,
-        'parent message has no parent itself'
-    );
+    ($fk)
+        = $schema->foreign_keys_between_tables(
+        $schema->tables( 'Message', 'Message' ) );
 
-    my $child = Message->insert(
-        message           => 'child body',
-        parent_message_id => $parent->message_id(),
-        user_id           => 1,
-    );
-
-    my $parent_from_attr = $child->parent_message();
-
-    is(
-        $parent_from_attr->message_id(), $parent->message_id(),
-        'parent_message() attribute created via has_one returns expected message'
+    has_one 'parent_message' => (
+        table => $schema->table('Message'),
+        fk    => $fk,
     );
 }
+
+inverted_fk_tests();
 
 {
     package User;
@@ -197,6 +201,38 @@ Fey::ORM::Test::insert_user_data();
     is(
         $message->user_id(), $user->user_id(),
         'message belongs to the user'
+    );
+}
+
+sub inverted_fk_tests {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my $parent = Message->insert(
+        message => 'parent body',
+        user_id => 1,
+    );
+
+    is(
+        $parent->user()->user_id(), 1,
+        'user() for parent message returns expected user object'
+    );
+
+    is(
+        $parent->parent_message(), undef,
+        'parent message has no parent itself'
+    );
+
+    my $child = Message->insert(
+        message           => 'child body',
+        parent_message_id => $parent->message_id(),
+        user_id           => 1,
+    );
+
+    my $parent_from_attr = $child->parent_message();
+
+    is(
+        $parent_from_attr->message_id(), $parent->message_id(),
+        'parent_message() attribute created via has_one returns expected message'
     );
 }
 
