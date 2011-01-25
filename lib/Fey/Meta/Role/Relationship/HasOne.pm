@@ -5,6 +5,7 @@ use warnings;
 use namespace::autoclean;
 
 use Fey::Exceptions qw( param_error );
+use Fey::ORM::Types qw( Any Bool Maybe );
 
 use Moose::Role;
 
@@ -12,7 +13,7 @@ with 'Fey::Meta::Role::Relationship';
 
 has associated_attribute => (
     is       => 'rw',
-    isa      => 'Maybe[Moose::Meta::Attribute]',
+    isa      => Maybe['Moose::Meta::Attribute'],
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_associated_attribute',
@@ -20,7 +21,7 @@ has associated_attribute => (
 
 has associated_method => (
     is       => 'rw',
-    isa      => 'Maybe[Moose::Meta::Method]',
+    isa      => Maybe['Moose::Meta::Method'],
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_associated_method',
@@ -28,7 +29,7 @@ has associated_method => (
 
 has allows_undef => (
     is      => 'ro',
-    isa     => 'Bool',
+    isa     => Bool,
     lazy    => 1,
     builder => '_build_allows_undef',
 );
@@ -37,7 +38,7 @@ has handles => (
     is => 'ro',
 
     # just gets passed on for attribute creation
-    isa => 'Any',
+    isa => Any,
 );
 
 sub _build_associated_attribute {

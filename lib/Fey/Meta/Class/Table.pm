@@ -17,6 +17,8 @@ use Fey::Meta::HasMany::ViaFK;
 use Fey::Meta::HasMany::ViaSelect;
 use Fey::Meta::Method::Constructor;
 use Fey::Meta::Method::FromSelect;
+use Fey::ORM::Types
+    qw( Bool ClassName CodeRef DoesHasMany DoesHasOne HashRef Object );
 use List::AllUtils qw( all );
 
 use Moose qw( extends with has );
@@ -28,7 +30,7 @@ extends 'Moose::Meta::Class';
 class_has '_ClassToTableMap' => (
     traits  => ['Hash'],
     is      => 'ro',
-    isa     => 'HashRef[Fey::Table]',
+    isa     => HashRef ['Fey::Table'],
     default => sub { {} },
     lazy    => 1,
     handles => {
@@ -40,14 +42,14 @@ class_has '_ClassToTableMap' => (
 
 has '_object_cache_is_enabled' => (
     is      => 'rw',
-    isa     => 'Bool',
+    isa     => Bool,
     lazy    => 1,
     default => 0,
 );
 
 has '_object_cache' => (
     is      => 'ro',
-    isa     => 'HashRef',
+    isa     => HashRef [Object],
     lazy    => 1,
     default => sub { {} },
     clearer => '_clear_object_cache',
@@ -63,7 +65,7 @@ has 'table' => (
 has 'inflators' => (
     traits  => ['Hash'],
     is      => 'ro',
-    isa     => 'HashRef[CodeRef]',
+    isa     => HashRef [CodeRef],
     default => sub { {} },
     lazy    => 1,
     handles => {
@@ -75,7 +77,7 @@ has 'inflators' => (
 has 'deflators' => (
     traits  => ['Hash'],
     is      => 'ro',
-    isa     => 'HashRef[CodeRef]',
+    isa     => HashRef [CodeRef],
     default => sub { {} },
     lazy    => 1,
     handles => {
@@ -87,7 +89,7 @@ has 'deflators' => (
 
 has 'schema_class' => (
     is      => 'ro',
-    isa     => 'ClassName',
+    isa     => ClassName,
     lazy    => 1,
     default => sub {
         Fey::Meta::Class::Schema->ClassForSchema( $_[0]->table()->schema() );
@@ -103,7 +105,7 @@ has 'policy' => (
 has '_has_ones' => (
     traits  => ['Hash'],
     is      => 'ro',
-    isa     => 'HashRef', # [Fey::Meta::HasOne]
+    isa     => HashRef [DoesHasOne],
     default => sub { {} },
     lazy    => 1,
     handles => {
@@ -118,7 +120,7 @@ has '_has_ones' => (
 has '_has_manies' => (
     traits  => ['Hash'],
     is      => 'ro',
-    isa     => 'HashRef', # [Fey::Meta::HasMany]
+    isa     => HashRef [DoesHasMany],
     default => sub { {} },
     lazy    => 1,
     handles => {
@@ -139,7 +141,7 @@ has '_select_sql_cache' => (
 
 has '_sql_string_cache' => (
     is      => 'ro',
-    isa     => 'HashRef[HashRef]',
+    isa     => HashRef [HashRef],
     lazy    => 1,
     default => sub {
         { {} }
@@ -324,9 +326,10 @@ sub _add_transform {
     param_error "The column $name does not exist as an attribute"
         unless $attr;
 
-    $self->_add_inflator_to_attribute( $name, $attr, $p{inflate},
-        $p{handles} )
-        if $p{inflate};
+    $self->_add_inflator_to_attribute(
+        $name, $attr, $p{inflate},
+        $p{handles}
+    ) if $p{inflate};
 
     if ( $p{deflate} ) {
         param_error

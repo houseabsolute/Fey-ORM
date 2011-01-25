@@ -4,8 +4,10 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Fey::ORM::Types qw( Bool CodeRef );
+use Moose::Util::TypeConstraints qw( find_type_constraint );
+
 use Moose::Role;
-use Moose::Util::TypeConstraints;
 
 has select => (
     is       => 'ro',
@@ -15,12 +17,12 @@ has select => (
 
 has bind_params => (
     is  => 'ro',
-    isa => 'CodeRef',
+    isa => CodeRef,
 );
 
 has is_multi_column => (
     is      => 'ro',
-    isa     => 'Bool',
+    isa     => Bool,
     default => 0,
 );
 

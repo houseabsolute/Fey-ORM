@@ -4,21 +4,16 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Fey::ORM::Types qw( ArrayRefOfClasses Bool Int );
 use List::AllUtils qw( pairwise );
+
 use Moose::Role;
-use Moose::Util::TypeConstraints;
 
 requires qw( _get_next_result reset );
 
-my $arrayref_of_classes
-    = subtype as 'ArrayRef[ClassName]',
-    where { @{$_} > 0 };
-
-coerce $arrayref_of_classes => from 'ClassName' => via { return [$_] };
-
 has classes => (
     is       => 'ro',
-    isa      => $arrayref_of_classes,
+    isa      => ArrayRefOfClasses,
     coerce   => 1,
     required => 1,
 );
@@ -26,7 +21,7 @@ has classes => (
 has index => (
     traits   => ['Counter'],
     is       => 'ro',
-    isa      => 'Int',
+    isa      => Int,
     default  => 0,
     init_arg => undef,
     handles  => {
@@ -37,7 +32,7 @@ has index => (
 
 has _can_make_hashes => (
     is       => 'ro',
-    isa      => 'Bool',
+    isa      => Bool,
     lazy     => 1,
     init_arg => undef,
     default  => sub {

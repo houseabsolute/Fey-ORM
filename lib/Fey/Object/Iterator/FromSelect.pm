@@ -5,6 +5,7 @@ use warnings;
 use namespace::autoclean;
 
 use Fey::Exceptions qw( param_error );
+use Fey::ORM::Types qw( ArrayRef HashRef Maybe Str );
 
 use Devel::GlobalDestruction;
 use Moose;
@@ -27,7 +28,7 @@ has select => (
 
 has bind_params => (
     is      => 'ro',
-    isa     => 'ArrayRef',
+    isa     => ArrayRef,
     lazy    => 1,
     default => sub { [ $_[0]->select()->bind_params() ] },
 );
@@ -45,13 +46,13 @@ has _sth => (
 
 has 'attribute_map' => (
     is      => 'ro',
-    isa     => 'HashRef[HashRef[Str]]',
+    isa     => HashRef [ HashRef [Str] ],
     default => sub { return {} },
 );
 
 has _class_attributes_by_position => (
     is       => 'ro',
-    isa      => 'HashRef[HashRef[Str]]',
+    isa      => HashRef [ HashRef [Str] ],
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_class_attributes_by_position',
@@ -59,7 +60,7 @@ has _class_attributes_by_position => (
 
 has raw_row => (
     is       => 'rw',
-    isa      => 'Maybe[ArrayRef]',
+    isa      => Maybe [ArrayRef],
     init_arg => undef,
     writer   => '_set_raw_row',
 );

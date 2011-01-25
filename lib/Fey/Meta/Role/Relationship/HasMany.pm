@@ -7,9 +7,9 @@ use namespace::autoclean;
 use Fey::Exceptions qw( param_error );
 use Fey::Object::Iterator::FromSelect;
 use Fey::Object::Iterator::FromSelect::Caching;
+use Fey::ORM::Types qw( ClassDoesIterator );
 
 use Moose::Role;
-use Moose::Util::TypeConstraints;
 
 with 'Fey::Meta::Role::Relationship';
 
@@ -21,16 +21,9 @@ has associated_method => (
     builder  => '_build_associated_method',
 );
 
-#<<<
-subtype 'Fey.ORM.Type.ClassDoesIterator'
-    => as 'ClassName'
-    => where { $_[0]->meta()->does_role('Fey::ORM::Role::Iterator') }
-    => message {"$_[0] does not do the Fey::ORM::Role::Iterator role"};
-#>>>
-
 has 'iterator_class' => (
     is      => 'ro',
-    isa     => 'Fey.ORM.Type.ClassDoesIterator',
+    isa     => ClassDoesIterator,
     lazy    => 1,
     builder => '_build_iterator_class',
 );

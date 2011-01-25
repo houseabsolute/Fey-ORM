@@ -4,7 +4,9 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Fey::ORM::Types qw( ArrayRef CodeRef HashRef );
 use List::Util qw( first );
+
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::SemiAffordanceAccessor;
@@ -12,7 +14,7 @@ use MooseX::SemiAffordanceAccessor;
 has '_transforms' => (
     traits   => ['Array'],
     is       => 'ro',
-    isa      => 'ArrayRef[HashRef]',
+    isa      => ArrayRef[HashRef],
     default  => sub { [] },
     init_arg => undef,
     handles  => {
@@ -23,14 +25,14 @@ has '_transforms' => (
 
 has 'has_one_namer' => (
     is       => 'rw',
-    isa      => 'CodeRef',
+    isa      => CodeRef,
     default  => \&_dumb_namer,
     required => 1,
 );
 
 has 'has_many_namer' => (
     is       => 'rw',
-    isa      => 'CodeRef',
+    isa      => CodeRef,
     default  => \&_dumb_namer,
     required => 1,
 );

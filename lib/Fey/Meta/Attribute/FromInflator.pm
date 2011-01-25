@@ -4,13 +4,15 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Fey::ORM::Types qw( CodeRef );
+
 use Moose;
 
 extends 'Moose::Meta::Attribute';
 
 has 'inflator' => (
     is       => 'ro',
-    isa      => 'CodeRef',
+    isa      => CodeRef,
     required => 1,
 );
 

@@ -4,27 +4,17 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Fey::ORM::Types qw( IterableArrayRef );
+
 use Moose;
 use MooseX::SemiAffordanceAccessor;
 use MooseX::StrictConstructor;
-use Moose::Util::TypeConstraints;
 
 with 'Fey::ORM::Role::Iterator';
 
-my $iterable_arrayref
-    = subtype as 'ArrayRef[ArrayRef[Object|Undef]]' => message {
-    'You must provide an array reference of which each '
-        . ' element is in turn an array reference. The inner '
-        . ' references should contain objects or undef.';
-    };
-
-coerce $iterable_arrayref => from 'ArrayRef[Object|Undef]', => via {
-    [ map { [$_] } @{$_} ];
-};
-
 has '_objects' => (
     is       => 'ro',
-    isa      => $iterable_arrayref,
+    isa      => IterableArrayRef,
     coerce   => 1,
     required => 1,
     init_arg => 'objects',

@@ -6,6 +6,7 @@ use namespace::autoclean;
 
 use Fey::DBIManager;
 use Fey::Exceptions qw( param_error );
+use Fey::ORM::Types qw( ClassName HashRef );
 
 use Moose;
 use MooseX::ClassAttribute;
@@ -17,7 +18,7 @@ extends 'Moose::Meta::Class';
 class_has '_SchemaClassMap' => (
     traits  => ['Hash'],
     is      => 'ro',
-    isa     => 'HashRef[Fey::Schema]',
+    isa     => HashRef['Fey::Schema'],
     default => sub { {} },
     lazy    => 1,
     handles => {
@@ -43,7 +44,7 @@ has 'dbi_manager' => (
 
 has 'sql_factory_class' => (
     is      => 'rw',
-    isa     => 'ClassName',
+    isa     => ClassName,
     lazy    => 1,
     default => 'Fey::SQL',
 );

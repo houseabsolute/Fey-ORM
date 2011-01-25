@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Fey::ORM::Types qw( CodeRef );
+
 use Moose;
 use MooseX::StrictConstructor;
 
@@ -17,7 +19,7 @@ has 'select' => (
 
 has 'bind_params' => (
     is  => 'ro',
-    isa => 'CodeRef',
+    isa => CodeRef,
 );
 
 # Since we don't know the content of the SQL, we just assume it can

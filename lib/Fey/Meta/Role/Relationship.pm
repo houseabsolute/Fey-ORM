@@ -5,23 +5,9 @@ use warnings;
 use namespace::autoclean;
 
 use Fey::Exceptions qw( param_error );
+use Fey::ORM::Types qw( Bool CodeRef Str TableWithSchema );
 
 use Moose::Role;
-use Moose::Util::TypeConstraints;
-
-unless (
-    Moose::Util::TypeConstraints::find_type_constraint(
-        'Fey.ORM.Type.TableWithSchema')
-    ) {
-    #<<<
-    subtype 'Fey.ORM.Type.TableWithSchema'
-        => as 'Fey::Table'
-        => where { $_[0]->has_schema() }
-        => message {
-            'A table used for has-one or -many relationships must have a schema'
-        };
-    #>>>
-}
 
 has associated_class => (
     is       => 'rw',
@@ -34,32 +20,32 @@ has associated_class => (
 
 has name => (
     is      => 'ro',
-    isa     => 'Str',
+    isa     => Str,
     lazy    => 1,
     builder => '_build_name',
 );
 
 has namer => (
     is       => 'ro',
-    isa      => 'CodeRef',
+    isa      => CodeRef,
     required => 1,
 );
 
 has table => (
     is       => 'ro',
-    isa      => 'Fey.ORM.Type.TableWithSchema',
+    isa      => TableWithSchema,
     required => 1,
 );
 
 has foreign_table => (
     is       => 'ro',
-    isa      => 'Fey.ORM.Type.TableWithSchema',
+    isa      => TableWithSchema,
     required => 1,
 );
 
 has is_cached => (
     is      => 'ro',
-    isa     => 'Bool',
+    isa     => Bool,
     lazy    => 1,
     builder => '_build_is_cached',
 );

@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Fey::ORM::Types qw( ArrayRef Bool );
+
 use Moose;
 use MooseX::SemiAffordanceAccessor;
 use MooseX::StrictConstructor;
@@ -13,7 +15,7 @@ extends 'Fey::Object::Iterator::FromSelect';
 has _cached_results => (
     traits   => ['Array'],
     is       => 'ro',
-    isa      => 'ArrayRef[ArrayRef]',
+    isa      => ArrayRef[ArrayRef],
     lazy     => 1,
     default  => sub { [] },
     init_arg => undef,
@@ -31,7 +33,7 @@ has _cached_results => (
 
 has '_sth_is_exhausted' => (
     is       => 'rw',
-    isa      => 'Bool',
+    isa      => Bool,
     init_arg => undef,
 );
 

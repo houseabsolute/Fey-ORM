@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Fey::ORM::Types qw( ArrayRef );
 use List::AllUtils qw( any );
 
 use Moose;
@@ -14,7 +15,7 @@ with 'Fey::Meta::Role::Relationship::HasMany',
 
 has 'order_by' => (
     is  => 'ro',
-    isa => 'ArrayRef',
+    isa => ArrayRef,
 );
 
 sub _make_iterator_maker {
