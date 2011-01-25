@@ -7,7 +7,7 @@ use namespace::autoclean;
 use Moose;
 use MooseX::StrictConstructor;
 
-extends 'Fey::Meta::HasMany';
+with 'Fey::Meta::Role::Relationship::HasMany';
 
 has 'select' => (
     is       => 'ro',

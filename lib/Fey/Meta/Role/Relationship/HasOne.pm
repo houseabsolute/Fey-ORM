@@ -1,4 +1,4 @@
-package Fey::Meta::HasOne;
+package Fey::Meta::Role::Relationship::HasOne;
 
 use strict;
 use warnings;
@@ -6,10 +6,9 @@ use namespace::autoclean;
 
 use Fey::Exceptions qw( param_error );
 
-use Moose;
-use MooseX::StrictConstructor;
+use Moose::Role;
 
-extends 'Fey::Meta::FK';
+with 'Fey::Meta::Role::Relationship';
 
 has associated_attribute => (
     is       => 'rw',
@@ -116,11 +115,9 @@ sub detach_from_class {
     $self->_clear_associated_class();
 }
 
-__PACKAGE__->meta()->make_immutable();
-
 1;
 
-# ABSTRACT: A parent for has-one metaclasses
+# ABSTRACT: A role for has-one metaclasses
 
 __END__
 
@@ -128,21 +125,19 @@ __END__
 
 =head1 DESCRIPTION
 
-This class exists to provide a common parent for the two has-one
-metaclasses, L<Fey::Meta::HasOne::ViaFK> and
-L<Fey::Meta::HasOne::ViaSelect>.
+This role provides functionality for the two has-one metaclasses,
+L<Fey::Meta::HasOne::ViaFK> and L<Fey::Meta::HasOne::ViaSelect>.
 
 =head1 CONSTRUCTOR OPTIONS
 
-This class accepts the following constructor options:
+This role adds the following constructor options:
 
 =over 4
 
 =item * handles
 
-This will simply be passed on when an attribute for this has-one
-relationship is created. Note that this is ignore if C<is_cached> is
-false.
+This will simply be passed on when an attribute for this has-one relationship
+is created. Note that this is ignored if C<is_cached> is false.
 
 =item * allows_undef
 
@@ -157,7 +152,7 @@ Defaults to true for this class.
 
 =head1 METHODS
 
-This provides the following methods:
+This role provides the following methods:
 
 =head2 $ho->name()
 

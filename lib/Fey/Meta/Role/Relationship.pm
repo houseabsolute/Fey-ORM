@@ -1,4 +1,4 @@
-package Fey::Meta::FK;
+package Fey::Meta::Role::Relationship;
 
 use strict;
 use warnings;
@@ -6,18 +6,22 @@ use namespace::autoclean;
 
 use Fey::Exceptions qw( param_error );
 
-use Moose;
-use MooseX::StrictConstructor;
+use Moose::Role;
 use Moose::Util::TypeConstraints;
 
-#<<<
-subtype 'Fey.ORM.Type.TableWithSchema'
-    => as 'Fey::Table'
-    => where { $_[0]->has_schema() }
-    => message {
-        'A table used for has-one or -many relationships must have a schema'
-    };
-#>>>
+unless (
+    Moose::Util::TypeConstraints::find_type_constraint(
+        'Fey.ORM.Type.TableWithSchema')
+    ) {
+    #<<<
+    subtype 'Fey.ORM.Type.TableWithSchema'
+        => as 'Fey::Table'
+        => where { $_[0]->has_schema() }
+        => message {
+            'A table used for has-one or -many relationships must have a schema'
+        };
+    #>>>
+}
 
 has associated_class => (
     is       => 'rw',
@@ -141,11 +145,9 @@ sub _invert_fk_if_necessary {
     );
 }
 
-__PACKAGE__->meta()->make_immutable();
-
 1;
 
-# ABSTRACT: A parent for foreign key-based metaclasses
+# ABSTRACT: A shared role for all foreign HasX metaclasses
 
 __END__
 
@@ -153,12 +155,12 @@ __END__
 
 =head1 DESCRIPTION
 
-This class exists to provide a common parent for has-one and has-many
+This role provides shared functionality for has-one and has-many
 metaclasses. See the relevant classes for documentation.
 
 =head1 CONSTRUCTOR OPTIONS
 
-This class accepts the following constructor options:
+This role adds the following constructor options:
 
 =over 4
 

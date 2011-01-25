@@ -9,26 +9,13 @@ use List::AllUtils qw( any );
 use Moose;
 use MooseX::StrictConstructor;
 
-extends 'Fey::Meta::HasMany';
-
-has 'fk' => (
-    is      => 'ro',
-    isa     => 'Fey::FK',
-    lazy    => 1,
-    builder => '_build_fk',
-);
+with 'Fey::Meta::Role::Relationship::HasMany',
+    'Fey::Meta::Role::Relationship::ViaFK';
 
 has 'order_by' => (
     is  => 'ro',
     isa => 'ArrayRef',
 );
-
-sub _build_fk {
-    my $self = shift;
-
-    $self->_find_one_fk_between_tables( $self->table(),
-        $self->foreign_table(), 1 );
-}
 
 sub _make_iterator_maker {
     my $self = shift;

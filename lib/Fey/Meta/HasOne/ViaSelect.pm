@@ -7,7 +7,7 @@ use namespace::autoclean;
 use Moose;
 use MooseX::StrictConstructor;
 
-extends 'Fey::Meta::HasOne';
+with 'Fey::Meta::Role::Relationship::HasOne';
 
 has 'select' => (
     is       => 'ro',

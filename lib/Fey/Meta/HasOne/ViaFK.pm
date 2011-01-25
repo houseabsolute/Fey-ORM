@@ -11,19 +11,8 @@ use MooseX::StrictConstructor;
 
 extends 'Fey::Meta::HasOne';
 
-has 'fk' => (
-    is      => 'ro',
-    isa     => 'Fey::FK',
-    lazy    => 1,
-    builder => '_build_fk',
-);
-
-sub _build_fk {
-    my $self = shift;
-
-    $self->_find_one_fk_between_tables( $self->table(),
-        $self->foreign_table(), 0 );
-}
+with 'Fey::Meta::Role::Relationship::HasOne',
+    'Fey::Meta::Role::Relationship::ViaFK';
 
 sub _build_allows_undef {
     my $self = shift;

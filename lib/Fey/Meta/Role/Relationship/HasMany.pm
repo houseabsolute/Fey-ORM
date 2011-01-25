@@ -1,4 +1,4 @@
-package Fey::Meta::HasMany;
+package Fey::Meta::Role::Relationship::HasMany;
 
 use strict;
 use warnings;
@@ -7,11 +7,11 @@ use namespace::autoclean;
 use Fey::Exceptions qw( param_error );
 use Fey::Object::Iterator::FromSelect;
 use Fey::Object::Iterator::FromSelect::Caching;
-use Moose;
-use Moose::Util::TypeConstraints;
-use MooseX::StrictConstructor;
 
-extends 'Fey::Meta::FK';
+use Moose::Role;
+use Moose::Util::TypeConstraints;
+
+with 'Fey::Meta::Role::Relationship';
 
 has associated_method => (
     is       => 'rw',
@@ -21,9 +21,12 @@ has associated_method => (
     builder  => '_build_associated_method',
 );
 
-subtype 'Fey.ORM.Type.ClassDoesIterator' => as 'ClassName' =>
-    where { $_[0]->meta()->does_role('Fey::ORM::Role::Iterator') } =>
-    message {"$_[0] does not do the Fey::ORM::Role::Iterator role"};
+#<<<
+subtype 'Fey.ORM.Type.ClassDoesIterator'
+    => as 'ClassName'
+    => where { $_[0]->meta()->does_role('Fey::ORM::Role::Iterator') }
+    => message {"$_[0] does not do the Fey::ORM::Role::Iterator role"};
+#>>>
 
 has 'iterator_class' => (
     is      => 'ro',
@@ -116,11 +119,9 @@ sub detach_from_class {
     $self->_clear_associated_class();
 }
 
-__PACKAGE__->meta()->make_immutable();
-
 1;
 
-# ABSTRACT: A parent for has-many metaclasses
+# ABSTRACT: A role for has-many metaclasses
 
 __END__
 
@@ -128,13 +129,12 @@ __END__
 
 =head1 DESCRIPTION
 
-This class exists to provide a common parent for the two has-many
-metaclasses, L<Fey::Meta::HasMany::ViaFK> and
-L<Fey::Meta::HasMany::ViaSelect>.
+This role provides shared functionality for the two has-many metaclasses,
+L<Fey::Meta::HasMany::ViaFK> and L<Fey::Meta::HasMany::ViaSelect>.
 
 =head1 CONSTRUCTOR OPTIONS
 
-This class accepts the following constructor options:
+This role adds the following constructor options:
 
 =over 4
 
@@ -153,7 +153,7 @@ L<Fey::Object::Iterator>
 
 =head1 METHODS
 
-This provides the following methods:
+This role provides the following methods:
 
 =head2 $hm->name()
 
