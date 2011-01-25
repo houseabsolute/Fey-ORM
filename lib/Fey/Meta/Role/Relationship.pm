@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-use Fey::Exceptions qw( param_error );
 use Fey::ORM::Types qw( Bool CodeRef Str TableWithSchema );
 
 use Moose::Role;
