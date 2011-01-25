@@ -1,3 +1,11 @@
+0.39   2011-01-25
+
+- When you explicitly provide a Fey::FK object for a has_one or has_many
+  relationship, Fey::ORM will now invert the direction of that relationship if
+  needed to generate the proper SQL. In the past, this was done as needed if
+  the Fey::FK _wasn't_ explicitly provided. Now it is done regardless.
+
+
 0.38   2011-01-07
 
 - Allow the use of SQL queries as insert & update values.
