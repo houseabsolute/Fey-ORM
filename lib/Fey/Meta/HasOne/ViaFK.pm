@@ -9,8 +9,6 @@ use List::AllUtils qw( any );
 use Moose;
 use MooseX::StrictConstructor;
 
-extends 'Fey::Meta::HasOne';
-
 with 'Fey::Meta::Role::Relationship::HasOne',
     'Fey::Meta::Role::Relationship::ViaFK';
 
