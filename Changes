@@ -1,3 +1,9 @@
+0.40   2011-01-25
+
+- A stray extends statement left in from a refactoring in 0.39 caused test
+  failures unless a previous version of Fey::ORM was already installed.
+
+
 0.39   2011-01-25
 
 - When you explicitly provide a Fey::FK object for a has_one or has_many
