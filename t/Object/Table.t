@@ -12,8 +12,6 @@ use Fey::Test;
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::define_live_classes();
 
-plan tests => 79;
-
 basic_tests();
 add_transform();
 tests_with_transform();
