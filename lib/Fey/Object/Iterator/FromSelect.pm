@@ -119,10 +119,18 @@ sub _get_next_result {
         # explicitly provides a bad attribute_map, or a valid
         # attribute_map and a crazy query. It also can happen pretty
         # easily with DBD::Mock.
-        push @result, eval { $class->new( \%attr ) } || undef;
+        push @result, $self->_new_object( $class, \%attr );
     }
 
     return \@result;
+}
+
+sub _new_object {
+    my $self  = shift;
+    my $class = shift;
+    my $attr  = shift;
+
+    eval { $class->new($attr) } || undef;
 }
 
 sub _build_sth {
