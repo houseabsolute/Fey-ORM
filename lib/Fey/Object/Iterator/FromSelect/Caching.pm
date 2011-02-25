@@ -37,7 +37,7 @@ has '_sth_is_exhausted' => (
     init_arg => undef,
 );
 
-sub _get_next_result {
+override _get_next_result => sub {
     my $self = shift;
 
     my $result = $self->_get_cached_result( $self->index() );
@@ -48,7 +48,7 @@ sub _get_next_result {
         # handle. DBD::SQLite can handle this, so it is not tested.
         return if $self->_sth_is_exhausted();
 
-        $result = $self->SUPER::_get_next_result();
+        $result = super();
 
         unless ($result) {
             $self->_set_sth_is_exhausted(1);
@@ -59,7 +59,7 @@ sub _get_next_result {
     }
 
     return $result;
-}
+};
 
 sub reset {
     my $self = shift;
