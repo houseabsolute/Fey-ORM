@@ -8,7 +8,7 @@ use Class::MOP;
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
 
-use Moose 0.98 ();
+use Moose 1.15 ();
 use Moose::Exporter;
 use Moose::Util::MetaRole;
 use MooseX::Params::Validate qw( pos_validated_list );

@@ -16,7 +16,7 @@ use Try::Tiny;
 use Fey::Exceptions qw( param_error );
 use Fey::ORM::Exceptions qw( no_such_row );
 
-use Moose 0.90;
+use Moose;
 use MooseX::StrictConstructor;
 
 override new => sub {

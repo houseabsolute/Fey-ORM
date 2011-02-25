@@ -7,7 +7,7 @@ use namespace::autoclean;
 use Fey::Meta::Class::Schema;
 use Fey::Object::Schema;
 
-use Moose 0.98 ();
+use Moose 1.15 ();
 use Moose::Exporter;
 use MooseX::Params::Validate qw( pos_validated_list );
 
