@@ -1,3 +1,9 @@
+0.41   2011-02-25
+
+- A small internal refactoring on Fey::Object::Iterator::FromSelect to make it
+  easier to override some of its behavior.
+
+
 0.40   2011-01-25
 
 - A stray extends statement left in from a refactoring in 0.39 caused test
