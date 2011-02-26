@@ -1,3 +1,9 @@
+0.43   2011-02-26
+
+- This release provides forward compatibility with Moose 1.99+. It will still
+  work with Moose 1.23 as well.
+
+
 0.42   2011-02-26
 
 - The most recent release of MooseX::StrictConstructor did not work with this
