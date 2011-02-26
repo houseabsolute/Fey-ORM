@@ -8,7 +8,7 @@ use Moose;
 
 extends 'Moose::Meta::Method::Constructor';
 
-with 'MooseX::StrictConstructor::Role::Meta::Method::Constructor';
+with 'MooseX::StrictConstructor::Trait::Method::Constructor';
 
 # XXX - This is copied straight from Moose 0.36 because there's no
 # good way to override it (note the eval it does at the end).
