@@ -7,7 +7,7 @@ use Fey::SQL;
 
 use Fey::Object::Iterator::FromSelect;
 use Fey::ORM::Test;
-use Test::Exception;
+use Test::Fatal;
 use Test::More;
 
 Fey::ORM::Test::require_sqlite();
@@ -407,18 +407,18 @@ sub run_shared_tests {
             'email = autarch@example.com'
         );
 
-        throws_ok(
-            sub { $iterator->next_as_hash() },
+        like(
+            exception { $iterator->next_as_hash() },
             qr/\QCannot make a hash unless all classes have a Table() method/,
             'cannot call next_as_hash when iterating with FakeUser class'
         );
-        throws_ok(
-            sub { $iterator->remaining_as_hashes() },
+        like(
+            exception { $iterator->remaining_as_hashes() },
             qr/\QCannot make a hash unless all classes have a Table() method/,
             'cannot call remaining_as_hashes when iterating with FakeUser class'
         );
-        throws_ok(
-            sub { $iterator->all_as_hashes() },
+        like(
+            exception { $iterator->all_as_hashes() },
             qr/\QCannot make a hash unless all classes have a Table() method/,
             'cannot call all_as_hashes when iterating with FakeUser class'
         );

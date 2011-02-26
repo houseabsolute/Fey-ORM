@@ -1,7 +1,6 @@
 use strict;
 use warnings;
 
-use Test::Exception;
 use Test::More;
 
 use Fey::Object::Iterator::FromArray;

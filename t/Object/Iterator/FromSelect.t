@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::Exception;
+use Test::Fatal;
 use Test::More;
 
 use Fey::Object::Iterator::FromSelect;
@@ -20,8 +20,8 @@ Fey::ORM::Test::Iterator::run_shared_tests(
 
     my $sql = Fey::SQL->new_select();
 
-    throws_ok(
-        sub {
+    like(
+        exception {
             Fey::Object::Iterator::FromSelect->new(
                 classes => [],
                 dbh     => $dbh,
@@ -32,8 +32,8 @@ Fey::ORM::Test::Iterator::run_shared_tests(
         'cannot pass empty array for classes attribute'
     );
 
-    throws_ok(
-        sub {
+    like(
+        exception {
             Fey::Object::Iterator::FromSelect->new(
                 classes => ['DoesNotExist'],
                 dbh     => $dbh,
@@ -44,8 +44,8 @@ Fey::ORM::Test::Iterator::run_shared_tests(
         'classes attribute must contain Fey::Object subclasses'
     );
 
-    throws_ok(
-        sub {
+    like(
+        exception {
             Fey::Object::Iterator::FromSelect->new(
                 classes       => ['User'],
                 dbh           => $dbh,
