@@ -8,8 +8,12 @@ use Moose;
 
 extends 'Moose::Meta::Method::Constructor';
 
-with 'MooseX::StrictConstructor::Trait::Method::Constructor';
+sub _expected_method_class {
+    return 'Fey::Object::Table';
+}
 
+if ( $Moose::VERSION < 1.9900 ) {
+    eval <<'EOF';
 # XXX - This is copied straight from Moose 0.36 because there's no
 # good way to override it (note the eval it does at the end).
 sub _initialize_body {
@@ -106,21 +110,18 @@ sub _initialize_body {
 
     $self->throw_error(
         "Could not eval the constructor :\n\n$source\n\nbecause :\n\n$e",
-        error => $e, data => $source )
-        if $e;
+        error => $e, data => $source
+    ) if $e;
 
     $self->{'body'} = $code;
-}
-
-sub _expected_method_class {
-    return 'Fey::Object::Table';
 }
 
 sub _inline_search_cache {
     my $self = shift;
 
     my $source = "\n" . 'if ( $metaclass->_object_cache_is_enabled() ) {';
-    $source .= "\n" . '    my $cached = $metaclass->_search_cache($params);';
+    $source
+        .= "\n" . '    my $cached = $metaclass->_search_cache($params);';
     $source .= "\n" . '    return $cached if $cached;';
     $source .= "\n" . '}';
 }
@@ -131,6 +132,17 @@ sub _inline_write_to_cache {
     return "\n"
         . '$metaclass->_write_to_cache($instance) if $metaclass->_object_cache_is_enabled();';
 }
+EOF
+}
+else {
+    override _eval_environment => sub {
+        my $self = shift;
+
+        my $env = super();
+        $env->{'$metaclass'} = \( $self->associated_metaclass() );
+
+        return $env;
+    };
+}
 
 1;
-

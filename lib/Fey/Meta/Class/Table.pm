@@ -20,8 +20,9 @@ use Fey::Meta::Method::FromSelect;
 use Fey::ORM::Types
     qw( Bool ClassName CodeRef DoesHasMany DoesHasOne HashRef Object );
 use List::AllUtils qw( all );
+use Try::Tiny ();
 
-use Moose qw( extends with has );
+use Moose;
 use MooseX::ClassAttribute;
 use MooseX::SemiAffordanceAccessor;
 
@@ -522,6 +523,71 @@ sub make_immutable {
         @_,
         constructor_class => 'Fey::Meta::Method::Constructor',
     );
+}
+
+if ( $Moose::VERSION >= 1.9900 ) {
+    # XXX - can we refactor Moose/CMOP core to make overriding (and copying)
+    # all of this unnecessary?
+    override _inline_new_object => sub {
+        my $self = shift;
+
+        #<<<
+        return (
+            'my $class = shift;',
+            '$class = Scalar::Util::blessed($class) || $class;',
+            $self->_inline_fallback_constructor('$class'),
+            $self->_inline_params( '$params', '$class' ),
+            $self->_inline_search_cache(),
+            'my $instance;',
+            '$class->_ClearConstructorError();',
+            'my @args = @_;',
+            'Try::Tiny::try {',
+                '@_ = @args;',
+                $self->_inline_generate_instance( '$instance', '$class' ),
+                $self->_inline_slot_initializers,
+                $self->_inline_preserve_weak_metaclasses,
+                $self->_inline_extra_init,
+            '}',
+            'Try::Tiny::catch {',
+                'die $_ unless Scalar::Util::blessed($_) && $_->isa(q{Fey::Exception::NoSuchRow});',
+                '$class->_SetConstructorError($_);',
+                'undef $instance;',
+            '};',
+            'return unless $instance;',
+            $self->_inline_write_to_cache(),
+            'return $instance',
+        );
+        #>>>
+    };
+
+    # The default version of this sticks a "my" in front of the declaration,
+    # but we want to declare the $instance var earlier.
+    override _inline_generate_instance => sub {
+        my $self = shift;
+        my ( $inst, $class ) = @_;
+        return (
+            $inst . ' = ' . $self->_inline_create_instance($class) . ';',
+        );
+    };
+}
+
+sub _inline_search_cache {
+    my $self = shift;
+
+    #<<<
+    return
+        ( 'if ( $metaclass->_object_cache_is_enabled() ) {',
+              'my $cached = $metaclass->_search_cache($params);',
+              'return $cached if $cached;',
+          '}'
+        );
+    #>>>
+}
+
+sub _inline_write_to_cache {
+    my $self = shift;
+
+    return '$metaclass->_write_to_cache($instance) if $metaclass->_object_cache_is_enabled();';
 }
 
 __PACKAGE__->meta()->make_immutable();
