@@ -8,12 +8,13 @@ use Fey::Meta::Class::Schema;
 use Fey::Object::Schema;
 
 use Moose 1.15 ();
+use MooseX::StrictConstructor 0.13 ();
 use Moose::Exporter;
 use MooseX::Params::Validate qw( pos_validated_list );
 
 Moose::Exporter->setup_import_methods(
     with_meta => [qw( has_schema )],
-    also      => 'Moose'
+    also      => [ 'Moose', 'MooseX::StrictConstructor' ],
 );
 
 sub init_meta {

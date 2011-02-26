@@ -17,7 +17,6 @@ use Fey::Exceptions qw( param_error );
 use Fey::ORM::Exceptions qw( no_such_row );
 
 use Moose;
-use MooseX::StrictConstructor;
 
 override new => sub {
     my $class = shift;

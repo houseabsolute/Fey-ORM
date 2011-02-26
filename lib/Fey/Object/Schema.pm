@@ -7,7 +7,6 @@ use namespace::autoclean;
 use Fey::Meta::Class::Table;
 
 use Moose;
-use MooseX::StrictConstructor;
 
 sub EnableObjectCaches {
     my $class = shift;

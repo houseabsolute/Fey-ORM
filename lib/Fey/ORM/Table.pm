@@ -9,6 +9,7 @@ use Fey::Meta::Class::Table;
 use Fey::Object::Table;
 
 use Moose 1.15 ();
+use MooseX::StrictConstructor 0.13 ();
 use Moose::Exporter;
 use Moose::Util::MetaRole;
 use MooseX::Params::Validate qw( pos_validated_list );
@@ -17,7 +18,7 @@ Moose::Exporter->setup_import_methods(
     with_meta =>
         [qw( has_table has_policy has_one has_many transform query )],
     as_is => [qw( inflate deflate handles )],
-    also  => 'Moose'
+    also  => [ 'Moose', 'MooseX::StrictConstructor' ],
 );
 
 sub init_meta {
