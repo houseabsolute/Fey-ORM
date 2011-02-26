@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 
+use Test::Fatal;
 use Test::More;
 
 use lib 't/lib';
@@ -207,6 +208,20 @@ my $Schema = schema();
     is(
         $user->email()->as_string(), 'test2@example.com',
         'setting an inflated attribute clears the inflated value so it gets rebuilt'
+    );
+}
+
+{
+    like(
+        exception {
+            User->new(
+                user_id     => 42,
+                bad_attr    => 'x',
+                _from_query => 1,
+            );
+        },
+        qr/Found unknown attribute.+bad_attr/,
+        'User class has a strict constructor'
     );
 }
 
