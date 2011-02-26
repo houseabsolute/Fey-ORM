@@ -278,10 +278,12 @@ $Schema2->set_name('Schema2');
 
     has_table $Schema2->table('User');
 
-    transform 'email' => inflate { return Email->new( $_[1] ) } =>
-        handles { address => 'as_string' } =>
-        deflate { return $_[1]->as_string() };
-
+    #<<<
+    transform 'email'
+        => inflate { return Email->new( $_[1] ) }
+        => deflate { return $_[1]->as_string() }
+        => handles { address => 'as_string' };
+    #>>>
 }
 
 {
