@@ -37,7 +37,10 @@ sub has_table {
 
     my ($table) = pos_validated_list( \@_, { isa => 'Fey::Table' } );
 
-    $meta->_associate_table($table);
+    $meta->_associate_table(
+        $table,
+        _context(),
+    );
 }
 
 sub has_policy {
@@ -63,7 +66,11 @@ sub transform {
     my %p = _combine_hashes(@p);
 
     for my $name (@_) {
-        $meta->_add_transform( $name => %p );
+        $meta->_add_transform(
+            $name,
+            _context(),
+            %p,
+        );
     }
 }
 
@@ -121,6 +128,13 @@ sub query {
     my $name = shift;
 
     $meta->add_query_method( name => $name, @_ );
+}
+
+sub _context {
+    my %context;
+    @context{qw(package file line)} = caller(2);
+
+    return \%context;
 }
 
 1;
