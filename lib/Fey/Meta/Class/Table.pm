@@ -287,7 +287,7 @@ sub _make_column_attributes {
 
         if ( my $transform = $self->policy()->transform_for_column($column) )
         {
-            $self->_add_transform( $name, %{$transform} );
+            $self->_add_transform( $name, {}, %{$transform} );
         }
     }
 }
