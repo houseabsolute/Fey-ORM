@@ -305,7 +305,7 @@ See L<ATTRIBUTE MAPPING> for more details.
 
 This returns the current index value of the iterator. When the object
 is first constructed, this index is 0, and it is incremented once for
-each row fetched by calling C<< $iteartor->next() >>.
+each row fetched by calling C<< $iterator->next() >>.
 
 =head2 $iterator->next()
 
