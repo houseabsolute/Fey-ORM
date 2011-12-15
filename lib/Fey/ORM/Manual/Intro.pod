@@ -477,11 +477,9 @@ power of the core Fey SQL generation tools with your classes:
 
       my $dbh = $class->_dbh($select);
 
-      my $sth = $dbh->prepare( $select->sql($dbh) );
-
       return Fey::Object::Iterator::FromSelect->new(
           classes => [ $class->meta()->ClassForTable( $message_t, $user_t ) ],
-          handle  => $sth,
+          dbh     => $dbh,
           bind_params => [ $select->bind_params() ],
       );
   }
