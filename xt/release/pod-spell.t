@@ -24,6 +24,7 @@ APIs
 DBI
 DBI's
 FromSelect
+HasX
 OO
 ORM
 Rolsky
@@ -51,3 +52,4 @@ unhashed
 unsets
 username
 webapp
+
