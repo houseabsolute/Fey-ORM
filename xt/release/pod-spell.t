@@ -26,6 +26,7 @@ DBI's
 FromSelect
 OO
 ORM
+Rolsky
 SQL
 SQLite
 SomeTable
