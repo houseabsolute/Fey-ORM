@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+- Work around breakage introduced in MooseX::Types 0.32.
 
 
 0.43   2011-02-26
