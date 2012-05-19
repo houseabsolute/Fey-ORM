@@ -8,7 +8,7 @@ use lib 't/lib';
 use Fey::ORM::Test;
 use Fey::Literal::String;
 use Fey::Test;
-use List::MoreUtils qw( uniq );
+use List::AllUtils qw( uniq );
 
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::insert_message_data();
