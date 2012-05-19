@@ -7,7 +7,7 @@ use base 'Exporter';
 
 our @EXPORT_OK = qw( schema );
 
-use Fey::Test;
+use Fey::Test 0.05;
 
 sub schema {
     return Fey::Test->mock_test_schema_with_fks();
