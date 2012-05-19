@@ -774,9 +774,8 @@ This method is expected to create a C<SELECT> statement and then pass
 the statement and bind parameters to C<< $object->_get_column_values()
 >>.
 
-On success, this method should simply return. If it fails, it should
-throw a L<Fey::Exception::NoSuchRow> exception. See
-L<Fey::ORM::Exceptions> for details.
+On success, this method should simply return. If it fails, it should throw a
+Fey::Exception::NoSuchRow exception. See L<Fey::ORM::Exceptions> for details.
 
 =head2 $object->_get_column_values( $select, $bind_params )
 

@@ -139,8 +139,8 @@ Defaults to false for this class.
 
 This is the class used for iterators over the objects in this
 relationship. By default, if this relationship is cached, it uses
-L<Fey::Object::Iterator::Caching>, otherwise it uses
-L<Fey::Object::Iterator>
+L<Fey::Object::Iterator::FromSelect::Caching>, otherwise it uses
+L<Fey::Object::Iterator::FromSelect>
 
 =back
 

@@ -62,7 +62,7 @@ connect a table-based class to your schema class automatically, and
 from that find an appropriate database handle when it needs to execute
 queries.
 
-To define your schema class you'll use L<Fey::Schema::Class>:
+To define your schema class you'll use L<Fey::ORM::Schema>:
 
   package Forum::Model::Schema;
 

@@ -124,7 +124,7 @@ __END__
 =head1 DESCRIPTION
 
 This class implements a caching subclass of
-L<Fey::Object::Iterator::FromSelect::FromSelect>. This means that it caches
+L<Fey::Object::Iterator::FromSelect>. This means that it caches
 objects it creates internally. When C<< $iterator->reset() >> is
 called it will re-use those objects before fetching more data from the
 DBMS.
