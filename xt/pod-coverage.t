@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::More 0.88;
 use Test::Pod::Coverage 1.04;
 use Pod::Coverage::Moose;
 

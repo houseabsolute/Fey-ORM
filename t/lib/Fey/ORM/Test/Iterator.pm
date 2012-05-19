@@ -8,7 +8,7 @@ use Fey::SQL;
 use Fey::Object::Iterator::FromSelect;
 use Fey::ORM::Test;
 use Test::Fatal;
-use Test::More;
+use Test::More 0.88;
 
 Fey::ORM::Test::require_sqlite();
 
