@@ -1,3 +1,7 @@
+{{$NEXT}}
+
+
+
 0.43   2011-02-26
 
 - This release provides forward compatibility with Moose 1.99+. It will still
