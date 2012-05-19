@@ -5,7 +5,7 @@ use warnings;
 use namespace::autoclean;
 
 use Fey::Exceptions qw( param_error );
-use Fey::ORM::Types qw( Any Bool Maybe );
+use Fey::ORM::Types qw( Bool Item Maybe );
 
 use Moose::Role;
 
@@ -38,7 +38,7 @@ has handles => (
     is => 'ro',
 
     # just gets passed on for attribute creation
-    isa => Any,
+    isa => Item,
 );
 
 sub _build_associated_attribute {
