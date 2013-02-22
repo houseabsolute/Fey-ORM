@@ -38,8 +38,6 @@ after BUILD => sub {
 sub _build_fk {
     my $self = shift;
 
-    my $is_has_many = ( ref $self ) =~ /HasMany/;
-
     $self->_find_one_fk_between_tables(
         $self->table(),
         $self->foreign_table(),
