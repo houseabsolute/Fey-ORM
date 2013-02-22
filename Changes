@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+- Fix test failure from hash randomization changes in 5.17.x Perl.
+
+
 0.44   2012-05-18
 
 - Work around breakage introduced in MooseX::Types 0.32.
