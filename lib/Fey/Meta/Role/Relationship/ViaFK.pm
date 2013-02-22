@@ -9,7 +9,7 @@ use Fey::ORM::Types qw( Bool );
 
 use Moose::Role;
 
-has 'fk' => (
+has fk => (
     is        => 'ro',
     isa       => 'Fey::FK',
     lazy      => 1,
