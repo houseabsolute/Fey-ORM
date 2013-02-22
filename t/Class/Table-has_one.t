@@ -274,7 +274,8 @@ my $Schema = schema();
     ::is( $@, '',
         'no error when specifying passing a disambiguating fk to has_one' );
 
-    my @ones = Message->meta()->has_ones();
+    my @ones = grep { $_->fk()->target_table()->name() eq 'User' }
+        Message->meta()->has_ones();
     ::is(
         $ones[0]->fk(), $fk,
         'fk matches the one passed to has_one'
