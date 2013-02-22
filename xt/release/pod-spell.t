@@ -30,6 +30,7 @@ ORM
 Rolsky
 SQL
 SQLite
+SUBCLASSES
 SomeTable
 attribute's
 dbh
@@ -45,11 +46,13 @@ metaclass's
 multi
 namespace
 nullable
+optimizations
 params
 rethrows
+subclasses
 subref
+subtype
 unhashed
 unsets
 username
 webapp
-
