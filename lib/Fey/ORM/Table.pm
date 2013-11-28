@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-use Class::MOP;
+use Class::Load qw( load_class );
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
 
@@ -48,7 +48,7 @@ sub has_policy {
     my $policy = shift;
 
     unless ( ref $policy ) {
-        Class::MOP::load_class($policy);
+        load_class($policy);
 
         $policy = $policy->Policy();
     }
