@@ -175,9 +175,8 @@ A subroutine reference which will be used to generate a name for
 C<has_one()> methods when a name is not explicitly provided.
 
 This sub will receive the foreign table as its first argument, and the
-associate L<Fey::Meta::FK> object as the second argument. In most
-cases, the foreign table will probably be sufficient to generate a
-name.
+associated FK object as the second argument. In most cases, the foreign table
+will probably be sufficient to generate a name.
 
 =head2 has_many_namer { ... }
 

@@ -102,8 +102,8 @@ This defaults to true.
 
 =head1 METHODS
 
-Besides the methods inherited from L<Fey::Meta::HasOne>, it also
-provides the following methods:
+Besides the methods provided by L<Fey::Meta::Role::Relationship::HasOne>, this
+class also provides the following methods:
 
 =head2 $ho->select()
 
