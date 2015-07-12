@@ -44,7 +44,7 @@ has _sth => (
     builder   => '_build_sth',
 );
 
-has 'attribute_map' => (
+has attribute_map => (
     is      => 'ro',
     isa     => HashRef [ HashRef [Str] ],
     default => sub { return {} },
