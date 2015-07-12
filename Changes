@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+- Changes in Fey broke has_many() relationships, causing many test failures.
+
+
 0.46   2013-11-28
 
 - Removed used of deprecated Class::MOP::load_class().

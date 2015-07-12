@@ -25,7 +25,7 @@ sub _make_iterator_maker {
 
     my $select = $self->associated_class()->schema_class()->SQLFactoryClass()
         ->new_select();
-    $select->select($target_table)->from($target_table);
+    $select->select( $target_table->columns() )->from($target_table);
 
     my @ph_names;
 

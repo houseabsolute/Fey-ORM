@@ -242,7 +242,7 @@ inverted_fk_tests();
 
     my $select
         = Schema->SQLFactoryClass()->new_select()
-        ->select( $schema->table('User') )
+        ->select( $schema->table('User')->columns() )
         ->from( $schema->table('User'), $schema->table('Message') )->where(
         $schema->table('Message')->column('parent_message_id'),
         '=', Fey::Placeholder->new()
