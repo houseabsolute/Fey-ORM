@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.47     2015-07-12
+
 - Changes in Fey broke has_many() relationships, causing many test failures.
 
 
