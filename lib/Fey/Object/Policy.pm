@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+our $VERSION = '0.47';
+
 use Fey::ORM::Types qw( ArrayRef CodeRef HashRef );
 use List::Util qw( first );
 

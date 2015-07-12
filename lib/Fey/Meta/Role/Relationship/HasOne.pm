@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+our $VERSION = '0.47';
+
 use Fey::Exceptions qw( param_error );
 use Fey::ORM::Types qw( Bool Item Maybe );
 

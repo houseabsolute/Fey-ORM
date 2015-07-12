@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+our $VERSION = '0.47';
+
 use Fey::ORM::Types qw( Bool CodeRef );
 use Moose::Util::TypeConstraints qw( find_type_constraint );
 

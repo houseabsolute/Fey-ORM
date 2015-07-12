@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+our $VERSION = '0.47';
+
 use Fey::ORM::Types qw( ArrayRefOfClasses Bool Int );
 use List::AllUtils qw( pairwise );
 

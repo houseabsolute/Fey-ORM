@@ -3,6 +3,8 @@ package Fey::ORM::Types::Internal;
 use strict;
 use warnings;
 
+our $VERSION = '0.47';
+
 use MooseX::Types -declare => [
     qw(
         ArrayRefOfClasses

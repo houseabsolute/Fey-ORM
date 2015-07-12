@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+our $VERSION = '0.47';
+
 use List::AllUtils qw( any );
 
 use Moose;

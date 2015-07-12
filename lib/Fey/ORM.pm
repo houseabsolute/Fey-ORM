@@ -3,6 +3,8 @@ package Fey::ORM;
 use strict;
 use warnings;
 
+our $VERSION = '0.47';
+
 use Fey 0.39;
 use Fey::DBIManager 0.07;
 use Moose 1.15 ();

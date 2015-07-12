@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+our $VERSION = '0.47';
+
 use Fey::Meta::Class::Schema;
 use Fey::Object::Schema;
 

@@ -3,6 +3,8 @@ package Fey::Hash::ColumnsKey;
 use strict;
 use warnings;
 
+our $VERSION = '0.47';
+
 sub new {
     my $class = shift;
 
