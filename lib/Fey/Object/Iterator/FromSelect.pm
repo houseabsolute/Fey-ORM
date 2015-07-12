@@ -13,6 +13,7 @@ use Devel::GlobalDestruction;
 use Moose;
 use MooseX::SemiAffordanceAccessor;
 use MooseX::StrictConstructor;
+use Try::Tiny;
 
 with 'Fey::ORM::Role::Iterator';
 
@@ -89,6 +90,7 @@ sub _validate_attribute_map {
     }
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _get_next_result {
     my $self = shift;
 
@@ -130,7 +132,7 @@ sub _new_object {
     # Fortunately, bogus data is unlikely, unless the caller explicitly
     # provides a bad attribute_map, or a valid attribute_map and a crazy
     # query. It also can happen pretty easily with DBD::Mock.
-    eval { $class->new($attr) } || undef;
+    try { $class->new($attr) } || undef;
 }
 
 sub _build_sth {
@@ -186,6 +188,7 @@ sub _remap_explicit_attribute_map {
     return \%map;
 }
 
+## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub reset {
     my $self = shift;
 
@@ -195,6 +198,7 @@ sub reset {
 
     return;
 }
+## use critic
 
 sub DEMOLISH {
     my $self = shift;

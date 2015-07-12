@@ -12,6 +12,7 @@ extends 'Moose::Meta::Method', 'Class::MOP::Method::Generated';
 
 with 'Fey::Meta::Role::FromSelect';
 
+## no critic (Moose::ProhibitNewMethod)
 sub new {
     my $class   = shift;
     my %options = @_;
@@ -29,6 +30,7 @@ sub new {
 
     return $self;
 }
+## use critic
 
 sub _new {
     my $class = shift;

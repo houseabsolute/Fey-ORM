@@ -15,7 +15,7 @@ with 'Fey::Meta::Role::Relationship';
 
 has associated_attribute => (
     is       => 'rw',
-    isa      => Maybe['Moose::Meta::Attribute'],
+    isa      => Maybe ['Moose::Meta::Attribute'],
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_associated_attribute',
@@ -23,7 +23,7 @@ has associated_attribute => (
 
 has associated_method => (
     is       => 'rw',
-    isa      => Maybe['Moose::Meta::Method'],
+    isa      => Maybe ['Moose::Meta::Method'],
     init_arg => undef,
     lazy     => 1,
     builder  => '_build_associated_method',

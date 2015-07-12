@@ -20,6 +20,7 @@ has 'order_by' => (
     isa => ArrayRef,
 );
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _make_iterator_maker {
     my $self = shift;
 
@@ -52,6 +53,7 @@ sub _make_iterator_maker {
         $bind_params_sub,
     );
 }
+## use critic
 
 __PACKAGE__->meta()->make_immutable();
 

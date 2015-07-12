@@ -33,8 +33,10 @@ my $schema = Fey::ORM::Test->schema();
     while ( $iterator->next() ) { }
 
     # This means we can only get results from the cache.
+    ## no critic (Variables::ProtectPrivateVars)
     no warnings 'redefine';
     local *Fey::Object::Iterator::FromSelect::_get_next_result = sub { };
+    ## use critic
 
     $iterator->reset();
 

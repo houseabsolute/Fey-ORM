@@ -17,6 +17,7 @@ Fey::ORM::Test::insert_user_data();
 
     use Fey::ORM::Table;
 
+    ## no critic (Subroutines::ProtectPrivateSubs)
     has email_length => (
         metaclass   => 'FromSelect',
         is          => 'ro',
@@ -31,14 +32,17 @@ Fey::ORM::Test::insert_user_data();
         isa       => 'ArrayRef',
         select    => __PACKAGE__->_BuildUserIdsSelect(),
     );
+    ## use critic
 
     sub _BuildEmailLengthSelect {
         my $class = shift;
 
         my $schema = Schema->Schema();
 
-        my $length = Fey::Literal::Function->new( 'LENGTH',
-            $class->Table()->column('email') );
+        my $length = Fey::Literal::Function->new(
+            'LENGTH',
+            $class->Table()->column('email')
+        );
         $length->set_alias_name('email_length');
 
         my $select = Schema->SQLFactoryClass()->new_select();
@@ -85,11 +89,13 @@ Fey::ORM::Test::insert_user_data();
         'email_length meta-attr'
     );
 
+    ## no critic (Subroutines::ProtectPrivateSubs)
     is(
         $attr->select()->sql('Fey::FakeDBI'),
         User->_BuildEmailLengthSelect()->sql('Fey::FakeDBI'),
         'select for attr is the expected SQL'
     );
+    ## use critic;
 
     my $user = User->new( user_id => 42 );
     is(
@@ -105,11 +111,14 @@ Fey::ORM::Test::insert_user_data();
         'user_ids meta-attr'
     );
 
+    ## no critic (Subroutines::ProtectPrivateSubs)
     is(
         $attr->select()->sql('Fey::FakeDBI'),
         User->_BuildUserIdsSelect()->sql('Fey::FakeDBI'),
         'select for attr is the expected SQL'
     );
+    ## use critic
+
     ok( !$attr->bind_params(), 'attr has no associated bind_params sub ref' );
 }
 

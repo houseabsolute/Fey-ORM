@@ -1,3 +1,4 @@
+## no critic (Moose::RequireMakeImmutable)
 package Fey::ORM;
 
 use strict;
@@ -7,8 +8,8 @@ our $VERSION = '0.47';
 
 use Fey 0.39;
 use Fey::DBIManager 0.07;
-use Moose 1.15 ();
-use MooseX::ClassAttribute 0.24 ();
+use Moose 1.15                     ();
+use MooseX::ClassAttribute 0.24    ();
 use MooseX::StrictConstructor 0.13 ();
 
 1;

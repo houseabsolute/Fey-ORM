@@ -13,6 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
+## no critic (Modules::ProhibitMultiplePackages)
 {
     package Message;
 
@@ -169,9 +170,10 @@ inverted_fk_tests();
         ->from( Schema->Schema()->table('Message') )->where(
         Schema->Schema()->table('Message')->column('user_id'),
         '=', Fey::Placeholder->new()
-        )
-        ->order_by( Schema->Schema()->table('Message')->column('message_id'),
-        'DESC' )->limit(1);
+        )->order_by(
+        Schema->Schema()->table('Message')->column('message_id'),
+        'DESC'
+        )->limit(1);
 
     has_one 'most_recent_message' => (
         table       => Schema->Schema()->table('Message'),

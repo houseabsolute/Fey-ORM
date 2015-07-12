@@ -12,6 +12,7 @@ extends 'Moose::Meta::Attribute';
 
 with 'Fey::Meta::Role::FromSelect';
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _process_options {
     my $class   = shift;
     my $name    = shift;
@@ -41,11 +42,13 @@ sub _new {
 
     return $self;
 }
+## use critic
 
 # The parent class's constructor is not a Moose::Object-based
 # constructor, so we don't want to inline one that is.
 __PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
 
+## no critic (Modules::ProhibitMultiplePackages)
 package    # hide from PAUSE
     Moose::Meta::Attribute::Custom::FromSelect;
 sub register_implementation {'Fey::Meta::Attribute::FromSelect'}

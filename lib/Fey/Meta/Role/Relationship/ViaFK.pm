@@ -79,8 +79,8 @@ sub _find_one_fk_between_tables {
 # target for an FK object are sort of arbitrary. The source should be
 # "our" table, and the target the foreign table.
 sub _invert_fk_if_necessary {
-    my $self        = shift;
-    my $fk          = shift;
+    my $self = shift;
+    my $fk   = shift;
 
     # Self-referential keys are a special case, and that case differs
     # for has_one vs has_many.
@@ -88,7 +88,7 @@ sub _invert_fk_if_necessary {
         if ( $self->_is_has_many() ) {
             return $fk
                 unless $fk->target_table()
-                    ->has_candidate_key( @{ $fk->target_columns() } );
+                ->has_candidate_key( @{ $fk->target_columns() } );
         }
         else {
 
@@ -100,7 +100,7 @@ sub _invert_fk_if_necessary {
             # though ;)
             return $fk
                 if $fk->target_table()
-                    ->has_candidate_key( @{ $fk->target_columns() } );
+                ->has_candidate_key( @{ $fk->target_columns() } );
         }
     }
     else {

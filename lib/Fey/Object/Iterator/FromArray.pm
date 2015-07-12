@@ -22,17 +22,20 @@ has '_objects' => (
     init_arg => 'objects',
 );
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _get_next_result {
     my $self = shift;
 
     return $self->_objects()->[ $self->index() ];
 }
 
+## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub reset {
     my $self = shift;
 
     $self->_reset_index();
 }
+## use critic
 
 __PACKAGE__->meta()->make_immutable();
 

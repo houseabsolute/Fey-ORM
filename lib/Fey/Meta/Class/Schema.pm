@@ -20,7 +20,7 @@ extends 'Moose::Meta::Class';
 class_has '_SchemaClassMap' => (
     traits  => ['Hash'],
     is      => 'ro',
-    isa     => HashRef['Fey::Schema'],
+    isa     => HashRef ['Fey::Schema'],
     default => sub { {} },
     lazy    => 1,
     handles => {
@@ -65,6 +65,7 @@ sub ClassForSchema {
     return;
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _associate_schema {
     my $self   = shift;
     my $schema = shift;
@@ -81,6 +82,7 @@ sub _associate_schema {
 
     $self->_set_schema($schema);
 }
+## use critic
 
 __PACKAGE__->meta()->make_immutable();
 

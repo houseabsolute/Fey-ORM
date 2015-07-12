@@ -17,22 +17,26 @@ Fey::ORM::Test::insert_user_data();
 
     use Fey::ORM::Table;
 
+    ## no critic (Subroutines::ProtectPrivateSubs)
     query email_length => (
         select      => __PACKAGE__->_BuildEmailLengthSelect(),
         bind_params => sub { $_[0]->user_id() },
     );
 
     query user_ids => (
-        select    => __PACKAGE__->_BuildUserIdsSelect(),
+        select => __PACKAGE__->_BuildUserIdsSelect(),
     );
+    ## use critic
 
     sub _BuildEmailLengthSelect {
         my $class = shift;
 
         my $schema = Schema->Schema();
 
-        my $length = Fey::Literal::Function->new( 'LENGTH',
-            $class->Table()->column('email') );
+        my $length = Fey::Literal::Function->new(
+            'LENGTH',
+            $class->Table()->column('email')
+        );
         $length->set_alias_name('email_length');
 
         my $select = Schema->SQLFactoryClass()->new_select();
@@ -67,11 +71,13 @@ Fey::ORM::Test::insert_user_data();
         'email_length meta-method'
     );
 
+    ## no critic (Subroutines::ProtectPrivateSubs)
     is(
         $meth->select()->sql('Fey::FakeDBI'),
         User->_BuildEmailLengthSelect()->sql('Fey::FakeDBI'),
-        'select for uqery method is the expected SQL'
+        'select for query method is the expected SQL'
     );
+    ## use critic
 
     my $user = User->new( user_id => 42 );
     is(
@@ -87,12 +93,18 @@ Fey::ORM::Test::insert_user_data();
         'user_ids meta-method'
     );
 
+    ## no critic (Subroutines::ProtectPrivateSubs)
     is(
         $meth->select()->sql('Fey::FakeDBI'),
         User->_BuildUserIdsSelect()->sql('Fey::FakeDBI'),
         'select for method is the expected SQL'
     );
-    ok( !$meth->bind_params(), 'method has no associated bind_params sub ref' );
+    ## use critic;
+
+    ok(
+        !$meth->bind_params(),
+        'method has no associated bind_params sub ref'
+    );
 }
 
 done_testing();

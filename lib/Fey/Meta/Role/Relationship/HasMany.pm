@@ -69,6 +69,7 @@ sub _build_associated_method {
     );
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _make_subref_for_sql {
     my $self     = shift;
     my $select   = shift;
@@ -94,6 +95,7 @@ sub _make_subref_for_sql {
     };
 
 }
+## use critic
 
 sub attach_to_class {
     my $self  = shift;

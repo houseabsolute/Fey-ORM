@@ -7,6 +7,7 @@ use namespace::autoclean;
 our $VERSION = '0.47';
 
 use Fey::Meta::Class::Table;
+use Try::Tiny;
 
 use Moose;
 
@@ -54,7 +55,7 @@ sub RunInTransaction {
 
     my @r;
 
-    eval {
+    try {
         $dbh->begin_work()
             unless $in_tran;
 
@@ -70,13 +71,12 @@ sub RunInTransaction {
 
         $dbh->commit()
             unless $in_tran;
-    };
-
-    if ( my $e = $@ ) {
+    }
+    catch {
         $dbh->rollback
             unless $in_tran;
-        die $e;
-    }
+        die $_;
+    };
 
     return unless defined $wantarray;
 

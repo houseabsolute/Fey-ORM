@@ -10,10 +10,12 @@ use Moose;
 
 extends 'Moose::Meta::Method::Constructor';
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _expected_method_class {
     return 'Fey::Object::Table';
 }
 
+## no critic (BuiltinFunctions::ProhibitStringyEval, ErrorHandling::RequireCheckingReturnValueOfEval)
 if ( $Moose::VERSION < 1.9900 ) {
     eval <<'EOF';
 # XXX - This is copied straight from Moose 0.36 because there's no
@@ -146,5 +148,7 @@ else {
         return $env;
     };
 }
+
+__PACKAGE__->meta()->make_immutable( inline_constructor => 0 );
 
 1;

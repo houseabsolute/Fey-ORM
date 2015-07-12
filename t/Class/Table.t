@@ -7,18 +7,19 @@ use Test::More 0.88;
 use lib 't/lib';
 
 use Fey::ORM::Test qw( schema );
+use Test::Fatal;
 
 my $Schema = schema();
 
+## no critic (Modules::ProhibitMultiplePackages)
 {
     package Group;
 
     use Fey::ORM::Table;
 
-    eval { has_table $Schema->table('Group') };
-
     ::like(
-        $@, qr/must load your schema class/,
+        ::exception { has_table $Schema->table('Group') },
+        qr/must load your schema class/,
         'cannot call has_table() before schema class is loaded'
     );
 }
@@ -49,9 +50,9 @@ my $Schema = schema();
     transform 'email' => inflate { return Email->new( $_[1] ) } =>
         deflate { return $_[1]->as_string() };
 
-    eval { has_table $Schema->table('User') };
     ::like(
-        $@, qr/more than once per class/,
+        ::exception { has_table $Schema->table('User') },
+        qr/more than once per class/,
         'cannot call has_table() more than once for a class'
     );
 
@@ -59,25 +60,25 @@ my $Schema = schema();
 
     use Fey::ORM::Table;
 
-    eval { has_table $Schema->table('User') };
     ::like(
-        $@, qr/associate the same table with multiple classes/,
+        ::exception { has_table $Schema->table('User') },
+        qr/associate the same table with multiple classes/,
         'cannot associate the same table with multiple classes'
     );
 
     my $table = Fey::Table->new( name => 'User2' );
 
-    eval { has_table $table };
     ::like(
-        $@, qr/must have a schema/,
+        ::exception { has_table $table },
+        qr/must have a schema/,
         'tables passed to has_table() must have a schema'
     );
 
     $Schema->add_table($table);
 
-    eval { has_table $table };
     ::like(
-        $@, qr/must have at least one key/,
+        ::exception { has_table $table },
+        qr/must have at least one key/,
         'tables passed to has_table() must have at least one key'
     );
 }
@@ -159,10 +160,14 @@ my $Schema = schema();
         'type for email is Str|Undef'
     );
 
-    ok( User->meta()->has_inflator('email'),
-        'User has an inflator coderef for email' );
-    ok( User->meta()->has_deflator('email'),
-        'User has a deflator coderef for email' );
+    ok(
+        User->meta()->has_inflator('email'),
+        'User has an inflator coderef for email'
+    );
+    ok(
+        User->meta()->has_deflator('email'),
+        'User has a deflator coderef for email'
+    );
 
     my $user = User->new(
         user_id     => 1,
@@ -239,39 +244,37 @@ my $Schema = schema();
     # Testing passing >1 attribute to transform
     transform qw( message quality ) => inflate { $_[0] } => deflate { $_[0] };
 
-    eval {
-        transform 'message' => inflate { $_[0] };
-    };
-
     ::like(
-        $@, qr/more than one inflator/,
+        ::exception { transform 'message' => inflate { $_[0] };
+        },
+        qr/more than one inflator/,
         'cannot provide more than one inflator for a column'
     );
 
-    eval {
-        transform 'message' => deflate { $_[0] };
-    };
-
     ::like(
-        $@, qr/more than one deflator/,
+        ::exception { transform 'message' => deflate { $_[0] };
+        },
+        qr/more than one deflator/,
         'cannot provide more than one deflator for a column'
     );
 
-    eval {
-        transform 'nosuchcolumn' => deflate { $_[0] };
-    };
-
     ::like(
-        $@, qr/\QThe column nosuchcolumn does not exist as an attribute/,
+        ::exception { transform 'nosuchcolumn' => deflate { $_[0] };
+        },
+        qr/\QThe column nosuchcolumn does not exist as an attribute/,
         'cannot transform a nonexistent column'
     );
 }
 
 {
-    ok( Message->meta()->has_deflator('message'),
-        'Message has a deflator coderef for message' );
-    ok( Message->meta()->has_deflator('quality'),
-        'Message has a deflator coderef for quality' );
+    ok(
+        Message->meta()->has_deflator('message'),
+        'Message has a deflator coderef for message'
+    );
+    ok(
+        Message->meta()->has_deflator('quality'),
+        'Message has a deflator coderef for quality'
+    );
 
     is(
         Message->message_id(), 'foo',

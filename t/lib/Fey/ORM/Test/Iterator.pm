@@ -1,3 +1,4 @@
+## no critic (Moose::RequireMakeImmutable)
 package Fey::ORM::Test::Iterator;
 
 use strict;
@@ -480,6 +481,7 @@ sub _make_iterator {
     }
 }
 
+## no critic (Modules::ProhibitMultiplePackages)
 {
     package FakeUser;
 

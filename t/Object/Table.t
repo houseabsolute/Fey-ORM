@@ -8,6 +8,7 @@ use lib 't/lib';
 use Fey::ORM::Test;
 use Fey::Literal::String;
 use Fey::Test;
+use Test::Fatal;
 
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::define_live_classes();
@@ -78,6 +79,7 @@ sub basic_tests {
         my $new_called = 0;
 
         {
+            ## no critic (TestingAndDebugging::ProhibitNoWarnings, Variables::ProtectPrivateVars)
             no warnings 'redefine', 'once';
             local *User::new = sub { $new_called = 1 };
 
@@ -87,8 +89,10 @@ sub basic_tests {
             );
         }
 
-        ok( !$new_called,
-            'new() is not called when insert() is done in void context' );
+        ok(
+            !$new_called,
+            'new() is not called when insert() is done in void context'
+        );
 
         is( User->Count(), 3, 'Count() is now 3' );
 
@@ -180,24 +184,32 @@ sub basic_tests {
             email    => 'updated@example.com'
         );
 
-        ok( $user->has_email(),
-            'email is not cleared when update value is a non-reference' );
+        ok(
+            $user->has_email(),
+            'email is not cleared when update value is a non-reference'
+        );
         is( $user->username(), 'updated', 'username = updated' );
 
         if ( User->meta()->is_immutable() ) {
-            is( $user->email()->as_string(), 'updated@example.com',
-                'email = updated@example.com' );
+            is(
+                $user->email()->as_string(), 'updated@example.com',
+                'email = updated@example.com'
+            );
         }
         else {
-            is( $user->email(), 'updated@example.com',
-                'email = updated@example.com' );
+            is(
+                $user->email(), 'updated@example.com',
+                'email = updated@example.com'
+            );
         }
 
         my $string = Fey::Literal::String->new('updated2');
         $user->update( username => $string );
 
-        ok( !$user->has_username(),
-            'username is cleared when update value is a reference' );
+        ok(
+            !$user->has_username(),
+            'username is cleared when update value is a reference'
+        );
         is( $user->username(), 'updated2', 'username = updated2' );
     }
 
@@ -206,6 +218,7 @@ sub basic_tests {
         my $user;
 
         {
+            ## no critic (TestingAndDebugging::ProhibitNoWarnings, Variables::ProtectPrivateVars)
             no warnings 'redefine', 'once';
             local *User::_load_from_dbms = sub { $load_from_dbms_called = 1 };
 
@@ -228,15 +241,14 @@ sub basic_tests {
     }
 
     {
-        eval {
-            User->new(
-                email       => 'notindbms@example.com',
-                _from_query => 1,
-            );
-        };
-
         like(
-            $@, qr/pass the primary key/,
+            exception {
+                User->new(
+                    email       => 'notindbms@example.com',
+                    _from_query => 1,
+                );
+            },
+            qr/pass the primary key/,
             'new() with _from_query requires the primary key'
         );
 
@@ -298,7 +310,7 @@ sub basic_tests {
     }
 
     {
-        $@ = 'an error';
+        local $@ = 'an error';
         my $user = User->new( user_id => 1244124 );
 
         is( $@, 'an error', 'nonexistent rows do not overwrite $@' );
@@ -370,6 +382,7 @@ sub tests_with_transform {
     );
 }
 
+## no critic (Subroutines::ProhibitNestedSubs, Modules::ProhibitMultiplePackages)
 sub add_transform {
     package Email;
 
@@ -389,9 +402,8 @@ sub add_transform {
 
     use Fey::ORM::Table;
 
-    transform 'email'
-        => inflate { return Email->new( $_[1] ) }
-        => deflate { return blessed $_[1] ? $_[1]->as_string() : $_[1] };
+    transform 'email' => inflate { return Email->new( $_[1] ) } =>
+        deflate { return blessed $_[1] ? $_[1]->as_string() : $_[1] };
 }
 
 done_testing();

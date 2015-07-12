@@ -28,6 +28,7 @@ has is_multi_column => (
     default => 0,
 );
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _make_sub_from_select {
     my $class        = shift;
     my $select       = shift;
@@ -36,8 +37,8 @@ sub _make_sub_from_select {
 
     die 'The select parameter must be do the Fey::Role::SQL::ReturnsData role'
         unless blessed $select
-            && $select->can('does')
-            && $select->does('Fey::Role::SQL::ReturnsData');
+        && $select->can('does')
+        && $select->does('Fey::Role::SQL::ReturnsData');
 
     if (@_) {
         return $class->_make_default_from_select_with_type(
@@ -55,6 +56,7 @@ sub _make_sub_from_select {
         );
     }
 }
+## use critic
 
 sub _make_default_from_select_with_type {
     my $class        = shift;
@@ -66,7 +68,7 @@ sub _make_default_from_select_with_type {
     my $wantarray = 0;
     $wantarray = 1
         if defined $type
-            && find_type_constraint($type)->is_a_type_of('ArrayRef');
+        && find_type_constraint($type)->is_a_type_of('ArrayRef');
 
     my $select_meth
         = $is_multi_col ? 'selectall_arrayref' : 'selectcol_arrayref';
@@ -78,7 +80,7 @@ sub _make_default_from_select_with_type {
 
         my @select_p = (
             $select->sql($dbh), {},
-            $bind_sub ? $self->$bind_sub() : ()
+            $bind_sub ? $self->$bind_sub() : (),
         );
 
         my $return = $dbh->$select_meth(@select_p)
@@ -104,7 +106,7 @@ sub _make_default_from_select_without_type {
 
         my @select_p = (
             $select->sql($dbh), {},
-            $bind_sub ? $self->$bind_sub() : ()
+            $bind_sub ? $self->$bind_sub() : (),
         );
 
         my $return = $dbh->$select_meth(@select_p)

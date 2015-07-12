@@ -96,7 +96,7 @@ sub _require_pk {
 
     return
         if all { defined $p->{$_} }
-        map { $_->name() } @{ $self->Table()->primary_key() };
+    map { $_->name() } @{ $self->Table()->primary_key() };
 
     my $package = ref $self;
     param_error
@@ -152,9 +152,11 @@ sub _load_from_key {
 
     my @where;
 
+    ## no critic (ControlStructures::ProhibitCStyleForLoops)
     for ( my $i = 0; $i < @{$key}; $i++ ) {
         push @where, $key->[$i]->name() . q{ = } . $bind->[$i];
     }
+    ## use critic
 
     $error .= join ', ', @where;
 
@@ -194,12 +196,13 @@ sub _set_column_values_from_hashref {
     my $values = shift;
 
     for my $col ( keys %{$values} ) {
-        my $set = q{_set_} . $col;
+        my $set_meth = q{_set_} . $col;
 
-        $self->$set( $values->{$col} );
+        $self->$set_meth( $values->{$col} );
     }
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _get_column_value {
     my $self = shift;
 
@@ -212,6 +215,7 @@ sub _get_column_value {
 
     return $col_values->{$name};
 }
+## use critic
 
 sub pk_values_list {
     my $self = shift;
@@ -221,11 +225,13 @@ sub pk_values_list {
     return map { $self->_deflated_value($_) } @cols;
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _MakeSelectByPKSQL {
     my $class = shift;
 
     return $class->_SelectSQLForKey( $class->Table->primary_key() );
 }
+## use critic
 
 sub _SelectSQLForKey {
     my $class = shift;
@@ -342,6 +348,7 @@ sub _bind_attributes_for {
     return @attr;
 }
 
+## no critic (Subroutines::ProhibitManyArgs)
 sub _insert_one_row {
     my $class = shift;
 
@@ -386,9 +393,11 @@ sub _sth_execute {
     my $attr = shift;
 
     if ( @{$attr} ) {
+        ## no critic (ControlStructures::ProhibitCStyleForLoops)
         for ( my $i = 0; $i < @{$vals}; $i++ ) {
             $sth->bind_param( $i + 1, $vals->[$i], $attr->[$i] );
         }
+        ## use critic
 
         return $sth->execute();
     }
@@ -451,7 +460,8 @@ sub update {
 
     $update->set(
         map { $table->column($_) => $self->_deflated_value( $_, $p{$_} ) }
-        sort keys %p );
+        sort keys %p
+    );
 
     for my $col ( @{ $table->primary_key() } ) {
         my $name = $col->name();
@@ -479,14 +489,15 @@ sub update {
             $self->$clear();
         }
         else {
-            my $set = q{_set_} . $k;
-            $self->$set( $p{$k} );
+            my $set_meth = q{_set_} . $k;
+            $self->$set_meth( $p{$k} );
         }
     }
 
     return;
 }
 
+## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub delete {
     my $self = shift;
 
@@ -512,6 +523,7 @@ sub delete {
 
     return;
 }
+## use critic
 
 sub _dbh {
     my $self = shift;
@@ -543,7 +555,8 @@ sub Count {
 
     my $dbh = $class->_dbh($select);
 
-    my $row = $dbh->selectcol_arrayref( $class->_sql_string( $select, $dbh ) );
+    my $row
+        = $dbh->selectcol_arrayref( $class->_sql_string( $select, $dbh ) );
 
     return $row->[0];
 }

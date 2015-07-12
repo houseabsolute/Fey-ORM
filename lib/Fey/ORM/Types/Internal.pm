@@ -16,11 +16,10 @@ use MooseX::Types -declare => [
         )
 ];
 
-use MooseX::Types::Moose
-    qw( ArrayRef ClassName Object Undef );
+use MooseX::Types::Moose qw( ArrayRef ClassName Object Undef );
 
 role_type DoesHasMany, { role => 'Fey::Meta::Role::Relationship::HasMany' };
-role_type DoesHasOne, { role => 'Fey::Meta::Role::Relationship::HasOne' };
+role_type DoesHasOne,  { role => 'Fey::Meta::Role::Relationship::HasOne' };
 
 #<<<
 subtype TableWithSchema,

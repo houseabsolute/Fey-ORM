@@ -16,7 +16,8 @@ sub schema {
 sub require_sqlite {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    unless ( eval "use Fey::Test::SQLite; 1" ) {
+    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    unless ( eval 'use Fey::Test::SQLite; 1' ) {
         Test::More::plan skip_all => 'These tests require Fey::Test::SQLite';
     }
 }
@@ -60,6 +61,7 @@ sub insert_message_data {
 sub define_basic_classes {
     my $schema = schema();
 
+    ## no critic (BuiltinFunctions::ProhibitStringyEval, ErrorHandling::RequireCheckingReturnValueOfEval)
     eval <<'EOF';
 {
     package Schema;

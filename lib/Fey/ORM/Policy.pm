@@ -28,6 +28,8 @@ use Fey::Object::Policy;
     };
 }
 
+## no critic (Subroutines::ProhibitSubroutinePrototypes)
+
 # I could use MooseX::ClassAttribute and add a class attribute to the
 # calling class, but really, that class doesn't need to use Moose,
 # since it's just a name we can use to find the associated policy

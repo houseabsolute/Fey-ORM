@@ -1,3 +1,4 @@
+## no critic (Moose::RequireMakeImmutable)
 package Fey::ORM::Table;
 
 use strict;
@@ -10,7 +11,7 @@ use Class::Load qw( load_class );
 use Fey::Meta::Class::Table;
 use Fey::Object::Table;
 
-use Moose 1.15 ();
+use Moose 1.15                     ();
 use MooseX::StrictConstructor 0.13 ();
 use Moose::Exporter;
 use Moose::Util::MetaRole;
@@ -22,6 +23,8 @@ Moose::Exporter->setup_import_methods(
     as_is => [qw( inflate deflate handles )],
     also  => [ 'Moose', 'MooseX::StrictConstructor' ],
 );
+
+## no critic (Subroutines::ProhibitSubroutinePrototypes)
 
 sub init_meta {
     shift;

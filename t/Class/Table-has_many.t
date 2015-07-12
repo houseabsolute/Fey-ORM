@@ -8,9 +8,11 @@ use lib 't/lib';
 use Fey::ORM::Test qw( schema );
 use Fey::Placeholder;
 use List::Util qw( first );
+use Test::Fatal;
 
 my $Schema = schema();
 
+## no critic (Modules::ProhibitMultiplePackages)
 {
     package Schema;
 
@@ -149,26 +151,21 @@ my $Schema = schema();
 
     has_table $Schema->table('Message');
 
-    eval { has_many( $Schema->table('Group') ) };
-
     ::like(
-        $@,
+        ::exception { has_many( $Schema->table('Group') ) },
         qr/\QThere are no foreign keys between the table for this class, Message and the table you passed to has_many(), Group/,
         'Cannot declare a has_many relationship to a table with which we have no FK'
     );
 
-    eval { has_many( $Schema->table('Message') ) };
-
     ::is(
-        $@, '',
+        ::exception { has_many( $Schema->table('Message') ) },
+        undef,
         'no exception declaring a self-referential has_many'
     );
 
     my $table = Fey::Table->new( name => 'NewTable' );
-    eval { has_many $table };
-
     ::like(
-        $@,
+        ::exception { has_many $table },
         qr/\QA table used for has-one or -many relationships must have a schema/,
         'table without a schema passed to has_many()'
     );
@@ -285,12 +282,10 @@ my $Schema = schema();
 
     __PACKAGE__->meta()->remove_has_many('child_message_users');
 
-    eval {
-        has_many 'edited_messages' => ( table => $Schema->table('Message') );
-    };
-
     ::like(
-        $@,
+        ::exception { has_many 'edited_messages' =>
+                ( table => $Schema->table('Message') );
+        },
         qr/\QThere is more than one foreign key between the table for this class, User and the table you passed to has_many(), Message. You must specify one explicitly/i,
         'exception is thrown if trying to make a has_many() when there is >1 fk between the two tables'
     );
@@ -299,15 +294,15 @@ my $Schema = schema();
         = grep { $_->source_columns()->[0]->name() eq 'editor_user_id' }
         $Schema->foreign_keys_between_tables( 'Message', 'User' );
 
-    eval {
-        has_many 'edited_messages' => (
-            table => $Schema->table('Message'),
-            fk    => $fk,
-        );
-    };
-
-    ::is( $@, '',
-        'no error when specifying passing a disambiguating fk to has_many' );
+    ::is(
+        ::exception { has_many 'edited_messages' => (
+                table => $Schema->table('Message'),
+                fk    => $fk,
+            );
+        },
+        undef,
+        'no error when specifying passing a disambiguating fk to has_many'
+    );
 }
 
 done_testing();

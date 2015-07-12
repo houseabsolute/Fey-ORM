@@ -17,7 +17,7 @@ extends 'Fey::Object::Iterator::FromSelect';
 has _cached_results => (
     traits   => ['Array'],
     is       => 'ro',
-    isa      => ArrayRef[ArrayRef],
+    isa      => ArrayRef [ArrayRef],
     lazy     => 1,
     default  => sub { [] },
     init_arg => undef,
@@ -45,6 +45,7 @@ override _get_next_result => sub {
     my $result = $self->_get_cached_result( $self->index() );
 
     unless ($result) {
+
         # Some drivers (DBD::Pg, at least) will blow up if we try to
         # call a ->fetch type method on an exhausted statement
         # handle. DBD::SQLite can handle this, so it is not tested.
@@ -63,11 +64,13 @@ override _get_next_result => sub {
     return $result;
 };
 
+## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub reset {
     my $self = shift;
 
     $self->_reset_index();
 }
+## use critic
 
 sub clone {
     my $self = shift;

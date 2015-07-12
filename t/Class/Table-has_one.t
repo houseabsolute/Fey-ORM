@@ -8,9 +8,11 @@ use lib 't/lib';
 use Fey::ORM::Test qw( schema );
 use Fey::Placeholder;
 use List::Util qw( first );
+use Test::Fatal;
 
 my $Schema = schema();
 
+## no critic (Modules::ProhibitMultiplePackages)
 {
     package Schema;
 
@@ -205,26 +207,21 @@ my $Schema = schema();
 {
     package Message;
 
-    eval { has_one $Schema->table('Group') };
-
     ::like(
-        $@,
+        ::exception { has_one $Schema->table('Group') },
         qr/\QThere are no foreign keys between the table for this class, Message and the table you passed to has_one(), Group/,
         'Cannot declare a has_one relationship to a table with which we have no FK'
     );
 
-    eval { has_one $Schema->table('Message') };
-
     ::is(
-        $@, '',
+        ::exception { has_one $Schema->table('Message') },
+        undef,
         'no exception declaring a self-referential has_one'
     );
 
     my $table = Fey::Table->new( name => 'NewTable' );
-    eval { has_one $table };
-
     ::like(
-        $@,
+        ::exception { has_one $table },
         qr/\QA table used for has-one or -many relationships must have a schema/,
         'table without a schema passed to has_one()'
     );
@@ -252,10 +249,9 @@ my $Schema = schema();
 
     __PACKAGE__->meta()->remove_has_one('user');
 
-    eval { has_one 'editor' => ( table => $Schema->table('User') ) };
-
     ::like(
-        $@,
+        ::exception { has_one 'editor' => ( table => $Schema->table('User') );
+        },
         qr/\QThere is more than one foreign key between the table for this class, Message and the table you passed to has_one(), User. You must specify one explicitly/i,
         'exception is thrown if trying to make a has_one() when there is >1 fk between the two tables'
     );
@@ -264,15 +260,15 @@ my $Schema = schema();
         = grep { $_->source_columns()->[0]->name() eq 'editor_user_id' }
         $Schema->foreign_keys_between_tables( 'Message', 'User' );
 
-    eval {
-        has_one 'editor' => (
-            table => $Schema->table('User'),
-            fk    => $fk,
-        );
-    };
-
-    ::is( $@, '',
-        'no error when specifying passing a disambiguating fk to has_one' );
+    ::is(
+        ::exception { has_one 'editor' => (
+                table => $Schema->table('User'),
+                fk    => $fk,
+            );
+        },
+        undef,
+        'no error when specifying passing a disambiguating fk to has_one'
+    );
 
     my @ones = grep { $_->fk()->target_table()->name() eq 'User' }
         Message->meta()->has_ones();
@@ -292,7 +288,8 @@ my $Schema = schema();
         = Fey::SQL->new_select()->select( $Schema->table('Message') )->where(
         $Schema->table('Message')->column('parent_message_id'),
         '=', Fey::Placeholder->new()
-        )->order_by( $Schema->table('Message')->column('message_id'), 'DESC' )
+        )
+        ->order_by( $Schema->table('Message')->column('message_id'), 'DESC' )
         ->limit(1);
 
     has_one 'most_recent_child' => (
@@ -341,7 +338,8 @@ my $Schema = schema();
         ->from( $Schema->table('Message') )->where(
         $Schema->table('Message')->column('parent_message_id'),
         '=', Fey::Placeholder->new()
-        )->order_by( $Schema->table('Message')->column('message_id'), 'DESC' )
+        )
+        ->order_by( $Schema->table('Message')->column('message_id'), 'DESC' )
         ->limit(1);
 
     has_one 'most_recent_child' => (

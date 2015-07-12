@@ -1,3 +1,4 @@
+## no critic (Moose::RequireMakeImmutable)
 package Fey::ORM::Schema;
 
 use strict;
@@ -9,7 +10,7 @@ our $VERSION = '0.47';
 use Fey::Meta::Class::Schema;
 use Fey::Object::Schema;
 
-use Moose 1.15 ();
+use Moose 1.15                     ();
 use MooseX::StrictConstructor 0.13 ();
 use Moose::Exporter;
 use MooseX::Params::Validate qw( pos_validated_list );

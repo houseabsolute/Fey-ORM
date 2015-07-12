@@ -184,13 +184,13 @@ sub _ClassForTable {
 
         return $class_name
             if $potential_table->name() eq $table->name()
-                && $potential_table->schema()->name() eq
-                $table->schema()->name();
+            && $potential_table->schema()->name() eq $table->schema()->name();
     }
 
     return;
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _search_cache {
     my $self = shift;
     my $p    = shift;
@@ -201,7 +201,7 @@ sub _search_cache {
         my @names = map { $_->name() } @{$key};
         next unless all { defined $p->{$_} } @names;
 
-        my $cache_key = join "\0", map { $_, $p->{$_} } sort @names;
+        my $cache_key = join "\0", map { ( $_, $p->{$_} ) } sort @names;
 
         return $cache->{$cache_key}
             if exists $cache->{$cache_key};
@@ -217,7 +217,7 @@ sub _write_to_cache {
     for my $key ( @{ $self->table()->candidate_keys() } ) {
         my @names = map { $_->name() } @{$key};
 
-        my @pieces = map { $_, $object->$_() } sort @names;
+        my @pieces = map { ( $_, $object->$_() ) } sort @names;
 
         next unless all {defined} @pieces;
 
@@ -247,8 +247,8 @@ sub _associate_table {
 
     param_error 'You must load your schema class before calling has_table()'
         unless $class
-            && $class->can('meta')
-            && $class->meta()->_has_schema();
+        && $class->can('meta')
+        && $class->meta()->_has_schema();
 
     param_error
         'A table object passed to has_table() must have at least one key'
@@ -260,6 +260,7 @@ sub _associate_table {
 
     $self->_make_column_attributes($context);
 }
+## use critic;
 
 sub _make_column_attributes {
     my $self    = shift;
@@ -350,6 +351,7 @@ sub _add_transform {
     }
 }
 
+## no critic (Subroutines::ProhibitManyArgs)
 sub _add_inflator_to_attribute {
     my $self     = shift;
     my $name     = shift;
@@ -387,15 +389,15 @@ sub _add_inflator_to_attribute {
 
     $self->add_attribute(
         $name,
-        metaclass     => 'Fey::Meta::Attribute::FromInflator',
-        is            => 'ro',
-        lazy          => 1,
-        default       => $default,
-        predicate     => $inflated_predicate,
-        clearer       => $inflated_clear,
-        init_arg      => undef,
-        raw_attribute => $raw_attr,
-        inflator      => $inflator,
+        metaclass          => 'Fey::Meta::Attribute::FromInflator',
+        is                 => 'ro',
+        lazy               => 1,
+        default            => $default,
+        predicate          => $inflated_predicate,
+        clearer            => $inflated_clear,
+        init_arg           => undef,
+        raw_attribute      => $raw_attr,
+        inflator           => $inflator,
         definition_context => $context,
         %handles,
     );
@@ -411,6 +413,7 @@ sub _add_inflator_to_attribute {
 
     $self->_add_inflator( $name => $inflator );
 }
+## use critic
 
 sub add_has_one {
     my $self = shift;
@@ -538,6 +541,7 @@ sub make_immutable {
 }
 
 if ( $Moose::VERSION >= 1.9900 ) {
+
     # XXX - can we refactor Moose/CMOP core to make overriding (and copying)
     # all of this unnecessary?
     override _inline_new_object => sub {
@@ -599,7 +603,8 @@ sub _inline_search_cache {
 sub _inline_write_to_cache {
     my $self = shift;
 
-    return '$metaclass->_write_to_cache($instance) if $metaclass->_object_cache_is_enabled();';
+    return
+        '$metaclass->_write_to_cache($instance) if $metaclass->_object_cache_is_enabled();';
 }
 
 __PACKAGE__->meta()->make_immutable();

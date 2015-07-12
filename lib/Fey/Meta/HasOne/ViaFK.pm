@@ -20,6 +20,7 @@ sub _build_allows_undef {
     return any { $_->is_nullable() } @{ $self->fk()->source_columns() };
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _make_subref {
     my $self = shift;
 
@@ -49,6 +50,7 @@ sub _make_subref {
         return $self->meta()->ClassForTable($target_table)->new(%new_p);
     };
 }
+## use critic
 
 __PACKAGE__->meta()->make_immutable();
 

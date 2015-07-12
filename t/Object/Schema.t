@@ -9,6 +9,7 @@ use Fey::ORM::Test;
 use Fey::Literal::String;
 use Fey::Test;
 use List::AllUtils qw( uniq );
+use Try::Tiny;
 
 Fey::ORM::Test::insert_user_data();
 Fey::ORM::Test::insert_message_data();
@@ -84,7 +85,7 @@ Fey::ORM::Test::define_live_classes();
         die 'should rollback';
     };
 
-    eval { Schema->RunInTransaction($sub) };
+    try { Schema->RunInTransaction($sub) };
 
     ok(
         !User->new( username => 'bar' ),
@@ -112,7 +113,7 @@ Fey::ORM::Test::define_live_classes();
         die 'should rollback';
     };
 
-    eval { Schema->RunInTransaction($sub) };
+    try { Schema->RunInTransaction($sub) };
 
     ok(
         !User->new( username => 'quux' ),

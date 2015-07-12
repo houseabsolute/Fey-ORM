@@ -7,6 +7,7 @@ use lib 't/lib';
 
 use Fey::ORM::Test qw( schema );
 
+## no critic (Modules::ProhibitMultiplePackages)
 {
     package Date;
 

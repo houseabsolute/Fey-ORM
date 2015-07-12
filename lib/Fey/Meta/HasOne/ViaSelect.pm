@@ -30,6 +30,7 @@ sub _build_allows_undef {
     return 1;
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _make_subref {
     my $self = shift;
 
@@ -63,6 +64,7 @@ sub _make_subref {
     };
 
 }
+## use critic
 
 __PACKAGE__->meta()->make_immutable();
 

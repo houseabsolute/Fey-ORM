@@ -6,11 +6,12 @@ use Test::More 0.88;
 use lib 't/lib';
 
 use Fey::ORM::Test qw( schema );
+use Test::Fatal;
 
 my $Schema = schema();
 
+## no critic (Modules::ProhibitMultiplePackages)
 {
-
     package Schema;
 
     use Fey::ORM::Schema;
@@ -44,10 +45,9 @@ is(
 
     use Fey::ORM::Schema;
 
-    eval { has_schema $Schema };
-
     ::like(
-        $@, qr/associate the same schema with multiple classes/,
+        ::exception { has_schema $Schema },
+        qr/associate the same schema with multiple classes/,
         'cannot associate the same schema with multiple classes'
     );
 }

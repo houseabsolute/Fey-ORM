@@ -42,6 +42,7 @@ has _can_make_hashes => (
     },
 );
 
+## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub next {
     my $self = shift;
 
@@ -53,6 +54,7 @@ sub next {
 
     return wantarray ? @{$result} : $result->[0];
 }
+## use critic
 
 sub next_as_hash {
     my $self = shift;

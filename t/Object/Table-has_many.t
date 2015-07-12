@@ -13,6 +13,7 @@ use Fey::Test;
 Fey::ORM::Test::define_live_classes();
 Fey::ORM::Test::insert_user_data();
 
+## no critic (Modules::ProhibitMultiplePackages)
 {
     package User;
 

@@ -16,7 +16,7 @@ use MooseX::SemiAffordanceAccessor;
 has '_transforms' => (
     traits   => ['Array'],
     is       => 'ro',
-    isa      => ArrayRef[HashRef],
+    isa      => ArrayRef [HashRef],
     default  => sub { [] },
     init_arg => undef,
     handles  => {
