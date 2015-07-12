@@ -5,7 +5,7 @@ use warnings;
 
 use base 'MooseX::Types::Combine';
 
-our $VERSION = '0.47';
+our $VERSION = '0.48';
 
 __PACKAGE__->provide_types_from(
     qw( MooseX::Types::Moose Fey::ORM::Types::Internal ));
